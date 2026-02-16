@@ -7,7 +7,7 @@ const Register = () => {
     const [step, setStep] = useState(1);
   return (
     <div>
-        {step == 1 ? <Welcome nextStep={setStep} /> : <RegisterForm/>}
+        {step == 1 ? <Welcome nextStep={setStep} /> : <RegisterForm previousStep={setStep}/>}
         
     </div>
   )

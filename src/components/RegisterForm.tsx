@@ -1,4 +1,4 @@
-import { ArrowLeft, EyeIcon, EyeOff, Loader, Loader2, LogIn } from 'lucide-react'
+import { ArrowLeft, EyeIcon, EyeOff, Loader2, LogIn } from 'lucide-react'
 import React, { useState } from 'react'
 import { motion } from "motion/react";
 import Image from 'next/image';

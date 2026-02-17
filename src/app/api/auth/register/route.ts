@@ -7,16 +7,34 @@ export async function POST(req:NextRequest) {
     try {
         await connectDb();
         const {name, email, password} = await req.json();
-        const existUser = await User.findOne({email});
-        if(existUser){
+        
+        // Validation
+        if(!name || !email || !password){
             return NextResponse.json(
-                {message:"email already present!"},
+                {message:"All fields are required"},
                 {status:400}
             )
         }
+
         if(password.length < 6){
             return NextResponse.json(
                 {message:"password must be at least 6 characters"},
+                {status:400}
+            )
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailRegex.test(email)){
+            return NextResponse.json(
+                {message:"Invalid email format"},
+                {status:400}
+            )
+        }
+
+        const existUser = await User.findOne({email});
+        if(existUser){
+            return NextResponse.json(
+                {message:"Email already registered!"},
                 {status:400}
             )
         }
@@ -30,8 +48,9 @@ export async function POST(req:NextRequest) {
             {status:200}
         )
     } catch (error) {
+        console.error("Register error:", error);
         return NextResponse.json(
-            {message:`Registor error ${error}`},
+            {message:`Registration error: ${error instanceof Error ? error.message : "Unknown error"}`},
             {status:500}
         )
     }

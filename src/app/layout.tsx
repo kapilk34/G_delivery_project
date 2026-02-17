@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Provider from "@/provider";
 
 export const metadata: Metadata = {
   title: "G_Delivery Project",
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="w-full min-h-screen bg-linear-to-b from-green-100">
-        {children}
+        <Provider>
+          {children}
+        </Provider>
       </body>
     </html>
   );

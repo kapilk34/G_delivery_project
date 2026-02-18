@@ -1,9 +1,25 @@
 import React from 'react'
+import connectDb from '@/lib/db'
+import User from '@/models/userModel'
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import EditRole from '@/components/EditRole';
 
-const page = () => {
+const page = async () => {
+  await connectDb();
+  const session = await auth();
+  const user = await User.findById(session?.user?.id)
+  if(!user){
+      redirect("/login")
+  }
+  
+  const inComplete = !user.mobile || !user.role || (!user.mobile && user.role == "user")
+  if(inComplete){
+      return <EditRole/>
+  }
   return (
     <>
-      <div className='bg-yellow-500 text-center p-4'>Home Page</div>
+      
     </>
   )
 }

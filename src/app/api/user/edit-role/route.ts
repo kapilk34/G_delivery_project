@@ -7,7 +7,7 @@ export async function POST(req:NextRequest){
     try {
         await connectDb();
         const {role, mobile} = await req.json()
-        const session = await auth
+        const session = await auth()
         const user = await User.findOneAndUpdate({email: session?.user?.email},{
             role, mobile
         })

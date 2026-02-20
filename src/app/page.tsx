@@ -4,6 +4,7 @@ import User from '@/models/userModel'
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import EditRole from '@/components/EditRole';
+import NavBar from '@/components/Nav';
 
 const page = async () => {
   await connectDb();
@@ -19,7 +20,7 @@ const page = async () => {
   }
   return (
     <>
-      
+      <NavBar user={user}/>
     </>
   )
 }

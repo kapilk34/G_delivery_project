@@ -5,6 +5,9 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import EditRole from '@/components/EditRole';
 import NavBar from '@/components/Nav';
+import UserDashboard from '@/components/UserDashboard';
+import AdminDashboard from '@/components/AdminDashboard';
+import DeliveryBoy from '@/components/DeliveryBoy';
 
 const page = async () => {
   await connectDb();
@@ -18,9 +21,12 @@ const page = async () => {
   if(inComplete){
       return <EditRole/>
   }
+
+  const plainUser = JSON.parse(JSON.stringify(user))
   return (
     <>
-      <NavBar user={user}/>
+      <NavBar user={plainUser}/>
+      {user.role == "user" ? <UserDashboard/> : user.role == "admin" ? <AdminDashboard/> : <DeliveryBoy/>}
     </>
   )
 }

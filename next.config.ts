@@ -4,8 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   images: {
     // allow loading user avatars from Google profile pictures
-    remotePatterns: [
-      {hostname:"lh3.googleusercontent.com"}
+    domains: [
+      "lh3.googleusercontent.com",
+      "t4.ftcdn.net",
     ],
     // or use remotePatterns if you need more flexibility:
     // remotePatterns: [

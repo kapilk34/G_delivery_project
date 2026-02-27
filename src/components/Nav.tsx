@@ -50,8 +50,10 @@ function NavBar({ user }: { user: Iuser }) {
 
         <div className="flex items-center gap-3 p-3 mt-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all shadow-inner">
           <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-green-400/60 shadow-lg">{user.image ? <Image src={user.image} alt="user" fill className="object-cover rounded-full"/> : <User/>}</div>
-          <h2 className="text-lg font-semibold text-white">{user.name}</h2>
-          <p className="text-xs text-green-200 capitalize tracking-wide">{user.role}</p>
+          <div className="flex flex-col">
+            <h2 className="text-lg font-semibold text-white">{user.name}</h2>
+            <p className="text-xs text-green-200 capitalize tracking-wide">{user.role}</p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-3 font-medium mt-6">

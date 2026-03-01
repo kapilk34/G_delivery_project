@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     domains: [
       "lh3.googleusercontent.com",
       "t4.ftcdn.net",
+      "res.cloudinary.com"
     ],
   },
 };

@@ -37,7 +37,7 @@ function GroceryCards({ item }: { item: IGrocery }) {
           <span className="text-green-700 font-bold text-lg">₹{item.price}</span>
         </div>
 
-        <motion.button className="mt-4 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-full py-2 text-sm font-medium transition-all" whileTap={{scale:0.96}} onClick={()}>
+        <motion.button className="mt-4 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-full py-2 text-sm font-medium transition-all" whileTap={{scale:0.96}} onClick={() =>dispatch(addToCart({...item,quantity:1}))}>
           <ShoppingCart/>
           Add to Cart
         </motion.button>

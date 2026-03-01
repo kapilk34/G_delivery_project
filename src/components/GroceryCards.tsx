@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
 
 interface IGrocery {
   _id?: mongoose.Types.ObjectId;
@@ -18,6 +20,7 @@ interface IGrocery {
 }
 
 function GroceryCards({ item }: { item: IGrocery }) {
+  const dispatch = useDispatch<AppDispatch>()
 
   return (
     <div className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col">
@@ -34,7 +37,7 @@ function GroceryCards({ item }: { item: IGrocery }) {
           <span className="text-green-700 font-bold text-lg">₹{item.price}</span>
         </div>
 
-        <motion.button className="mt-4 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-full py-2 text-sm font-medium transition-all" whileTap={{scale:0.96}}>
+        <motion.button className="mt-4 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-full py-2 text-sm font-medium transition-all" whileTap={{scale:0.96}} onClick={()}>
           <ShoppingCart/>
           Add to Cart
         </motion.button>

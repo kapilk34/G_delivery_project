@@ -9,6 +9,8 @@ import { signOut } from "next-auth/react"
 import { createPortal } from "react-dom"
 import { AnimatePresence } from "motion/react"
 import { motion } from "motion/react"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
 interface Iuser {
   _id?: mongoose.Types.ObjectId
@@ -27,6 +29,7 @@ function NavBar({ user }: { user: Iuser }) {
   const searchRef = useRef<HTMLDivElement | null>(null)
   const [query, setQuery] = useState("")
   const [menuOpen, setMenuOpen] = useState(false)
+  const {cartData} = useSelector((state:RootState) => state.cart)
 
   useEffect(() =>{
     const handleClickOutside = (e:MouseEvent) =>{
@@ -112,7 +115,7 @@ function NavBar({ user }: { user: Iuser }) {
 
             <Link href="/cart" className="relative p-2 rounded-full bg-white/20 hover:bg-white/30 transition duration-300">
               <ShoppingCart className="text-white w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-medium shadow-md">0</span>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-medium shadow-md">{cartData.length}</span>
             </Link>
           </>}
 

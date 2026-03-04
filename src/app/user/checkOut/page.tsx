@@ -63,8 +63,6 @@ function CheckOutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 py-10">
       <div className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto">
-
-        {/* Back Button */}
         <button
           onClick={() => router.push("/user/cart")}
           className="flex items-center gap-2 text-green-700 hover:text-green-900 font-semibold transition-all mb-8"

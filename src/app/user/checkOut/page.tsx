@@ -219,7 +219,6 @@ function CheckOutPage() {
             </div>
           </div>
 
-          {/* RIGHT SIDE - ORDER SUMMARY */}
           <div className="bg-white rounded-3xl shadow-xl p-6 border border-green-100 h-fit">
 
             <div className="flex items-center gap-3 mb-6">

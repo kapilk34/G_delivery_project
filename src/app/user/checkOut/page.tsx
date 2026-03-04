@@ -1,145 +1,72 @@
 'use client'
 
 import { RootState } from '@/redux/store'
-import { ArrowLeft, CreditCard, MapPin, Truck, Loader2 } from 'lucide-react'
+import { ArrowLeft, CreditCard, MapPin, Truck, Loader2, User, Phone } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { address } from 'motion/react-client'
 import { motion } from 'motion/react'
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
+
 
 function CheckOutPage() {
   const router = useRouter()
+  const {userData} = useSelector((state:RootState)=>state.user)
+  const [address, setAddress] = useState({
+    fullName:userData?.name,
+    mobile:userData?.mobile,
+    city:"",
+    state:"",
+    pincode:"",
+    fullAddress:"",
+  })
 
   const { cartData, subTotal, deliveryFee, finalTotal } =
     useSelector((state: RootState) => state.cart)
 
-  const [address, setAddress] = useState('')
   const [loadingLocation, setLoadingLocation] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('cod')
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
+  
 
   useEffect(() => {
     if (cartData.length === 0) {
       router.push('/user/cart')
     }
   }, [cartData, router])
-
-  // 📍 Auto Fetch Location
-  const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation not supported')
-      return
-    }
-
-    setLoadingLocation(true)
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords
-
-        setLocation({ lat: latitude, lng: longitude })
-
-        try {
-          const res = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_GOOGLE_MAPS_API_KEY`
-          )
-          const data = await res.json()
-          setAddress(data.results[0]?.formatted_address || '')
-        } catch (err) {
-          alert('Unable to fetch address')
-        }
-
-        setLoadingLocation(false)
-      },
-      () => {
-        alert('Location permission denied')
-        setLoadingLocation(false)
-      }
-    )
-  }
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 py-10">
       <div className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto">
-        <button
-          onClick={() => router.push("/user/cart")}
-          className="flex items-center gap-2 text-green-700 hover:text-green-900 font-semibold transition-all mb-8"
-        >
+        <button onClick={() => router.push("/user/cart")}
+          className="flex items-center gap-2 text-green-700 hover:text-green-900 font-semibold transition-all mb-8">
           <ArrowLeft size={18} />
           Back to Cart
         </button>
 
         <h1 className="text-3xl sm:text-4xl font-bold text-center text-green-800 mb-10">
-          Secure Checkout
+          Checkout
         </h1>
 
         <div className="grid lg:grid-cols-3 gap-10">
-
-          {/* LEFT SIDE */}
           <div className="lg:col-span-2 space-y-8">
-
-            {/* Delivery Section */}
             <div className="bg-white rounded-3xl shadow-lg p-6 border border-green-100">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <MapPin className="text-green-600" />
-                  <h2 className="text-xl font-semibold text-green-800">
-                    Delivery Address
-                  </h2>
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
+                <MapPin className="text-green-700" />
+                Delivery Address
+              </h2>
+
+              <div className='space-y-4'>
+                <div className='relative'>
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input type="text" value={address.fullName} onChange={(e)=>setAddress({...address, fullAddress:e.target.value})} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white shadow-sm'/>
                 </div>
 
-                <button
-                  onClick={handleDetectLocation}
-                  className="text-sm bg-green-100 text-green-700 px-4 py-2 rounded-full hover:bg-green-200 transition flex items-center gap-2"
-                >
-                  {loadingLocation ? (
-                    <Loader2 className="animate-spin" size={16} />
-                  ) : (
-                    'Detect Location'
-                  )}
-                </button>
+                <div className='relative'>
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input type="text" value={address.mobile} onChange={(e)=>setAddress({...address, mobile:e.target.value})} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                </div>
               </div>
-
-              {/* Live Google Map */}
-              {location && (
-                <div className="mb-4">
-                  <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
-                    <GoogleMap
-                      mapContainerStyle={{
-                        width: '100%',
-                        height: '300px',
-                        borderRadius: '16px'
-                      }}
-                      center={location}
-                      zoom={15}
-                    >
-                      <Marker position={location} />
-                    </GoogleMap>
-                  </LoadScript>
-                </div>
-              )}
-
-              <input
-                type="text"
-                placeholder="Full Name"
-                className="w-full mb-4 p-3 border rounded-xl focus:ring-2 focus:ring-green-400 outline-none"
-              />
-
-              <input
-                type="text"
-                placeholder="Phone Number"
-                className="w-full mb-4 p-3 border rounded-xl focus:ring-2 focus:ring-green-400 outline-none"
-              />
-
-              <textarea
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Your delivery address"
-                rows={3}
-                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-400 outline-none"
-              />
             </div>
 
             {/* Payment Section */}

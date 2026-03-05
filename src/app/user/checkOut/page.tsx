@@ -1,31 +1,48 @@
 'use client'
 
 import { RootState } from '@/redux/store'
-import { ArrowLeft, CreditCard, MapPin, Truck, Loader2, User, Phone } from 'lucide-react'
+import { ArrowLeft, CreditCard, MapPin, Truck, Loader2, User, Phone, Home, Building, Navigation, Search } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { address } from 'motion/react-client'
 import { motion } from 'motion/react'
+import MapView from '@/components/MapView'
 
 
 function CheckOutPage() {
   const router = useRouter()
   const {userData} = useSelector((state:RootState)=>state.user)
   const [address, setAddress] = useState({
-    fullName:userData?.name,
-    mobile:userData?.mobile,
+    fullName:"",
+    mobile:"",
     city:"",
     state:"",
     pincode:"",
     fullAddress:"",
   })
 
+  const [position, setPosition] = useState<[number,number] | null>(null)
+  useEffect(() =>{
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition((pos)=>{
+        const {latitude,longitude} = pos.coords
+        setPosition([latitude,longitude])
+      })
+    }
+  },[])
+
+  useEffect(() =>{
+    if(userData){
+      setAddress((prev)=>({...prev,fullName:userData.name || ""}))
+      setAddress((prev)=>({...prev,mobile:userData.mobile || ""}))
+    }
+  }, [userData])
+
   const { cartData, subTotal, deliveryFee, finalTotal } =
     useSelector((state: RootState) => state.cart)
 
-  const [loadingLocation, setLoadingLocation] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('cod')
   
 
@@ -59,12 +76,41 @@ function CheckOutPage() {
               <div className='space-y-4'>
                 <div className='relative'>
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input type="text" value={address.fullName} onChange={(e)=>setAddress({...address, fullAddress:e.target.value})} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white shadow-sm'/>
+                  <input type="text" value={address.fullName} onChange={(e)=>setAddress((prev)=>({...prev,fullName:address.fullName}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white shadow-sm'/>
                 </div>
 
                 <div className='relative'>
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input type="text" value={address.mobile} onChange={(e)=>setAddress({...address, mobile:e.target.value})} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                  <input type="text" value={address.mobile} onChange={(e)=>setAddress((prev)=>({...prev,mobile:address.mobile}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                </div>
+
+                <div className='relative'>
+                  <Home className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input type="text" value={address.fullAddress} placeholder='Full Address' onChange={(e)=>setAddress((prev)=>({...prev,fullAddress:address.fullAddress}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                </div>
+                
+                <div className='grid grid-cols-3 gap-3'>
+                  <div className='relative'>
+                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input type="text" value={address.city} placeholder='City' onChange={(e)=>setAddress((prev)=>({...prev,fullAddress:address.city}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                  </div>
+                  <div className='relative'>
+                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input type="text" value={address.state} placeholder='State' onChange={(e)=>setAddress((prev)=>({...prev,fullAddress:address.state}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                  </div>
+                  <div className='relative'>
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input type="text" value={address.pincode} placeholder='Pincode' onChange={(e)=>setAddress((prev)=>({...prev,fullAddress:address.pincode}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                  </div>
+                </div>
+
+                <div className='flex gap-2 mt-3'>
+                  <input type='text' placeholder='search city and area...' className="flex-1 px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"/>
+                  <button className="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-200">Search</button>
+                </div>
+
+                <div className="w-full h-[400px] rounded-xl overflow-hidden shadow-md border border-gray-200">
+                  <MapView position={position}/>
                 </div>
               </div>
             </div>

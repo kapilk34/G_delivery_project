@@ -8,8 +8,16 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { address } from 'motion/react-client'
 import { motion } from 'motion/react'
-import MapView from '@/components/MapView'
+import { MapContainer, Marker, TileLayer} from 'react-leaflet'
+import "leaflet/dist/leaflet.css"
+import L, { LatLngExpression } from 'leaflet'
+import { error } from 'console'
 
+const markerIcon = new L.Icon({
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+})
 
 function CheckOutPage() {
   const router = useRouter()
@@ -29,7 +37,7 @@ function CheckOutPage() {
       navigator.geolocation.getCurrentPosition((pos)=>{
         const {latitude,longitude} = pos.coords
         setPosition([latitude,longitude])
-      })
+      },(err)=>{console.log("location error", err)},{enableHighAccuracy:true, maximumAge:0, timeout:10000})
     }
   },[])
 
@@ -110,7 +118,15 @@ function CheckOutPage() {
                 </div>
 
                 <div className="w-full h-[400px] rounded-xl overflow-hidden shadow-md border border-gray-200">
-                  <MapView position={position}/>
+                  {position && 
+                    <MapContainer center={position as LatLngExpression} zoom={13} scrollWheelZoom={true} className='w-full h-full'>
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker icon={markerIcon} position={position} />
+                    </MapContainer>
+                  }
                 </div>
               </div>
             </div>

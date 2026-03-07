@@ -107,6 +107,39 @@ function CheckOutPage() {
   fetchAddress()
 }, [position])
 
+  const handleCod = async ()=>{
+    try {
+      const result = await axios.post("/api/user/order",{
+        userId:userData?._id,
+        items:cartData.map(item =>(
+          {
+            grocery:item._id,
+            name:item.name,
+            price:item.price,
+            unit:item.unit,
+            image:item.image,
+            quantity:item.quantity
+          }
+        )),
+        paymentMethod:"cod",
+        totalAmmount:finalTotal,
+        address:{
+          fullName : address.fullName,
+          mobile: address.mobile,
+          city : address.city,
+          state : address.state,
+          pincode : address.pincode,
+          fullAddress : address.fullAddress,
+          latitude : position ? position[0] : 0,
+          longitude : position ? position[1] : 0
+        }
+      })
+      console.log(result.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const handleCurrentLocation = ()=>{
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition((pos)=>{
@@ -227,7 +260,13 @@ function CheckOutPage() {
                     <span>Total</span>
                     <span className='text-green-600'>₹{finalTotal}</span>
                   </div>
-                  <motion.button whileTap={{ scale: 0.95 }} className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-semibold text-lg transition-all shadow-md hover:shadow-lg" onClick={() =>(``)}>
+                  <motion.button whileTap={{ scale: 0.95 }} className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-semibold text-lg transition-all shadow-md hover:shadow-lg" onClick={() =>{
+                    if(paymentMethod == "cod"){
+                      handleCod()
+                    } else{
+                      null
+                    }
+                  }}>
                     {paymentMethod == "cod" ? "Place Order" : "Pay & Place Order"}
                   </motion.button>
                 </div>

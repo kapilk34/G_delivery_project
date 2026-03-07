@@ -211,7 +211,7 @@ function CheckOutPage() {
                   paymentMethod === "cod" ? "border-green-600 bg-green-50 shadow-sm" : "hover:bg-gray-50"
                 }`}>
                   <TruckIcon className='text-green-600'/>
-                  <span className='font-medium text-gray-700'>Cash on Delivery (stripe)</span>
+                  <span className='font-medium text-gray-700'>Cash on Delivery</span>
                 </button>
 
                 <div className="border-t mt-6 pt-6 space-y-3 text-sm">
@@ -227,7 +227,9 @@ function CheckOutPage() {
                     <span>Total</span>
                     <span className='text-green-600'>₹{finalTotal}</span>
                   </div>
-                  <motion.button whileTap={{ scale: 0.95 }} className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-semibold text-lg transition-all shadow-md hover:shadow-lg" onClick={() =>(``)}>Place Order</motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-semibold text-lg transition-all shadow-md hover:shadow-lg" onClick={() =>(``)}>
+                    {paymentMethod == "cod" ? "Place Order" : "Pay & Place Order"}
+                  </motion.button>
                 </div>
               </div>
             </div>

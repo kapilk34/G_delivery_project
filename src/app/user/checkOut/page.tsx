@@ -134,7 +134,7 @@ function CheckOutPage() {
           longitude : position ? position[1] : 0
         }
       })
-      console.log(result.data)
+      router.push("/user/orderSuccess")
     } catch (error) {
       console.log(error)
     }

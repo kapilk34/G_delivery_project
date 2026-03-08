@@ -140,6 +140,39 @@ function CheckOutPage() {
     }
   }
 
+  const handleOnlinePayment = async ()=>{
+    try {
+      const result = await axios.post("/api/user/payment", {
+        userId:userData?._id,
+        items:cartData.map(item =>(
+          {
+            grocery:item._id,
+            name:item.name,
+            price:item.price,
+            unit:item.unit,
+            image:item.image,
+            quantity:item.quantity
+          }
+        )),
+        paymentMethod:"online",
+        totalAmmount:finalTotal,
+        address:{
+          fullName : address.fullName,
+          mobile: address.mobile,
+          city : address.city,
+          state : address.state,
+          pincode : address.pincode,
+          fullAddress : address.fullAddress,
+          latitude : position ? position[0] : 0,
+          longitude : position ? position[1] : 0
+        }
+      })
+      window.location.href = result.data.url
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const handleCurrentLocation = ()=>{
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition((pos)=>{
@@ -264,7 +297,7 @@ function CheckOutPage() {
                     if(paymentMethod == "cod"){
                       handleCod()
                     } else{
-                      null
+                      handleOnlinePayment()
                     }
                   }}>
                     {paymentMethod == "cod" ? "Place Order" : "Pay & Place Order"}

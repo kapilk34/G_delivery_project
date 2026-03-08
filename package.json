@@ -26,6 +26,7 @@
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
     "react-redux": "^9.2.0",
+    "stripe": "^20.4.1",
     "swiper": "^12.1.2"
   },
   "devDependencies": {

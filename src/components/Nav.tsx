@@ -86,7 +86,7 @@ function NavBar({ user }: { user: Iuser }) {
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 w-[96%] max-w-7xl z-50">
       <div className="flex items-center justify-between px-5 md:px-8 py-4 rounded-2xl bg-linear-to-r from-green-600 via-green-500 to-emerald-600 shadow-xl shadow-black/20 backdrop-blur-md border border-white/10">
-        <Link href={"/"} className="text-white font-semibold text-xl md:text-2xl tracking-wide hover:scale-105 transition duration-300">G_Delivery</Link>
+        <Link href={"/"} className="text-white font-semibold text-xl md:text-2xl tracking-wide hover:scale-105 transition duration-300">FreshKart</Link>
 
         {user.role == "user" && 
           <form className="hidden md:flex items-center bg-white/95 backdrop-blur-md rounded-full px-4 py-2 w-[45%] max-w-lg shadow-md focus-within:ring-2 focus-within:ring-green-400 transition">
@@ -166,7 +166,7 @@ function NavBar({ user }: { user: Iuser }) {
 
                   <div className="flex flex-col gap-2">
                     {user.role == "user" && 
-                      <Link href="/profile" className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-green-600 transition text-sm font-medium text-gray-700">
+                      <Link href="/user/my-order" className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-green-600 transition text-sm font-medium text-gray-700">
                         <Package/>
                         My Orders
                       </Link>

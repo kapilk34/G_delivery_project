@@ -25,7 +25,7 @@ function OrderSuccess() {
         </div>
 
         <motion.div whileTap={{ scale: 0.93 }} className="mt-6">
-          <Link href="/user/myOrders">
+          <Link href="/user/my-order">
             <button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-full font-semibold flex items-center justify-center gap-2 transition-all duration-300">
               Go To My Orders
             </button>

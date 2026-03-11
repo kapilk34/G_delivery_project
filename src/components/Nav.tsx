@@ -129,7 +129,7 @@ function NavBar({ user }: { user: Iuser }) {
                 <Box className="w-5 h-5"/>
                 View Grocery
               </Link>
-              <Link href={""} className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all">
+              <Link href={"/admin/manage-orders"} className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all">
                 <Clipboard className="w-5 h-5"/>
                 Manage Grocery
               </Link>

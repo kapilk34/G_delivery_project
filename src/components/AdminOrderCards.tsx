@@ -1,0 +1,74 @@
+"use client";
+
+import { IOrder } from "@/models/orderModel";
+import { CreditCard, MapPin, Package, Phone, User } from "lucide-react";
+import React from "react";
+
+function AdminOrderCards({ order }: { order: IOrder }) {
+  const statusOptions = ["pending", "Out of delivery"]
+  return (
+    <div key={order._id?.toString()} className="bg-white shadow-md hover:shadow-lg border border-gray-100 rounded-2xl p-6 transition-all">
+      
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+
+        <div className="space-y-1">
+          <p className="text-lg font-bold flex items-center gap-2 text-green-700">
+            <Package />
+            order #{order._id?.toString().slice(-6)}
+          </p>
+
+          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${order.isPaid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+            {order.isPaid ? "Paid" : "Unpaid"}
+          </span>
+
+          <p className="text-gray-500 text-sm">
+            {new Date(order.createdAt!).toLocaleString()}
+          </p>
+
+          <div className="mt-3 space-y-1 text-gray-700 text-sm">
+            <p className="flex items-center gap-2 font-semibold">
+              <User size={18} className="text-green-600" />
+              <span>{order?.address?.fullName}</span>
+            </p>
+
+            <p className="flex items-center gap-2 font-semibold">
+              <Phone size={18} className="text-green-600" />
+              <span>{order?.address?.mobile}</span>
+            </p>
+
+            <p className="flex items-center gap-2 font-semibold">
+              <MapPin size={18} className="text-green-600" />
+              <span>{order?.address?.fullAddress}</span>
+            </p>
+          </div>
+
+          <p className="flex items-center gap-2 text-sm mt-4 text-gray-700">
+            <CreditCard size={20} className="text-green-600" />
+            <span>{order.paymentMethod === "cod" ? "Cash On Delivery" : "Online Payment"}</span>
+          </p>
+        </div>
+
+        <div className="flex flex-col items-start md:items-end gap-2">
+          <span className={`text-xs font-semibold px-3 rounded-full capitalize ${
+            order.orderStatus === "delivered"
+              ? "bg-green-100 text-green-700"
+              : order.orderStatus === "pending"
+              ? "bg-yellow-100 text-yellow-700"
+              : "bg-blue-100 text-blue-700"
+          }`}>
+            {order.orderStatus}
+          </span>
+
+          <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none">
+            {statusOptions.map(st =>(
+              <option key={st} value={st}>{st.toUpperCase()}</option>
+            ))}
+          </select>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+export default AdminOrderCards;

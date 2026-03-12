@@ -17,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email;
         const password = credentials.password as string;
         const user = await User.findOne({ email });
-        if (!User) {
+        if (!user) {
           throw new Error("User does not exist");
         }
         const isPasswordMatch = await bcrypt.compare(password, user.password);
@@ -56,16 +56,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    jwt({ token, user, trigger}) {
+    jwt({ token, user, trigger, account}) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
         token.role = user.role
-      }
-
-      if(trigger == "update"){
-        token.role = session.role
       }
       return token;
     },

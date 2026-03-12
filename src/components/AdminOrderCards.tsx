@@ -3,6 +3,7 @@
 import { IOrder } from "@/models/orderModel";
 import { CreditCard, MapPin, Package, Phone, User } from "lucide-react";
 import React from "react";
+import Image from "next/image";
 
 function AdminOrderCards({ order }: { order: IOrder }) {
   const statusOptions = ["pending", "Out of delivery"]
@@ -11,19 +12,54 @@ function AdminOrderCards({ order }: { order: IOrder }) {
       
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
 
-        <div className="space-y-1">
-          <p className="text-lg font-bold flex items-center gap-2 text-green-700">
-            <Package />
-            order #{order._id?.toString().slice(-6)}
-          </p>
+        <div className="space-y-1 flex-1">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-lg font-bold flex items-center gap-2 text-green-700">
+                <Package />
+                order #{order._id?.toString().slice(-6)}
+              </p>
 
-          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${order.isPaid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-            {order.isPaid ? "Paid" : "Unpaid"}
-          </span>
+              <span className={`px-3 py-1 text-xs font-semibold rounded-full ${order.isPaid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                {order.isPaid ? "Paid" : "Unpaid"}
+              </span>
 
-          <p className="text-gray-500 text-sm">
-            {new Date(order.createdAt!).toLocaleString()}
-          </p>
+              <p className="text-gray-500 text-sm">
+                {new Date(order.createdAt!).toLocaleString()}
+              </p>
+            </div>
+
+            <div className="flex flex-col items-end gap-2 md:hidden">
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${
+                order.orderStatus === "delivered"
+                  ? "bg-green-100 text-green-700"
+                  : order.orderStatus === "pending"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-blue-100 text-blue-700"
+              }`}>
+                {order.orderStatus}
+              </span>
+
+              <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none">
+                {statusOptions.map(st =>(
+                  <option key={st} value={st}>{st.toUpperCase()}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-3 flex-wrap">
+            {order.items.map((item, idx) => (
+              <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                <Image 
+                  src={item.image} 
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
 
           <div className="mt-3 space-y-1 text-gray-700 text-sm">
             <p className="flex items-center gap-2 font-semibold">
@@ -48,8 +84,8 @@ function AdminOrderCards({ order }: { order: IOrder }) {
           </p>
         </div>
 
-        <div className="flex flex-col items-start md:items-end gap-2">
-          <span className={`text-xs font-semibold px-3 rounded-full capitalize ${
+        <div className="hidden md:flex flex-col items-end gap-2">
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${
             order.orderStatus === "delivered"
               ? "bg-green-100 text-green-700"
               : order.orderStatus === "pending"
@@ -66,6 +102,26 @@ function AdminOrderCards({ order }: { order: IOrder }) {
           </select>
         </div>
 
+      </div>
+
+      <hr className="my-4 border-gray-200" />
+
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600">Delivery Status:</span>
+          <span className={`font-semibold capitalize ${
+            order.orderStatus === "delivered"
+              ? "text-green-700"
+              : order.orderStatus === "pending"
+              ? "text-yellow-700"
+              : "text-blue-700"
+          }`}>
+            {order.orderStatus}
+          </span>
+        </div>
+        <div className="text-lg font-bold text-green-700">
+          ₹{order.totalAmmount}
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import NavBar from '@/components/Nav';
 import UserDashboard from '@/components/UserDashboard';
 import AdminDashboard from '@/components/AdminDashboard';
 import DeliveryBoy from '@/components/DeliveryBoy';
+import GeoUpdater from '@/components/GeoUpdater';
 
 const page = async () => {
   await connectDb();
@@ -26,6 +27,7 @@ const page = async () => {
   return (
     <>
       <NavBar user={plainUser}/>
+      <GeoUpdater userId={plainUser._id}/>
       {user.role == "user" ? <UserDashboard/> : user.role == "admin" ? <AdminDashboard/> : <DeliveryBoy/>}
     </>
   )

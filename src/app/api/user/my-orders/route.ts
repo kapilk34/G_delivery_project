@@ -4,13 +4,9 @@ import Order from "@/models/orderModel";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-
     try {
-
         await connectDb()
-
         const session = await auth()
-
         if(!session?.user?.id){
             return NextResponse.json(
                 { message: "Unauthorized" },
@@ -20,7 +16,7 @@ export async function GET(req: NextRequest) {
 
         const orders = await Order.find({
             user: session.user.id
-        }).populate("user").populate("items.grocery")
+        }).populate("user").populate("items.grocery").sort({createdAt:-1})
 
         if(!orders || orders.length === 0){
             return NextResponse.json(
@@ -35,7 +31,6 @@ export async function GET(req: NextRequest) {
         )
 
     } catch (error) {
-
         return NextResponse.json(
             { message: `get all orders error: ${error}` },
             { status: 500 }

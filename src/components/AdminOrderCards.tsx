@@ -4,9 +4,18 @@ import { IOrder } from "@/models/orderModel";
 import { CreditCard, MapPin, Package, Phone, User } from "lucide-react";
 import React from "react";
 import Image from "next/image";
+import axios from "axios";
 
 function AdminOrderCards({ order }: { order: IOrder }) {
   const statusOptions = ["pending", "Out of delivery"]
+  const updateStatus = async (orderId:string,status:string)=>{
+    try {
+      const result = await axios.post(`/api/admin/updateOrderStatus/${orderId}`,{status})
+      console.log(result.data)
+    } catch(error){
+      console.error("Failed to update order status", error);
+    }
+  }
   return (
     <div key={order._id?.toString()} className="bg-white shadow-md hover:shadow-lg border border-gray-100 rounded-2xl p-6 transition-all">
       
@@ -40,7 +49,7 @@ function AdminOrderCards({ order }: { order: IOrder }) {
                 {order.orderStatus}
               </span>
 
-              <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none">
+              <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none" onChange={(e)=>updateStatus(order._id?.toString()!,e.target.value)}>
                 {statusOptions.map(st =>(
                   <option key={st} value={st}>{st.toUpperCase()}</option>
                 ))}

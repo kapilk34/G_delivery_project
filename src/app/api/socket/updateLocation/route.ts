@@ -2,17 +2,17 @@ import connectDb from "@/lib/db";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function name(req:NextRequest) {
+export async function POST(req:NextRequest) {
     try {
         await connectDb()
         const {userId, location} = await req.json()
-        if(!userId){
+        if(!userId || !location){
             return NextResponse.json(
-                {message:"missing userId or loctaion"},
+                {message:"missing userId or location"},
                 {status:400}
             )
         }
-        const user = await User.findByIdAndUpdate(userId,(location))
+        const user = await User.findByIdAndUpdate(userId, { location }, { new: true })
         if(!user){
             return NextResponse.json(
                 {message:"user not found"},

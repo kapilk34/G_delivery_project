@@ -4,7 +4,7 @@ interface IDeliveryAssignment{
     order:mongoose.Types.ObjectId,
     brodcastedTo:mongoose.Types.ObjectId[],
     assignedTo:mongoose.Types.ObjectId | null,
-    status : "brocasted" | "assigned" | "completed"
+    status : "broadcasted" | "assigned" | "completed"
     acceptedAt : Date
     createdAt?: Date
     updatedAt?:Date
@@ -27,13 +27,16 @@ const deliveryAssignmentSchema = new mongoose.Schema<IDeliveryAssignment>({
     },
     status:{
         type:String,
-        enum:["brocasted","assigned","completed"],
-        default:"brocasted"
+        enum:["broadcasted","assigned","completed"],
+        default:"broadcasted"
     },
     acceptedAt:{
         type:Date
     }
 },{timestamps:true})
 
-const deliveryAssignment = mongoose.models.deliveryAssignment || mongoose.model("DeliveryAssignment", deliveryAssignmentSchema)
-export default deliveryAssignment
+if (mongoose.models.DeliveryAssignment) {
+    delete mongoose.models.DeliveryAssignment;
+}
+const deliveryAssignment = mongoose.model("DeliveryAssignment", deliveryAssignmentSchema);
+export default deliveryAssignment;

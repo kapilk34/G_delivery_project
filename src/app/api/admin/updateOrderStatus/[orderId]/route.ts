@@ -3,6 +3,7 @@ import DeliveryAssignment from "@/models/deliveryAssignmentModel";
 import Order from "@/models/orderModel";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export async function POST(req: NextRequest, { params }: { params: { orderId: string } }) {
     try {
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
 
             const busyIds = await DeliveryAssignment.find({
                 assignedTo: { $in: nearByIds },
-                status: { $in: ["brodcasted", "completed"] }
+                status: { $in: ["broadcasted", "completed"] }
             }).distinct("assignedTo")
 
             const busyIdSet = new Set(busyIds.map((b) => String(b)))
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
             const deliveryAssignment = await DeliveryAssignment.create({
                 order: order._id,
                 brodcastedTo: candidates,
-                status: "brodcasted"
+                status: "broadcasted"
             })
 
             order.assignment = deliveryAssignment._id
@@ -81,6 +82,21 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
 
         await order.save()
         await order.populate("user")
+
+        // Emit socket event to the user
+        try {
+            const user = order.user as any;
+            if (user && user.socketId) {
+                const socketUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER || "http://localhost:4000";
+                await axios.post(`${socketUrl}/emit`, {
+                    socketId: user.socketId,
+                    eventName: "orderStatusUpdated",
+                    payload: { orderId: order._id, status: order.orderStatus }
+                });
+            }
+        } catch (socketErr) {
+            console.error("Socket emit failed:", socketErr);
+        }
 
         return NextResponse.json(
             {

@@ -6,6 +6,7 @@ import { ArrowLeft, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import UserOrderCard from "@/components/userOrderCard";
+import { getSocket } from "@/lib/socket";
 
 function MyOrder() {
   const router = useRouter();
@@ -31,6 +32,24 @@ function MyOrder() {
     };
 
     getMyOrders();
+  }, []);
+
+  useEffect(() => {
+    const socket = getSocket();
+    
+    const handleStatusUpdate = (data: { orderId: string, status: string }) => {
+      setOrders(prevOrders => prevOrders.map(o => 
+        o._id?.toString() === data.orderId 
+          ? { ...o, orderStatus: data.status as "pending" | "Out of Delivery" | "delivered" } 
+          : o
+      ));
+    };
+
+    socket.on("orderStatusUpdated", handleStatusUpdate);
+
+    return () => {
+      socket.off("orderStatusUpdated", handleStatusUpdate);
+    };
   }, []);
 
   // Loading State

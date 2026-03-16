@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
             )
         }
 
-        order.status = status
+        order.orderStatus = status
         let deliveryBoysPayload: any[] = []
 
         if (status === "Out of Delivery" && !order.assignment) {
@@ -84,6 +84,7 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
 
         return NextResponse.json(
             {
+                order,
                 assignment: order.assignment,
                 availableBoys: deliveryBoysPayload
             },

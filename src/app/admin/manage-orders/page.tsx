@@ -26,6 +26,14 @@ function ManageOrders() {
     getOrders();
   }, []);
 
+  const handleOrderStatusChange = (orderId: string, status: string) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order._id?.toString() === orderId ? { ...order, orderStatus: status } : order
+      )
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       
@@ -83,7 +91,7 @@ function ManageOrders() {
                 key={order._id || index}
                 className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition"
               >
-                <AdminOrderCards order={order} />
+                <AdminOrderCards order={order} onStatusChange={handleOrderStatusChange} />
               </div>
             ))}
           </div>

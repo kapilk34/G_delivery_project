@@ -6,11 +6,14 @@ import React from "react";
 import Image from "next/image";
 import axios from "axios";
 
-function AdminOrderCards({ order }: { order: IOrder }) {
-  const statusOptions = ["pending", "Out of delivery"]
+function AdminOrderCards({ order, onStatusChange }: { order: IOrder, onStatusChange?: (orderId: string, status: string) => void }) {
+  const statusOptions = ["pending", "Out of Delivery"]
   const updateStatus = async (orderId:string,status:string)=>{
     try {
       const result = await axios.post(`/api/admin/updateOrderStatus/${orderId}`,{status})
+      if(result?.data?.order){
+        onStatusChange?.(orderId, status)
+      }
       console.log(result.data)
     } catch(error){
       console.error("Failed to update order status", error);
@@ -49,7 +52,10 @@ function AdminOrderCards({ order }: { order: IOrder }) {
                 {order.orderStatus}
               </span>
 
-              <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none" onChange={(e)=>updateStatus(order._id?.toString()!,e.target.value)}>
+              <select value={order.orderStatus} className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none" onChange={(e)=>{
+                const id = order._id?.toString()
+                if (id) updateStatus(id, e.target.value)
+              }}>
                 {statusOptions.map(st =>(
                   <option key={st} value={st}>{st.toUpperCase()}</option>
                 ))}
@@ -104,7 +110,10 @@ function AdminOrderCards({ order }: { order: IOrder }) {
             {order.orderStatus}
           </span>
 
-          <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none">
+          <select value={order.orderStatus} className="border border-gray-300 rounded-lg px-3 py-1 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none" onChange={(e)=>{
+            const id = order._id?.toString()
+            if (id) updateStatus(id, e.target.value)
+          }}>
             {statusOptions.map(st =>(
               <option key={st} value={st}>{st.toUpperCase()}</option>
             ))}

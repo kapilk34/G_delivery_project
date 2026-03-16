@@ -84,7 +84,7 @@ const orderSchema = new mongoose.Schema<IOrder>({
     },
     orderStatus:{
         type:String,
-        enum:["pending","Out of delivered"],
+        enum:["pending","Out of Delivery","delivered"],
         default:"pending"
     },
 },{timestamps:true})

@@ -2,12 +2,13 @@
 
 import { IOrder } from "@/models/orderModel";
 import { CreditCard, MapPin, Package, Phone, User } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import axios from "axios";
 
 function AdminOrderCards({ order, onStatusChange }: { order: IOrder, onStatusChange?: (orderId: string, status: string) => void }) {
   const statusOptions = ["pending", "Out of Delivery"]
+  // const [status,setStatus] = useState<string>(order.orderStatus)
   const updateStatus = async (orderId:string,status:string)=>{
     try {
       const result = await axios.post(`/api/admin/updateOrderStatus/${orderId}`,{status})

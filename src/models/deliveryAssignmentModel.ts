@@ -35,8 +35,5 @@ const deliveryAssignmentSchema = new mongoose.Schema<IDeliveryAssignment>({
     }
 },{timestamps:true})
 
-if (mongoose.models.DeliveryAssignment) {
-    delete mongoose.models.DeliveryAssignment;
-}
-const deliveryAssignment = mongoose.model("DeliveryAssignment", deliveryAssignmentSchema);
-export default deliveryAssignment;
+const DeliveryAssignment = mongoose.models.DeliveryAssignment || mongoose.model("DeliveryAssignment", deliveryAssignmentSchema);
+export default DeliveryAssignment;

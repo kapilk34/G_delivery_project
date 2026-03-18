@@ -87,7 +87,7 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
         try {
             const user = order.user as any;
             if (user && user.socketId) {
-                const socketUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER || "http://localhost:4000";
+                const socketUrl = (process.env.NEXT_PUBLIC_SOCKET_SERVER || "http://localhost:4000").replace(/\/+$/, "");
                 await axios.post(`${socketUrl}/emit`, {
                     socketId: user.socketId,
                     eventName: "orderStatusUpdated",

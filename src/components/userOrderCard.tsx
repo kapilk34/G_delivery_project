@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { IOrder } from "@/models/orderModel";
 import {
   Package,
@@ -38,6 +38,8 @@ function UserOrderCard({ order }: UserOrderCardProps) {
     paymentMethod === "online" ? "Online Payment" : "Cash on Delivery";
 
   const paidStatus = isPaid ?? false;
+
+  const [status, setStatus] = useState(order.orderStatus)
 
   // Optimized status calculation
   const step = useMemo(() => {
@@ -108,8 +110,8 @@ function UserOrderCard({ order }: UserOrderCardProps) {
             {/* IMAGE */}
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border bg-white flex items-center justify-center flex-shrink-0">
               <img
-                src={item.image || "/placeholder.png"}
-                alt={item.name}
+                src={item?.image ?? "/placeholder.png"}
+                alt={item?.name ?? "product"}
                 loading="lazy"
                 className="w-full h-full object-cover hover:scale-110 transition duration-300"
               />
@@ -118,17 +120,17 @@ function UserOrderCard({ order }: UserOrderCardProps) {
             {/* DETAILS */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-800 truncate">
-                {item.name}
+                {item?.name}
               </p>
 
               <p className="text-xs text-gray-500">
-                Qty: {item.quantity}
+                Qty: {item?.quantity}
               </p>
             </div>
 
             {/* PRICE */}
             <div className="text-sm font-bold text-gray-800 whitespace-nowrap">
-              ₹{item.price}
+              ₹{item?.price}
             </div>
           </div>
         ))}
@@ -146,23 +148,23 @@ function UserOrderCard({ order }: UserOrderCardProps) {
           <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700 space-y-1">
 
             <p className="font-semibold">
-              {address.fullName || "Customer"}
+              {address?.fullName || "Customer"}
             </p>
 
-            {address.mobile && (
+            {address?.mobile && (
               <p className="text-gray-600">
                 📞 {address.mobile}
               </p>
             )}
 
-            <p>{address.fullAddress}</p>
+            <p>{address?.fullAddress}</p>
 
             <p>
-              {address.city}, {address.state}
+              {address?.city}, {address?.state}
             </p>
 
             <p>
-              Pincode: {address.pincode}
+              Pincode: {address?.pincode}
             </p>
 
           </div>
@@ -180,7 +182,7 @@ function UserOrderCard({ order }: UserOrderCardProps) {
         </div>
 
         <div className="text-lg font-bold text-green-600">
-          ₹{totalAmmount}
+          ₹{totalAmmount ?? 0}
         </div>
 
       </div>
@@ -191,6 +193,6 @@ function UserOrderCard({ order }: UserOrderCardProps) {
 export default React.memo(
   UserOrderCard,
   (prevProps, nextProps) =>
-    prevProps.order._id === nextProps.order._id &&
-    prevProps.order.orderStatus === nextProps.order.orderStatus
+    prevProps.order?._id === nextProps.order?._id &&
+    prevProps.order?.orderStatus === nextProps.order?.orderStatus
 );

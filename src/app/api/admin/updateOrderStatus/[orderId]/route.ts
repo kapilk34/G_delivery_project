@@ -4,6 +4,7 @@ import Order from "@/models/orderModel";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import emitEventHandler from "@/lib/emitEventHandler";
 
 export async function POST(req: NextRequest, { params }: { params: { orderId: string } }) {
     try {
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
 
             if (candidates.length === 0) {
                 await order.save()
+                await emitEventHandler("order-status-update",{orderId:order._id,status:order.status})
                 return NextResponse.json(
                     { message: "There is no available Delivery Boys" },
                     { status: 200 }
@@ -82,7 +84,8 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
 
         await order.save()
         await order.populate("user")
-
+        await emitEventHandler("order-status-update",{orderId:order._id,status:order.status})
+        
         // Emit socket event to the user
         try {
             const user = order.user as any;

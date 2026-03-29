@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
         const orders = await Order.find({
             user: session.user.id
-        }).populate("user").populate("items.grocery").sort({createdAt:-1})
+        }).populate("user").populate("items.grocery").populate({ path: "assignedDeliveryBoy", select: "location name socketId" }).sort({createdAt:-1})
 
         if(!orders || orders.length === 0){
             return NextResponse.json(

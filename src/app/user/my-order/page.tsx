@@ -12,7 +12,17 @@ function MyOrder() {
   const router = useRouter();
 
   const [orders, setOrders] = useState<IOrder[]>([]);
+  const [deliveryLocations, setDeliveryLocations] = useState<Record<string, { latitude: number; longitude: number }>>({});
   const [loading, setLoading] = useState<boolean>(true);
+
+  const getDeliveryBoyId = (assignedDeliveryBoy: any) => {
+    if (!assignedDeliveryBoy) return undefined;
+    if (typeof assignedDeliveryBoy === "string") return assignedDeliveryBoy;
+    if (typeof assignedDeliveryBoy === "object") {
+      return assignedDeliveryBoy._id?.toString?.() ?? String(assignedDeliveryBoy);
+    }
+    return String(assignedDeliveryBoy);
+  };
 
   useEffect(() => {
     const getMyOrders = async () => {
@@ -45,10 +55,24 @@ function MyOrder() {
       ));
     };
 
+    const handleLocationUpdate = (data: { deliveryBoyId: string, latitude: number, longitude: number }) => {
+      setDeliveryLocations(prev => ({
+        ...prev,
+        [data.deliveryBoyId]: {
+          latitude: data.latitude,
+          longitude: data.longitude,
+        }
+      }));
+    };
+
     socket.on("orderStatusUpdated", handleStatusUpdate);
+    socket.on("order-status-update", handleStatusUpdate);
+    socket.on("deliveryBoyLocationUpdated", handleLocationUpdate);
 
     return () => {
       socket.off("orderStatusUpdated", handleStatusUpdate);
+      socket.off("order-status-update", handleStatusUpdate);
+      socket.off("deliveryBoyLocationUpdated", handleLocationUpdate);
     };
   }, []);
 
@@ -108,9 +132,16 @@ function MyOrder() {
       ) : (
         <div className="max-w-6xl mx-auto p-4 space-y-4">
 
-          {orders.map((order) => (
-            <UserOrderCard key={order._id} order={order} />
-          ))}
+          {orders.map((order) => {
+            const deliveryBoyId = getDeliveryBoyId(order.assignedDeliveryBoy);
+            return (
+              <UserOrderCard
+                key={order._id}
+                order={order}
+                deliveryLocation={deliveryBoyId ? deliveryLocations[deliveryBoyId] : undefined}
+              />
+            );
+          })}
 
         </div>
       )}

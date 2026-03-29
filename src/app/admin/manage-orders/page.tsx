@@ -27,12 +27,29 @@ function ManageOrders() {
     getOrders();
   }, []);
 
-  useEffect(():any=>{
+  useEffect(() => {
     const socket = getSocket()
     socket?.on("new-order",(newOrder)=>{
       setOrders((prev)=>[newOrder,...prev!])
     })
     return ()=>socket.off("new-order")
+  },[])
+
+  useEffect(() => {
+    const socket = getSocket();
+    const handleOrderUpdate = (data: { orderId: string; status: string }) => {
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id?.toString() === data.orderId ? { ...order, orderStatus: data.status as "pending" | "Out of Delivery" | "delivered" } : order
+        )
+      );
+    };
+
+    socket?.on("order-status-update", handleOrderUpdate);
+
+    return () => {
+      socket?.off("order-status-update", handleOrderUpdate);
+    };
   },[])
 
   const handleOrderStatusChange = (orderId: string, status: string) => {

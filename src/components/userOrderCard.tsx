@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React from "react";
+import Image from "next/image";
+import "leaflet/dist/leaflet.css";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import L from "leaflet";
 import { IOrder } from "@/models/orderModel";
 import {
   Package,
@@ -8,6 +12,26 @@ import {
   CreditCard,
   MapPin,
 } from "lucide-react";
+
+const defaultIcon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+L.Marker.prototype.options.icon = defaultIcon;
+
+interface DeliveryLocation {
+  latitude: number;
+  longitude: number;
+}
+
+interface UserOrderCardProps {
+  order: IOrder;
+  deliveryLocation?: DeliveryLocation;
+}
 
 interface OrderItem {
   name: string;
@@ -20,9 +44,7 @@ interface UserOrderCardProps {
   order: IOrder;
 }
 
-function UserOrderCard({ order }: UserOrderCardProps) {
-  if (!order) return null;
-
+function UserOrderCard({ order, deliveryLocation }: UserOrderCardProps) {
   const {
     _id,
     orderStatus,
@@ -34,26 +56,23 @@ function UserOrderCard({ order }: UserOrderCardProps) {
     totalAmmount,
   } = order;
 
+  const destinationPosition = address
+    ? [address.latitude, address.longitude] as [number, number]
+    : null;
+
+  const showTracking = Boolean(
+    order.assignedDeliveryBoy &&
+      (order.orderStatus === "Out of Delivery" || order.orderStatus === "delivered")
+  );
+
+  const mapCenter = deliveryLocation
+    ? [deliveryLocation.latitude, deliveryLocation.longitude]
+    : destinationPosition;
+
   const paymentLabel =
     paymentMethod === "online" ? "Online Payment" : "Cash on Delivery";
 
   const paidStatus = isPaid ?? false;
-
-  const [status, setStatus] = useState(order.orderStatus)
-
-  // Optimized status calculation
-  const step = useMemo(() => {
-    switch (orderStatus) {
-      case "confirmed":
-        return 1;
-      case "shipped":
-        return 2;
-      case "delivered":
-        return 3;
-      default:
-        return 1;
-    }
-  }, [orderStatus]);
 
   return (
     <div className="bg-white border border-gray-200 shadow-md rounded-2xl p-4 sm:p-6 hover:shadow-xl transition duration-300 space-y-5">
@@ -77,7 +96,7 @@ function UserOrderCard({ order }: UserOrderCardProps) {
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
 
           {/* ORDER STATUS */}
-          <span className="text-xs px-3 py-1 rounded-full font-medium bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm">
+          <span className="text-xs px-3 py-1 rounded-full font-medium bg-linear-to-r from-green-500 to-emerald-600 text-white shadow-sm">
             {orderStatus || "Processing"}
           </span>
 
@@ -108,11 +127,12 @@ function UserOrderCard({ order }: UserOrderCardProps) {
             className="flex items-center gap-3 sm:gap-4 bg-gray-50 rounded-xl p-3 hover:bg-gray-100 transition"
           >
             {/* IMAGE */}
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border bg-white flex items-center justify-center flex-shrink-0">
-              <img
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border bg-white flex items-center justify-center shrink-0">
+              <Image
                 src={item?.image ?? "/placeholder.png"}
                 alt={item?.name ?? "product"}
-                loading="lazy"
+                width={64}
+                height={64}
                 className="w-full h-full object-cover hover:scale-110 transition duration-300"
               />
             </div>
@@ -168,6 +188,33 @@ function UserOrderCard({ order }: UserOrderCardProps) {
             </p>
 
           </div>
+        </div>
+      )}
+
+      {showTracking && destinationPosition && (
+        <div className="border-t pt-4">
+          <p className="text-sm font-semibold text-gray-700 mb-3">
+            Live Delivery Tracking
+          </p>
+
+          {mapCenter ? (
+            <div className="h-72 rounded-2xl overflow-hidden">
+              <MapContainer center={mapCenter} zoom={13} scrollWheelZoom className="h-full w-full">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={destinationPosition} />
+                {deliveryLocation && (
+                  <Marker position={[deliveryLocation.latitude, deliveryLocation.longitude]} />
+                )}
+              </MapContainer>
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
+              Waiting for the delivery boy&apos;s location...
+            </div>
+          )}
         </div>
       )}
 

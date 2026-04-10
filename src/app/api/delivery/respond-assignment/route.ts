@@ -3,6 +3,7 @@ import connectDb from "@/lib/db";
 import DeliveryAssignment from "@/models/deliveryAssignmentModel";
 import axios from "axios";
 import emitEventHandler from "@/lib/emitEventHandler";
+import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -14,9 +15,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = String(session.user.role || "").toLowerCase();
+    const dbUser = await User.findById(session.user.id);
+    const userRole = String(dbUser?.role || session.user.role || "").toLowerCase();
     if (userRole !== "deliveryboy") {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ message: `Forbidden: not a deliveryboy. Current role: ${userRole}` }, { status: 403 });
     }
 
     const { assignmentId, action } = await req.json();

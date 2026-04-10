@@ -4,6 +4,8 @@ import CategorySlider from "./CategorySlider";
 import connectDb from "@/lib/db";
 import Grocery from "@/models/groceryModel";
 import GroceryCards from "./GroceryCards";
+import UserBanner from "./UserBanner";
+import Testimonials from "./Testimonials";
 
 async function UserDashboard() {
   await connectDb();
@@ -21,6 +23,8 @@ async function UserDashboard() {
           ))}
         </div>
       </div>
+      <UserBanner/>
+      <Testimonials/>
     </>
   );
 }

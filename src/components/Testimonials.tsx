@@ -4,7 +4,7 @@ const testimonials = [
   {
     name: "Aman Sharma",
     role: "Regular Customer",
-    image: "/users/user1.jpg",
+    image: "https://i.pinimg.com/1200x/b0/ad/ce/b0adce1b2cc94e4bc8e2fa0929be6a85.jpg",
     review:
       "Super fast delivery! Fresh groceries every time. This app has made my life so much easier.",
     rating: 5,
@@ -12,7 +12,7 @@ const testimonials = [
   {
     name: "Priya Verma",
     role: "Working Professional",
-    image: "/users/user2.jpg",
+    image: "https://i.pinimg.com/736x/3b/98/30/3b9830f74dd41eb5fa98542fc7f8be26.jpg",
     review:
       "Amazing experience! The UI is smooth and delivery is always on time. Highly recommended.",
     rating: 4,
@@ -20,7 +20,7 @@ const testimonials = [
   {
     name: "Rohit Singh",
     role: "Fitness Enthusiast",
-    image: "/users/user3.jpg",
+    image: "https://i.pinimg.com/736x/a7/1f/75/a71f75d4154c7f82f648f819921e2526.jpg",
     review:
       "Best grocery service I've used. Quality products and great customer support!",
     rating: 5,
@@ -28,7 +28,7 @@ const testimonials = [
   {
     name: "Neha Kapoor",
     role: "Home Maker",
-    image: "/users/user4.jpg",
+    image: "https://i.pinimg.com/736x/b3/36/80/b33680975a82f83a188a17ed2584563e.jpg",
     review:
       "I love how easy it is to order groceries. The discounts and offers are great too!",
     rating: 5,
@@ -36,7 +36,7 @@ const testimonials = [
   {
     name: "Arjun Mehta",
     role: "Startup Founder",
-    image: "/users/user5.jpg",
+    image: "https://i.pinimg.com/1200x/96/5d/2a/965d2a2094ec1fe38a0b4878484fbb7a.jpg",
     review:
       "Saves me so much time! The delivery is quick and the products are always fresh.",
     rating: 4,
@@ -44,7 +44,7 @@ const testimonials = [
   {
     name: "Sneha Reddy",
     role: "Student",
-    image: "/users/user6.jpg",
+    image: "https://i.pinimg.com/736x/39/8e/4f/398e4f78d4258b967dfeff179b072c57.jpg",
     review:
       "Affordable and reliable. Perfect for students like me who don’t have time to shop.",
     rating: 5,
@@ -52,7 +52,7 @@ const testimonials = [
   {
     name: "Vikram Joshi",
     role: "Gym Trainer",
-    image: "/users/user7.jpg",
+    image: "https://i.pinimg.com/736x/d9/66/91/d96691c487d4f17ddd7804b1817d2aa1.jpg",
     review:
       "Great quality fruits and vegetables. Always fresh and delivered on time.",
     rating: 5,
@@ -60,7 +60,7 @@ const testimonials = [
   {
     name: "Kavita Nair",
     role: "Teacher",
-    image: "/users/user8.jpg",
+    image: "https://i.pinimg.com/736x/5a/79/08/5a790832c1d81150b924f07cce5f815d.jpg",
     review:
       "Very convenient app. Ordering groceries has never been this simple!",
     rating: 4,
@@ -68,7 +68,7 @@ const testimonials = [
   {
     name: "Rahul Khanna",
     role: "IT Professional",
-    image: "/users/user9.jpg",
+    image: "https://i.pinimg.com/736x/12/d4/14/12d4141533884aa35c6ade513dbea2e8.jpg",
     review:
       "Smooth experience and excellent service. The app design is also very user-friendly.",
     rating: 5,
@@ -76,7 +76,7 @@ const testimonials = [
   {
     name: "Anjali Gupta",
     role: "Entrepreneur",
-    image: "/users/user10.jpg",
+    image: "https://i.pinimg.com/736x/8e/8f/d3/8e8fd3a1eebb3a61ef3f59fc5a72ee1b.jpg",
     review:
       "Love the quick delivery and quality packaging. Highly dependable service!",
     rating: 5,
@@ -85,9 +85,9 @@ const testimonials = [
 
 export default function TestimonialSection() {
   return (
-    <section className="bg-gray-50 py-16 overflow-hidden">
+    <section className=" py-16 overflow-hidden">
       <div className="text-center mb-12 px-6 md:px-16">
-        <h2 className="text-4xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-green-700 mb-6 text-center">
           What Our Customers Say
         </h2>
       </div>

@@ -44,20 +44,16 @@ function ViewGrocery() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-50 to-white pb-16">
-      <Link
-        href={"/admin/add-grocery"}
-        className="sticky top-6 left-6 inline-flex items-center gap-2 text-green-700 font-semibold bg-white px-4 py-2 rounded-full shadow-md hover:bg-green-100 hover:shadow-lg transition-all m-6"
-      >
+      <Link href={"/"} className="inline-flex items-center gap-2 text-green-700 font-semibold bg-white px-4 py-2 rounded-full shadow-md hover:bg-green-100 hover:shadow-lg transition-all m-6">
         <ArrowLeft className="w-5 h-5" />
-        <span className="hidden md:flex">Back</span>
+        <span className="hidden md:flex">Back To Home</span>
       </Link>
 
+      <div className="flex items-center justify-center gap-2 mb-8">
+        <Package className="text-green-600 w-6 h-6" />
+        <h1 className="text-2xl font-bold text-green-700">View Groceries</h1>
+      </div>
       <div className="px-4 md:px-8 py-8">
-        <div className="flex items-center gap-2 mb-8">
-          <Package className="text-green-600 w-6 h-6" />
-          <h1 className="text-3xl font-bold text-gray-900">View Groceries</h1>
-        </div>
-
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="text-gray-500">Loading groceries...</div>
@@ -80,7 +76,7 @@ function ViewGrocery() {
                       src={grocery.image}
                       alt={grocery.name}
                       fill
-                      className="object-cover"
+                      className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
                 )}

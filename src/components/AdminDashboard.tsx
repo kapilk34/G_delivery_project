@@ -74,9 +74,9 @@ const statCards = [
 
 function getGreeting() {
     const h = new Date().getHours()
-    if (h < 12) return "morning"
-    if (h < 17) return "afternoon"
-    return "evening"
+    if (h < 12) return "Morning"
+    if (h < 17) return "Afternoon"
+    return "Evening"
 }
 
 function AdminDashboard() {
@@ -202,7 +202,7 @@ function AdminDashboard() {
 
                                 <h1 className="text-white text-2xl sm:text-3xl font-bold tracking-tight leading-snug">
                                     Good {getGreeting()},{" "}
-                                    <span className="text-emerald-200">{session?.user?.name?.split(" ")[0] ?? "Admin"}</span> 👋
+                                    <span className="text-emerald-200">{session?.user?.name?.split(" ")[0] ?? "Admin"}</span>!
                                 </h1>
                                 <p className="text-emerald-300 text-sm mt-1.5">{dateString}</p>
                             </div>

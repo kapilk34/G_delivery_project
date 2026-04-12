@@ -26,6 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
         if (status === "Out of Delivery" && !order.assignment) {
             const { latitude, longitude } = order.address
 
+            // Find nearby delivery boys within 10km
             const nearByDeliveryBoys = await User.find({
                 role: "deliveryBoy",
                 location: {
@@ -39,26 +40,54 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
                 }
             })
 
-            const nearByIds = nearByDeliveryBoys.map((b) => b._id)
+            console.log(`Found ${nearByDeliveryBoys.length} delivery boys nearby for order`, orderId)
 
-            const busyIds = await DeliveryAssignment.find({
-                assignedTo: { $in: nearByIds },
-                status: { $in: ["broadcasted", "completed"] }
-            }).distinct("assignedTo")
+            // If no delivery boys found by location, try all delivery boys as fallback
+            let candidates: any[] = []
+            
+            if (nearByDeliveryBoys.length === 0) {
+                console.log("No delivery boys found by location, checking all delivery boys...")
+                const allDeliveryBoys = await User.find({ role: "deliveryBoy" })
+                console.log(`Total delivery boys in system: ${allDeliveryBoys.length}`)
 
-            const busyIdSet = new Set(busyIds.map((b) => String(b)))
+                const nearByIds = allDeliveryBoys.map((b) => b._id)
 
-            const availableDeliveryBoys = nearByDeliveryBoys.filter(
-                (b) => !busyIdSet.has(String(b._id))
-            )
+                const busyIds = await DeliveryAssignment.find({
+                    assignedTo: { $in: nearByIds },
+                    status: "assigned"
+                }).distinct("assignedTo")
 
-            const candidates = availableDeliveryBoys.map((b: any) => b._id)
+                const busyIdSet = new Set(busyIds.map((b) => String(b)))
+
+                const availableDeliveryBoys = allDeliveryBoys.filter(
+                    (b) => !busyIdSet.has(String(b._id))
+                )
+
+                console.log(`Available delivery boys: ${availableDeliveryBoys.length}`)
+                candidates = availableDeliveryBoys.map((b: any) => b._id)
+            } else {
+                const nearByIds = nearByDeliveryBoys.map((b) => b._id)
+
+                const busyIds = await DeliveryAssignment.find({
+                    assignedTo: { $in: nearByIds },
+                    status: "assigned"
+                }).distinct("assignedTo")
+
+                const busyIdSet = new Set(busyIds.map((b) => String(b)))
+
+                const availableDeliveryBoys = nearByDeliveryBoys.filter(
+                    (b) => !busyIdSet.has(String(b._id))
+                )
+
+                console.log(`Available nearby delivery boys: ${availableDeliveryBoys.length}`)
+                candidates = availableDeliveryBoys.map((b: any) => b._id)
+            }
 
             if (candidates.length === 0) {
                 await order.save()
-                await emitEventHandler("order-status-update",{orderId:order._id,status:order.status})
+                await emitEventHandler("order-status-update",{orderId:order._id,status:order.orderStatus})
                 return NextResponse.json(
-                    { message: "There is no available Delivery Boys" },
+                    { message: "There are no available Delivery Boys. Please try again later." },
                     { status: 200 }
                 )
             }
@@ -71,12 +100,17 @@ export async function POST(req: NextRequest, { params }: { params: { orderId: st
 
             order.assignment = deliveryAssignment._id
 
-            deliveryBoysPayload = availableDeliveryBoys.map((b: any) => ({
+            // Get available boys data for response
+            let availableDeliveryBoys = nearByDeliveryBoys.length > 0 
+                ? nearByDeliveryBoys.filter((b) => candidates.map((c: any) => String(c)).includes(String(b._id)))
+                : (await User.find({ _id: { $in: candidates } }))
+
+            const deliveryBoysPayload = availableDeliveryBoys.map((b: any) => ({
                 _id: b._id,
                 name: b.name,
                 phone: b.phone,
-                latitude: b.location.coordinates[1],
-                longitude: b.location.coordinates[0],
+                latitude: b.location?.coordinates?.[1] || 0,
+                longitude: b.location?.coordinates?.[0] || 0,
             }))
 
             await deliveryAssignment.populate("order")

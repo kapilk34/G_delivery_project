@@ -76,7 +76,7 @@ function DeliveryBoyDashboard() {
     );
 
     return () => navigator.geolocation.clearWatch(watcher);
-  }, [])
+  }, [session?.user?.id])
 
   const respondToAssignment = async (assignmentId: string, action: 'accept' | 'reject') => {
     try {
@@ -100,20 +100,40 @@ function DeliveryBoyDashboard() {
     }
   }
 
+  // Register socket connection and listen for updates
   useEffect(() => {
-    fetchAssignment()
+    if (!session?.user?.id) return;
 
-    const socket = getSocket()
+    const socket = getSocket();
+    // Register socket connection with backend
+    socket.emit("identity", session.user.id);
+
     const handleAssignmentUpdate = async () => {
-      await fetchAssignment()
-    }
+      await fetchAssignment();
+    };
 
-    socket.on('order-status-update', handleAssignmentUpdate)
+    socket.on('order-status-update', handleAssignmentUpdate);
 
     return () => {
-      socket.off('order-status-update', handleAssignmentUpdate)
+      socket.off('order-status-update', handleAssignmentUpdate);
+    };
+  }, [session?.user?.id]);
+
+  // Polling fallback - refresh assignments every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAssignment();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchAssignment();
     }
-  }, [])
+  }, [session?.user?.id])
 
   return (
     <div className='w-full min-h-screen bg-gray-100 p-4 md:p-8'>

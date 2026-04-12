@@ -42,11 +42,17 @@ export async function POST(req: NextRequest) {
       _id: string;
       user?: { socketId?: string | null };
       orderStatus: "pending" | "Out of Delivery" | "delivered";
+      paymentMethod: "cod" | "online";
+      isPaid: boolean;
       save: () => Promise<void>;
       populate: (path: string) => Promise<{ user?: { socketId?: string | null } }>;
     };
     if (order) {
       order.orderStatus = "delivered";
+      // Mark as paid for COD orders when delivered
+      if (order.paymentMethod === "cod") {
+        order.isPaid = true;
+      }
       await order.save();
       await order.populate("user");
 

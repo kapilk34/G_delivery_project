@@ -74,4 +74,4 @@ function CategorySlider() {
     )
 }
 
-export default CategorySlider
+export default CategorySlider;

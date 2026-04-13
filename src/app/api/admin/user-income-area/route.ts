@@ -48,7 +48,8 @@ export async function GET(req: NextRequest) {
           orderCount: { $sum: 1 },
           averageOrderValue: {
             $avg: "$totalAmmount"
-          }
+          },
+          city: { $first: "$address.city" }
         }
       },
       {
@@ -70,13 +71,7 @@ export async function GET(req: NextRequest) {
           averageOrderValue: 1,
           name: "$userDetails.name",
           email: "$userDetails.email",
-          city: {
-            $cond: [
-              { $eq: ["$userDetails.location", null] },
-              "Unknown",
-              "$userDetails.location"
-            ]
-          }
+          city: { $ifNull: ["$city", "Unknown"] }
         }
       },
       {

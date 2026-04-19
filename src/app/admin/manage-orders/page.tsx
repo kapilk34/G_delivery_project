@@ -28,12 +28,18 @@ function ManageOrders() {
   }, []);
 
   useEffect(() => {
-    const socket = getSocket()
-    socket?.on("new-order",(newOrder)=>{
-      setOrders((prev)=>[newOrder,...prev!])
-    })
-    return ()=>socket.off("new-order")
-  },[])
+  const socket = getSocket();
+
+  const handleNewOrder = (newOrder: IOrder) => {
+    setOrders((prev) => [newOrder, ...(prev || [])]);
+  };
+
+  socket?.on("new-order", handleNewOrder);
+
+  return () => {
+    socket?.off("new-order", handleNewOrder);
+  };
+}, []);
 
   useEffect(() => {
     const socket = getSocket();
@@ -53,12 +59,15 @@ function ManageOrders() {
   },[])
 
   const handleOrderStatusChange = (orderId: string, status: string) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order._id?.toString() === orderId ? { ...order, orderStatus: status } : order
-      )
+  setOrders((prev) =>
+    prev.map((order) =>
+      order._id?.toString() === orderId
+        ? { ...order, orderStatus: status as "pending" | "Out of Delivery" | "delivered" }
+        : order
     )
-  }
+  );
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,7 +123,7 @@ function ManageOrders() {
           <div className="space-y-6">
             {orders.map((order, index) => (
               <div
-                key={order._id || index}
+                key={order._id?.toString() || index}
                 className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition"
               >
                 <AdminOrderCards order={order} onStatusChange={handleOrderStatusChange} />

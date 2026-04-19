@@ -7,17 +7,11 @@ import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'motion/react'
-import { MapContainer, Marker, TileLayer, useMap} from 'react-leaflet'
-import "leaflet/dist/leaflet.css"
-import L, { LatLngExpression } from 'leaflet'
+import dynamicImport from 'next/dynamic'
 import axios from 'axios'
-import { OpenStreetMapProvider } from 'leaflet-geosearch'
 
-const markerIcon = new L.Icon({
-  iconUrl: "https://thumbs.dreamstime.com/b/gps-icon-vector-logo-design-map-pointer-pin-location-symbol-flat-style-navigation-icons-web-mobile-place-marker-travel-158027525.jpg",
-  iconSize: [35, 41],
-  iconAnchor: [12, 41]
-})
+// Dynamically import the map component to avoid SSR issues
+const MapComponent = dynamicImport(() => import('./MapComponent'), { ssr: false })
 
 function CheckOutPage() {
   const router = useRouter()
@@ -52,24 +46,10 @@ function CheckOutPage() {
     }
   }, [userData])
 
-  const DraggableMarker:React.FC = ()=>{
-    const map = useMap()
-    useEffect(()=>{
-      map.setView(position as LatLngExpression, 15, {animate:true})
-    },[position,map])
-
-    return <Marker icon={markerIcon} position={position as LatLngExpression}  draggable={true} eventHandlers={{
-              dragend:(e:L.LeafletEvent)=>{
-                const marker = e.target as L.Marker 
-                const {lat, lng} = marker.getLatLng()
-                setPosition([lat,lng])
-              }
-            }}/>
-  }
-
   const { cartData, subTotal, deliveryFee, finalTotal } = useSelector((state: RootState) => state.cart)
   
   const handleSearchQuery = async()=>{
+    const { OpenStreetMapProvider } = await import('leaflet-geosearch')
     setSearchLoading(true)
     const provider = new OpenStreetMapProvider()
     const result = await provider.search({query: searchQuery});
@@ -222,15 +202,15 @@ function CheckOutPage() {
                 <div className='grid grid-cols-3 gap-3'>
                   <div className='relative'>
                     <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input type="text" value={address.city} placeholder='City' onChange={(e)=>setAddress((prev)=>({...prev,fullAddress:e.target.value}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                    <input type="text" value={address.city} placeholder='City' onChange={(e)=>setAddress((prev)=>({...prev,city:e.target.value}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
                   </div>
                   <div className='relative'>
                     <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input type="text" value={address.state} placeholder='State' onChange={(e)=>setAddress((prev)=>({...prev,fullAddress:e.target.value}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                    <input type="text" value={address.state} placeholder='State' onChange={(e)=>setAddress((prev)=>({...prev,state:e.target.value}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
                   </div>
                   <div className='relative'>
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input type="text" value={address.pincode} placeholder='Pincode' onChange={(e)=>setAddress((prev)=>({...prev,fullAddress:e.target.value}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
+                    <input type="text" value={address.pincode} placeholder='Pincode' onChange={(e)=>setAddress((prev)=>({...prev,pincode:e.target.value}))} className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white shadow-sm'/>
                   </div>
                 </div>
 
@@ -240,18 +220,10 @@ function CheckOutPage() {
                 </div>
 
                 <div className="relative w-full h-[400px] rounded-xl overflow-hidden shadow-md border border-gray-200">
-                  {position && <>
-                    <MapContainer center={position as LatLngExpression} zoom={13} scrollWheelZoom={true} className='w-full h-full'>
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      <DraggableMarker/>
-                    </MapContainer>
-                    <motion.button whileTap={{scale:0.92}} className="absolute bottom-4 right-4 bg-green-600 text-white shadow-lg rounded-full p-3 hover:bg-green-700 transition-all flex items-center justify-center z-999" onClick={handleCurrentLocation}>
-                      <LocateFixed size={20} />
-                    </motion.button>
-                  </>}
+                  <MapComponent position={position} setPosition={setPosition} />
+                  <motion.button whileTap={{scale:0.92}} className="absolute bottom-4 right-4 bg-green-600 text-white shadow-lg rounded-full p-3 hover:bg-green-700 transition-all flex items-center justify-center z-999" onClick={handleCurrentLocation}>
+                    <LocateFixed size={20} />
+                  </motion.button>
                 </div>
               </div>
             </div>

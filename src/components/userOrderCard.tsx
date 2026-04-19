@@ -2,9 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import "leaflet/dist/leaflet.css";
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
-import L from "leaflet";
+import dynamic from "next/dynamic";
 import { IOrder } from "@/models/orderModel";
 import {
   Package,
@@ -13,15 +11,24 @@ import {
   MapPin,
 } from "lucide-react";
 
-const defaultIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+// Dynamically import MapContainer to avoid SSR issues
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
 
-L.Marker.prototype.options.icon = defaultIcon;
+// Import L separately
+import L from "leaflet";
+
+// Move icon creation to useEffect
 
 interface DeliveryLocation {
   latitude: number;
@@ -45,6 +52,20 @@ interface UserOrderCardProps {
 }
 
 function UserOrderCard({ order, deliveryLocation }: UserOrderCardProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    const defaultIcon = L.icon({
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+    L.Marker.prototype.options.icon = defaultIcon;
+  }, []);
+
   const {
     _id,
     orderStatus,
@@ -197,7 +218,7 @@ function UserOrderCard({ order, deliveryLocation }: UserOrderCardProps) {
             Live Delivery Tracking
           </p>
 
-          {mapCenter ? (
+          {mapCenter && mounted ? (
             <div className="h-72 rounded-2xl overflow-hidden">
               <MapContainer center={mapCenter as [number, number]} zoom={13} scrollWheelZoom className="h-full w-full">
                 <TileLayer
@@ -212,7 +233,7 @@ function UserOrderCard({ order, deliveryLocation }: UserOrderCardProps) {
             </div>
           ) : (
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
-              Waiting for the delivery boy&apos;s location...
+              {mounted ? "Waiting for the delivery boy&apos;s location..." : "Loading map..."}
             </div>
           )}
         </div>

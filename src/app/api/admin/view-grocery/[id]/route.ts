@@ -12,7 +12,7 @@ export async function DELETE(
 
     const session = await auth();
 
-    if (!session || session.user.role !== "admin") {
+    if (!session || session.user?.role !== "admin") {
       return NextResponse.json(
         { message: "You are not authorized" },
         { status: 403 }

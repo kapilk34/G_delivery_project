@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = session.user.id;
-    const isInBroadcast = assignment.brodcastedTo.map((id) => id.toString()).includes(userId);
+    const isInBroadcast = assignment.brodcastedTo.map((id: string) => id).includes(userId);
 
     if (action === "accept") {
       if (assignment.status !== "broadcasted") {
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      assignment.brodcastedTo = assignment.brodcastedTo.filter((id) => id.toString() !== userId);
+      assignment.brodcastedTo = assignment.brodcastedTo.filter((id: string) => id.toString() !== userId);
       await assignment.save();
 
       return NextResponse.json({ assignment }, { status: 200 });

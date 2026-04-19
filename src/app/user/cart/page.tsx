@@ -44,11 +44,11 @@ function CartPage() {
                     <p className='text-green-700 font-bold mt-2 text-lg'>₹{Number(item.price) * item.quantity}</p>
                   </div>
                   <div className='flex items-center gap-3 mt-4 sm:mt-0 bg-green-50 px-4 py-2 rounded-full shadow-inner'>
-                    <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-green-200 transition-all shadow" onClick={() => dispatch(decreaseQuantity(item._id))}><Minus size={16} className="text-green-700" /></button>
+                    <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-green-200 transition-all shadow" onClick={() => dispatch(decreaseQuantity(item._id!))}><Minus size={16} className="text-green-700" /></button>
                     <span className="text-base font-semibold text-gray-800">{item.quantity}</span>
-                    <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-green-200 transition-all shadow" onClick={() => dispatch(increaseQuantity(item._id))}><Plus size={16} className="text-green-700" /></button>
+                    <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-green-200 transition-all shadow" onClick={() => dispatch(increaseQuantity(item._id!))}><Plus size={16} className="text-green-700" /></button>
                   </div>
-                  <button className='sm:ml-6 mt-4 sm:mt-0 text-red-500 hover:text-red-700 transition-all' onClick={() => dispatch(removeFromCart(item._id))}><Trash size={20} /></button>
+                  <button className='sm:ml-6 mt-4 sm:mt-0 text-red-500 hover:text-red-700 transition-all' onClick={() => dispatch(removeFromCart(item._id!))}><Trash size={20} /></button>
                 </div>
               ))}
             </div>

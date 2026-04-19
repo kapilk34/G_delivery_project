@@ -7,7 +7,7 @@ export interface IOrder{
         {
             grocery:mongoose.Types.ObjectId,
             name:string,
-            price:string,
+            price:number,
             unit:string,
             image:string,
             quantity:number

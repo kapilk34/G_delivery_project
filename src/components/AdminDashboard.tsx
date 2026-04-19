@@ -337,7 +337,7 @@ function AdminDashboard() {
                                                 ...CHART_DEFAULTS.scales.y,
                                                 ticks: {
                                                     ...CHART_DEFAULTS.scales.y.ticks,
-                                                    callback: (v: number) => `₹${Math.round(v / 1000)}k`,
+                                                    callback: (v: string | number) => `₹${Math.round(Number(v) / 1000)}k`,
                                                 },
                                             },
                                         },

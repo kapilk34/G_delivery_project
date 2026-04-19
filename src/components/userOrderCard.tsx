@@ -88,7 +88,7 @@ function UserOrderCard({ order, deliveryLocation }: UserOrderCardProps) {
 
           <div>
             <p className="text-xs text-gray-500">Order ID</p>
-            <p className="text-sm font-semibold break-all">{_id}</p>
+            <p className="text-sm font-semibold break-all">{_id?.toString()}</p>
           </div>
         </div>
 
@@ -199,7 +199,7 @@ function UserOrderCard({ order, deliveryLocation }: UserOrderCardProps) {
 
           {mapCenter ? (
             <div className="h-72 rounded-2xl overflow-hidden">
-              <MapContainer center={mapCenter} zoom={13} scrollWheelZoom className="h-full w-full">
+              <MapContainer center={mapCenter as [number, number]} zoom={13} scrollWheelZoom className="h-full w-full">
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

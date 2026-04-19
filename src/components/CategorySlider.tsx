@@ -4,7 +4,7 @@ import { Apple, Milk, Wheat, Cookie, Coffee, Sparkles, Home, Baby, PawPrint } fr
 import React, { useEffect, useRef } from 'react'
 
 function CategorySlider() {
-    const scrollRef = useRef(null)
+    const scrollRef = useRef<HTMLDivElement>(null)
     const speed = 0.5 // smoother speed
 
     const categories = [
@@ -23,7 +23,7 @@ function CategorySlider() {
 
     useEffect(() => {
         const slider = scrollRef.current
-        let animationId
+        let animationId: number
 
         const animate = () => {
             if (!slider) return

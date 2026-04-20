@@ -8,7 +8,7 @@ import { ArrowLeft, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import UserOrderCard from "@/components/userOrderCard";
-// import { getSocket } from "@/lib/socket";
+import { getSocket } from "@/lib/socket";
 
 function MyOrder() {
   const router = useRouter();
@@ -46,37 +46,37 @@ function MyOrder() {
     getMyOrders();
   }, []);
 
-  // useEffect(() => {
-  //   const socket = getSocket();
+  useEffect(() => {
+    const socket = getSocket();
     
-  //   const handleStatusUpdate = (data: { orderId: string, status: string }) => {
-  //     setOrders(prevOrders => prevOrders.map(o => 
-  //       o._id?.toString() === data.orderId 
-  //         ? { ...o, orderStatus: data.status as "pending" | "Out of Delivery" | "delivered" } 
-  //       : o
-  //     ));
-  //   };
+    const handleStatusUpdate = (data: { orderId: string, status: string }) => {
+      setOrders(prevOrders => prevOrders.map(o => 
+        o._id?.toString() === data.orderId 
+          ? { ...o, orderStatus: data.status as "pending" | "Out of Delivery" | "delivered" } 
+        : o
+      ));
+    };
 
-  //   const handleLocationUpdate = (data: { deliveryBoyId: string, latitude: number, longitude: number }) => {
-  //     setDeliveryLocations(prev => ({
-  //       ...prev,
-  //       [data.deliveryBoyId]: {
-  //         latitude: data.latitude,
-  //         longitude: data.longitude,
-  //       }
-  //     }));
-  //   };
+    const handleLocationUpdate = (data: { deliveryBoyId: string, latitude: number, longitude: number }) => {
+      setDeliveryLocations(prev => ({
+        ...prev,
+        [data.deliveryBoyId]: {
+          latitude: data.latitude,
+          longitude: data.longitude,
+        }
+      }));
+    };
 
-  //   socket.on("orderStatusUpdated", handleStatusUpdate);
-  //   socket.on("order-status-update", handleStatusUpdate);
-  //   socket.on("deliveryBoyLocationUpdated", handleLocationUpdate);
+    socket.on("orderStatusUpdated", handleStatusUpdate);
+    socket.on("order-status-update", handleStatusUpdate);
+    socket.on("deliveryBoyLocationUpdated", handleLocationUpdate);
 
-  //   return () => {
-  //     socket.off("orderStatusUpdated", handleStatusUpdate);
-  //     socket.off("order-status-update", handleStatusUpdate);
-  //     socket.off("deliveryBoyLocationUpdated", handleLocationUpdate);
-  //   };
-  // }, []);
+    return () => {
+      socket.off("orderStatusUpdated", handleStatusUpdate);
+      socket.off("order-status-update", handleStatusUpdate);
+      socket.off("deliveryBoyLocationUpdated", handleLocationUpdate);
+    };
+  }, []);
 
   // Loading State
   if (loading) {

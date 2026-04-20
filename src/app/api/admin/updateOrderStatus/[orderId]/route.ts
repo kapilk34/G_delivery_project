@@ -8,12 +8,12 @@ import emitEventHandler from "@/lib/emitEventHandler";
 
 export async function POST(
     req: NextRequest,
-    context: { params: Promise<{ orderId: string }> } // ✅ FIXED
+    context: { params: Promise<{ orderId: string }> }
 ) {
     try {
         await connectDb();
 
-        const { orderId } = await context.params; // ✅ FIXED
+        const { orderId } = await context.params;
         const { status } = await req.json();
 
         const order = await Order.findById(orderId).populate("user");
@@ -139,7 +139,6 @@ export async function POST(
         await order.save();
         await order.populate("user");
 
-        // ✅ FIXED (order.status → order.orderStatus)
         await emitEventHandler("order-status-update", {
             orderId: order._id,
             status: order.orderStatus,

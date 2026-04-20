@@ -25,10 +25,7 @@ const Marker = dynamic(
   { ssr: false }
 );
 
-// Import L separately
-import L from "leaflet";
-
-// Move icon creation to useEffect
+// Import L dynamically in useEffect
 
 interface DeliveryLocation {
   latitude: number;
@@ -56,14 +53,16 @@ function UserOrderCard({ order, deliveryLocation }: UserOrderCardProps) {
 
   React.useEffect(() => {
     setMounted(true);
-    const defaultIcon = L.icon({
-      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
+    import("leaflet").then((L) => {
+      const defaultIcon = L.icon({
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
+      L.Marker.prototype.options.icon = defaultIcon;
     });
-    L.Marker.prototype.options.icon = defaultIcon;
   }, []);
 
   const {

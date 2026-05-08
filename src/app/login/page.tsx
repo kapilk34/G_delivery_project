@@ -14,17 +14,26 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
   const handleLogin = async(e:FormEvent)=>{
     e.preventDefault()
     setLoading(true)
+    setError("")
     try {
-        await signIn("credentials", {
-            email,password,
+        const result = await signIn("credentials", {
+            email,
+            password,
+            redirect: false
         })
-        router.push("/")
+        if (result?.ok) {
+            router.push("/")
+        } else {
+            setError(result?.error || "Login failed. Please try again.")
+        }
         setLoading(false)
     } catch (error) {
+        setError("An error occurred. Please try again.")
         setLoading(false)
     }
   }
@@ -37,6 +46,11 @@ const Login = () => {
 
       {/* Form */}
       <motion.form onSubmit={handleLogin} className='w-full max-w-md bg-white shadow-lg rounded-2xl p-6 space-y-4 border'>
+        {error && (
+          <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded'>
+            {error}
+          </div>
+        )}
         <div>
           <label className='block text-sm font-medium mb-1'>Email</label>
           <input type="email" placeholder="Enter your email" className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600' onChange={(e) => setEmail(e.target.value)} value={email}/>

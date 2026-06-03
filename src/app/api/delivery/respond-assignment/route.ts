@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
     }
 
     const dbUser = await User.findById(session.user.id);
-    const userRole = String(dbUser?.role || session.user.role || "").toLowerCase();
-    if (userRole !== "deliveryboy") {
-      return NextResponse.json({ message: `Forbidden: not a deliveryboy. Current role: ${userRole}` }, { status: 403 });
+    const userRole = dbUser?.role || session.user.role;
+    if (userRole !== "deliveryBoy") {
+      return NextResponse.json({ message: `Forbidden: not a deliveryBoy. Current role: ${userRole}` }, { status: 403 });
     }
 
     const { assignmentId, action } = await req.json();
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = session.user.id;
-    const isInBroadcast = assignment.brodcastedTo.map((id: string) => id).includes(userId);
+    const isInBroadcast = assignment.brodcastedTo.some((id: string) => id.toString() === userId);
 
     if (action === "accept") {
       if (assignment.status !== "broadcasted") {

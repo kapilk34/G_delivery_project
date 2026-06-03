@@ -7,7 +7,7 @@ import "leaflet/dist/leaflet.css"
 import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import { getSocket } from '@/lib/socket'
-import { MapPin, Package, Navigation, CheckCircle, XCircle, Check, Wallet, TrendingUp, Bell, User, LogOut, Star, Clock, Truck, Award, Zap, Shield } from 'lucide-react'
+import { MapPin, Package, Navigation, CheckCircle, XCircle, Wallet, TrendingUp, Bell, User, Clock, Truck, Award, Zap, IndianRupee } from 'lucide-react'
 
 const defaultIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -42,6 +42,36 @@ interface AxiosError {
     };
   };
   message?: string;
+}
+
+const statusConfig = {
+  broadcasted: {
+    border: 'border-l-amber-400',
+    headerBg: 'bg-gradient-to-r from-amber-50 to-orange-50',
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+    badge: 'bg-amber-100 text-amber-700 border border-amber-200',
+    label: 'New Request',
+    dot: true,
+  },
+  assigned: {
+    border: 'border-l-blue-500',
+    headerBg: 'bg-gradient-to-r from-blue-50 to-indigo-50',
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+    badge: 'bg-blue-100 text-blue-700 border border-blue-200',
+    label: 'In Progress',
+    dot: false,
+  },
+  completed: {
+    border: 'border-l-emerald-500',
+    headerBg: 'bg-gradient-to-r from-emerald-50 to-teal-50',
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    badge: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+    label: 'Completed',
+    dot: false,
+  },
 }
 
 function DeliveryBoyDashboard() {
@@ -166,10 +196,10 @@ function DeliveryBoyDashboard() {
   }, [session?.user?.id])
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200'>
+    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200'>
       {/* Notification Toast */}
       {notification.show && (
-        <div className={`fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300`}>
+        <div className='fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300'>
           <div className={`rounded-2xl shadow-2xl px-6 py-4 flex items-center gap-3 ${
             notification.type === 'success' ? 'bg-emerald-500 text-white' :
             notification.type === 'error' ? 'bg-rose-500 text-white' :
@@ -184,11 +214,11 @@ function DeliveryBoyDashboard() {
       )}
 
       {/* Header */}
-      <header className='sticky top-0 z-40'>
+      <header className='sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/60 shadow-sm'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
-              <div className='p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl'>
+              <div className='p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md'>
                 <Truck className='w-6 h-6 text-white' />
               </div>
               <div>
@@ -199,9 +229,9 @@ function DeliveryBoyDashboard() {
               </div>
             </div>
             <div className='flex items-center gap-3'>
-              <div className='flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-xl'>
+              <div className='flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl'>
                 <div className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></div>
-                <span className='text-sm font-medium text-gray-700'>Online</span>
+                <span className='text-sm font-medium text-green-700'>Online</span>
               </div>
               <button className='p-2 hover:bg-gray-100 rounded-xl transition-colors'>
                 <User className='w-5 h-5 text-gray-600' />
@@ -214,7 +244,6 @@ function DeliveryBoyDashboard() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         {/* Stats Grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-          {/* Earnings Card */}
           <div className='group relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1'>
             <div className='absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500'></div>
             <div className='relative p-6 text-white'>
@@ -230,7 +259,6 @@ function DeliveryBoyDashboard() {
             </div>
           </div>
 
-          {/* Completed Deliveries Card */}
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1'>
             <div className='flex items-center justify-between mb-4'>
               <div className='p-3 bg-emerald-100 rounded-xl'>
@@ -238,17 +266,16 @@ function DeliveryBoyDashboard() {
               </div>
               <Award className='w-5 h-5 text-gray-400' />
             </div>
-            <p className='text-sm font-medium text-gray-600'>Completed Deliveries</p>
+            <p className='text-sm font-medium text-gray-600'>Completed</p>
             <p className='text-3xl font-bold text-gray-800 mt-2'>{completedDeliveries}</p>
             <div className='mt-3 flex items-center gap-2'>
               <div className='flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden'>
                 <div className='h-full bg-emerald-500 rounded-full transition-all duration-500' style={{ width: `${completionRate}%` }}></div>
               </div>
-              <span className='text-xs font-medium text-gray-500'>{completionRate.toFixed(0)}% rate</span>
+              <span className='text-xs font-medium text-gray-500'>{completionRate.toFixed(0)}%</span>
             </div>
           </div>
 
-          {/* In Progress Card */}
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1'>
             <div className='flex items-center justify-between mb-4'>
               <div className='p-3 bg-blue-100 rounded-xl'>
@@ -261,7 +288,6 @@ function DeliveryBoyDashboard() {
             <p className='text-xs text-gray-500 mt-3'>Active deliveries</p>
           </div>
 
-          {/* Pending Card */}
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1'>
             <div className='flex items-center justify-between mb-4'>
               <div className='p-3 bg-amber-100 rounded-xl'>
@@ -269,9 +295,17 @@ function DeliveryBoyDashboard() {
               </div>
               <Zap className='w-5 h-5 text-gray-400' />
             </div>
-            <p className='text-sm font-medium text-gray-600'>Pending Assignments</p>
+            <p className='text-sm font-medium text-gray-600'>Pending</p>
             <p className='text-3xl font-bold text-gray-800 mt-2'>{assignment.filter(a => a.status === 'broadcasted').length}</p>
             <p className='text-xs text-gray-500 mt-3'>Awaiting response</p>
+          </div>
+        </div>
+
+        {/* Section Header */}
+        <div className='flex items-center justify-between mb-5'>
+          <div>
+            <h2 className='text-lg font-bold text-gray-800'>My Deliveries</h2>
+            <p className='text-sm text-gray-500'>{assignment.length} assignment{assignment.length !== 1 ? 's' : ''} total</p>
           </div>
         </div>
 
@@ -291,166 +325,165 @@ function DeliveryBoyDashboard() {
               <Package className='w-20 h-20 text-gray-300 mx-auto relative' />
             </div>
             <h3 className='text-xl font-semibold text-gray-700 mt-6'>No Active Deliveries</h3>
-            <p className='text-gray-500 mt-2 max-w-sm mx-auto'>You're all caught up! New assignments will appear here automatically.</p>
+            <p className='text-gray-500 mt-2 max-w-sm mx-auto'>You&apos;re all caught up! New assignments will appear here automatically.</p>
             <div className='mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full'>
               <div className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></div>
               <span className='text-sm text-gray-600'>Waiting for new orders...</span>
             </div>
           </div>
         ) : (
-          <div className='space-y-6'>
-            {assignment.map((a, index) => (
-              <div 
-                key={a._id} 
-                className={`bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-in fade-in slide-in-from-bottom-4 duration-500`}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className='p-6'>
-                  {/* Header Section */}
-                  <div className='flex flex-col lg:flex-row lg:items-start justify-between gap-4'>
-                    <div className='flex items-start gap-4'>
-                      <div className={`relative p-3 rounded-xl ${
-                        a.status === 'assigned' ? 'bg-blue-100' : 
-                        a.status === 'completed' ? 'bg-emerald-100' : 
-                        'bg-gradient-to-br from-amber-100 to-orange-100'
-                      }`}>
-                        <Package className={`w-6 h-6 ${
-                          a.status === 'assigned' ? 'text-blue-600' : 
-                          a.status === 'completed' ? 'text-emerald-600' : 
-                          'text-amber-600'
-                        }`} />
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
+            {assignment.map((a, index) => {
+              const cfg = statusConfig[a.status]
+              return (
+                <div
+                  key={a._id}
+                  className={`bg-white rounded-2xl shadow-md border border-gray-100 border-l-4 ${cfg.border} overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col`}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Card Header Band */}
+                  <div className={`${cfg.headerBg} px-4 py-3 flex items-center justify-between gap-2 border-b border-gray-100`}>
+                    <div className='flex items-center gap-2'>
+                      <div className={`relative p-2 ${cfg.iconBg} rounded-lg`}>
+                        <Package className={`w-4 h-4 ${cfg.iconColor}`} />
                         {a.status === 'broadcasted' && (
-                          <div className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse'></div>
+                          <span className='absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-white'></span>
                         )}
                       </div>
+                      <span className='text-xs font-mono bg-white/70 border border-gray-200 px-2 py-0.5 rounded-md text-gray-600 tracking-wider'>
+                        #ORD-{a?.order?._id?.toString().slice(-6).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${cfg.badge}`}>
+                      {cfg.label}
+                    </span>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className='p-4 flex flex-col flex-1 gap-4'>
+                    {/* Meta row */}
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center gap-1.5 text-xs text-gray-500'>
+                        <Clock className='w-3.5 h-3.5' />
+                        <span className='capitalize'>{a?.order?.orderStatus}</span>
+                      </div>
+                      <div className='flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg'>
+                        <IndianRupee className='w-3 h-3 text-emerald-600' />
+                        <span className='text-xs font-bold text-emerald-700'>{PER_DELIVERY_AMOUNT}</span>
+                      </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className='flex items-start gap-2'>
+                      <div className='mt-0.5 p-1.5 bg-gray-100 rounded-lg shrink-0'>
+                        <MapPin className='w-3.5 h-3.5 text-gray-500' />
+                      </div>
                       <div>
-                        <div className='flex items-center gap-2 mb-1'>
-                          <span className='text-xs font-mono bg-gray-100 px-2 py-1 rounded-md text-gray-600'>
-                            #{a?.order?._id?.toString().slice(-8)}
-                          </span>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            a.status === 'assigned' ? 'bg-blue-100 text-blue-700' : 
-                            a.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
-                            'bg-amber-100 text-amber-700'
-                          }`}>
-                            {a.status === 'assigned' ? 'Active' : a.status === 'completed' ? 'Completed' : 'New Request'}
-                          </span>
-                        </div>
-                        <h3 className='text-lg font-semibold text-gray-800 flex items-center gap-2'>
-                          <MapPin className='w-4 h-4 text-gray-400' />
-                          Delivery Address
-                        </h3>
-                        <p className='text-gray-600 mt-1 max-w-md'>{a?.order?.address?.fullAddress}</p>
+                        <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5'>Delivery Address</p>
+                        <p className='text-sm text-gray-800 font-medium leading-snug line-clamp-2'>{a?.order?.address?.fullAddress}</p>
                       </div>
                     </div>
 
-                    <div className='flex flex-col items-start lg:items-end gap-2'>
-                      <div className='flex items-center gap-2'>
-                        <Clock className='w-4 h-4 text-gray-400' />
-                        <span className='text-sm text-gray-500'>Order Status: {a?.order?.orderStatus}</span>
-                      </div>
-                      {a.status === 'assigned' && (
-                        <div className='flex items-center gap-2 px-3 py-1 bg-green-50 rounded-full'>
-                          <Truck className='w-4 h-4 text-green-600 animate-pulse' />
-                          <span className='text-xs font-medium text-green-700'>Ready for pickup</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className='mt-6 flex flex-wrap gap-3'>
-                    {a.status === 'broadcasted' && (
-                      <>
-                        <button
-                          className='flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105'
-                          onClick={() => respondToAssignment(a._id, 'accept')}
-                        >
-                          <CheckCircle className='w-5 h-5' /> Accept Delivery
-                        </button>
-                        <button
-                          className='flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-200'
-                          onClick={() => respondToAssignment(a._id, 'reject')}
-                        >
-                          <XCircle className='w-5 h-5' /> Decline
-                        </button>
-                      </>
-                    )}
-
+                    {/* Ready for pickup badge */}
                     {a.status === 'assigned' && (
-                      <button
-                        className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105'
-                        onClick={() => completeDelivery(a._id)}
-                      >
-                        <CheckCircle className='w-5 h-5' /> Mark as Delivered
-                      </button>
-                    )}
-
-                    {a.status === 'completed' && (
-                      <div className='w-full flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 px-8 py-3 rounded-xl font-semibold'>
-                        <CheckCircle className='w-5 h-5' /> Delivered Successfully
+                      <div className='flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg w-fit'>
+                        <Truck className='w-3.5 h-3.5 text-green-600 animate-pulse' />
+                        <span className='text-xs font-semibold text-green-700'>Ready for Pickup</span>
                       </div>
                     )}
-                  </div>
-                </div>
 
-                {/* Map Section */}
-                {a.status === 'assigned' && (
-                  <div className='border-t border-gray-100 bg-gradient-to-br from-gray-50 to-white'>
-                    <div className='p-6'>
-                      <div className='flex items-center justify-between mb-4'>
-                        <div className='flex items-center gap-2'>
-                          <div className='p-2 bg-blue-100 rounded-lg'>
-                            <Navigation className='w-5 h-5 text-blue-600' />
-                          </div>
-                          <h2 className='text-sm font-bold text-gray-700 uppercase tracking-wide'>Live Navigation</h2>
-                        </div>
-                        <button 
-                          onClick={() => setSelectedAssignment(selectedAssignment === a._id ? null : a._id)}
-                          className='text-sm text-blue-600 hover:text-blue-700 font-medium'
+                    {/* Action Buttons — pushed to bottom */}
+                    <div className='flex flex-col gap-2 mt-auto pt-2 border-t border-gray-100'>
+                      {a.status === 'broadcasted' && (
+                        <>
+                          <button
+                            className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2.5 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95'
+                            onClick={() => respondToAssignment(a._id, 'accept')}
+                          >
+                            <CheckCircle className='w-4 h-4' /> Accept Delivery
+                          </button>
+                          <button
+                            className='w-full flex items-center justify-center gap-2 bg-white hover:bg-red-50 text-red-500 border border-red-200 hover:border-red-300 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95'
+                            onClick={() => respondToAssignment(a._id, 'reject')}
+                          >
+                            <XCircle className='w-4 h-4' /> Decline
+                          </button>
+                        </>
+                      )}
+
+                      {a.status === 'assigned' && (
+                        <button
+                          className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95'
+                          onClick={() => completeDelivery(a._id)}
                         >
-                          {selectedAssignment === a._id ? 'Minimize Map' : 'View Full Map'}
+                          <CheckCircle className='w-4 h-4' /> Mark as Delivered
                         </button>
-                      </div>
-                      <div className={`transition-all duration-500 overflow-hidden ${selectedAssignment === a._id ? 'h-[500px]' : 'h-80'}`}>
-                        <MapContainer
-                          center={currentPosition ?? [a.order.address.latitude, a.order.address.longitude]}
-                          zoom={14}
-                          scrollWheelZoom={true}
-                          className='h-full w-full rounded-2xl shadow-inner border-2 border-white'
-                        >
-                          <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                          />
-                          <Marker 
-                            position={[a.order.address.latitude, a.order.address.longitude]} 
-                            title="Delivery Location"
-                          />
-                          {currentPosition && (
-                            <Marker 
-                              position={currentPosition} 
-                              title="Your Location"
-                            />
-                          )}
-                        </MapContainer>
-                      </div>
-                      {currentPosition && (
-                        <div className='mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100'>
-                          <div className='flex items-center justify-between'>
-                            <div>
-                              <p className='text-sm font-medium text-gray-700'>Your Current Location</p>
-                              <p className='text-xs text-gray-500 mt-1'>Lat: {currentPosition[0].toFixed(6)}, Lng: {currentPosition[1].toFixed(6)}</p>
-                            </div>
-                            <div className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></div>
-                          </div>
+                      )}
+
+                      {a.status === 'completed' && (
+                        <div className='w-full flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 py-2.5 rounded-xl text-sm font-semibold'>
+                          <CheckCircle className='w-4 h-4 text-emerald-500' /> Delivered Successfully
                         </div>
                       )}
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* Map Section */}
+                  {a.status === 'assigned' && (
+                    <div className='border-t border-gray-100'>
+                      <div className='p-4'>
+                        <div className='flex items-center justify-between mb-2'>
+                          <div className='flex items-center gap-1.5'>
+                            <div className='p-1 bg-blue-100 rounded-md'>
+                              <Navigation className='w-3.5 h-3.5 text-blue-600' />
+                            </div>
+                            <span className='text-xs font-bold text-gray-700 uppercase tracking-wide'>Live Map</span>
+                          </div>
+                          <button
+                            onClick={() => setSelectedAssignment(selectedAssignment === a._id ? null : a._id)}
+                            className='text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors'
+                          >
+                            {selectedAssignment === a._id ? '↑ Minimize' : '↓ Expand'}
+                          </button>
+                        </div>
+                        <div className={`transition-all duration-500 overflow-hidden rounded-xl ${selectedAssignment === a._id ? 'h-64' : 'h-40'}`}>
+                          <MapContainer
+                            center={currentPosition ?? [a.order.address.latitude, a.order.address.longitude]}
+                            zoom={14}
+                            scrollWheelZoom={true}
+                            className='h-full w-full'
+                          >
+                            <TileLayer
+                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                              url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                            />
+                            <Marker
+                              position={[a.order.address.latitude, a.order.address.longitude]}
+                              title="Delivery Location"
+                            />
+                            {currentPosition && (
+                              <Marker
+                                position={currentPosition}
+                                title="Your Location"
+                              />
+                            )}
+                          </MapContainer>
+                        </div>
+                        {currentPosition && (
+                          <div className='mt-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between'>
+                            <p className='text-xs text-gray-500'>{currentPosition[0].toFixed(4)}, {currentPosition[1].toFixed(4)}</p>
+                            <div className='flex items-center gap-1'>
+                              <div className='w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse'></div>
+                              <span className='text-xs text-green-600 font-medium'>Live</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

@@ -123,6 +123,7 @@ function AdminDashboard() {
     const [userRevenueData, setUserRevenueData] = useState<UserRevenueData[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [hasFetched, setHasFetched] = useState(false)
 
     const fetchStats = async () => {
         try {
@@ -151,8 +152,12 @@ function AdminDashboard() {
     }
 
     useEffect(() => {
-        if (session?.user && session.user.role === "admin") fetchStats()
-    }, [session])
+        // Only fetch data once on component mount
+        if (!hasFetched && session?.user && session.user.role === "admin") {
+            fetchStats()
+            setHasFetched(true)
+        }
+    }, [hasFetched, session?.user?.id]) // Only re-fetch if user ID changes, not entire session object
 
     if (loading) {
         return (
@@ -186,7 +191,6 @@ function AdminDashboard() {
         weekday: "long", year: "numeric", month: "long", day: "numeric",
     })
 
-    /* ── Chart Data ── */
     const ordersData = {
         labels: DAYS,
         datasets: [{

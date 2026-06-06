@@ -9,8 +9,9 @@ import { signOut } from "next-auth/react"
 import { createPortal } from "react-dom"
 import { AnimatePresence } from "motion/react"
 import { motion } from "motion/react"
-import { useSelector } from "react-redux"
-import { RootState } from "@/redux/store"
+import { useSelector, useDispatch } from "react-redux"
+import { RootState, AppDispatch } from "@/redux/store"
+import { setSearchQuery } from "@/redux/searchSlice"
 
 interface Iuser {
   _id?: mongoose.Types.ObjectId
@@ -30,13 +31,12 @@ function NavBar({ user }: { user: Iuser }) {
   const [query, setQuery] = useState("")
   const [menuOpen, setMenuOpen] = useState(false)
   const {cartData} = useSelector((state:RootState) => state.cart)
+  const dispatch = useDispatch<AppDispatch>()
 
   const handleSearch = () => {
-    if (query.trim()) {
-      console.log("Searching for:", query)
-      setSearchBarOpen(false)
-      setQuery("")
-    }
+    dispatch(setSearchQuery(query.trim()))
+    setSearchBarOpen(false)
+    setQuery("")
   }
 
   useEffect(() =>{
@@ -97,9 +97,10 @@ function NavBar({ user }: { user: Iuser }) {
         <Link href={"/"} className="text-white font-semibold text-xl md:text-2xl tracking-wide hover:scale-105 transition duration-300">FreshKart</Link>
 
         {user.role == "user" && 
-          <form className="hidden md:flex items-center bg-white/95 backdrop-blur-md rounded-full px-4 py-2 w-[45%] max-w-lg shadow-md focus-within:ring-2 focus-within:ring-green-400 transition">
+          <form onSubmit={(e) => { e.preventDefault(); handleSearch() }} className="hidden md:flex items-center bg-white/95 backdrop-blur-md rounded-full px-4 py-2 w-[45%] max-w-lg shadow-md focus-within:ring-2 focus-within:ring-green-400 transition">
             <Search className="text-gray-500 w-5 h-5 mr-2" />
-            <input type="text" placeholder="Search groceries, fruits, vegetables..." className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm" />
+            <input type="text" placeholder="Search groceries, fruits, vegetables..." value={query} onChange={(e) => setQuery(e.target.value)} className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm" />
+            {query && <button type="button" onClick={() => { setQuery(""); dispatch(setSearchQuery("")) }} className="ml-1"><X className="w-4 h-4 text-gray-400" /></button>}
           </form>
         }
 

@@ -10,7 +10,6 @@ import Footer from "./Footer";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { setSearchQuery } from "@/redux/searchSlice";
-import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface IGrocery {

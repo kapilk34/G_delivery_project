@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react";
-import mongoose from "mongoose";
 import Image from "next/image";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
@@ -12,14 +11,14 @@ import { increaseQuantity } from "@/redux/cartSlice";
 import { decreaseQuantity } from "@/redux/cartSlice";
 
 interface IGrocery {
-  _id: mongoose.Types.ObjectId;
+  _id: string;
   name: string;
   category: string;
   price: string;
   unit: string;
   image: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 function GroceryCards({ item }: { item: IGrocery }) {

@@ -247,12 +247,12 @@ function DeliveryBoyDashboard() {
           <div className='group relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1'>
             <div className='absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500'></div>
             <div className='relative p-6 text-white'>
-              <div className='flex items-center justify-between mb-4'>
+              {/* <div className='flex items-center justify-between mb-4'>
                 <div className='p-3 bg-white/20 rounded-xl backdrop-blur-sm'>
                   <Wallet className='w-6 h-6' />
                 </div>
                 <TrendingUp className='w-5 h-5 opacity-75' />
-              </div>
+              </div> */}
               <p className='text-sm font-medium opacity-90'>Total Earnings</p>
               <p className='text-4xl font-bold mt-2'>₹{totalEarnings}</p>
               <p className='text-xs opacity-80 mt-3'>₹{PER_DELIVERY_AMOUNT} per delivery</p>
@@ -260,12 +260,12 @@ function DeliveryBoyDashboard() {
           </div>
 
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1'>
-            <div className='flex items-center justify-between mb-4'>
+            {/* <div className='flex items-center justify-between mb-4'>
               <div className='p-3 bg-emerald-100 rounded-xl'>
                 <CheckCircle className='w-6 h-6 text-emerald-600' />
               </div>
               <Award className='w-5 h-5 text-gray-400' />
-            </div>
+            </div> */}
             <p className='text-sm font-medium text-gray-600'>Completed</p>
             <p className='text-3xl font-bold text-gray-800 mt-2'>{completedDeliveries}</p>
             <div className='mt-3 flex items-center gap-2'>
@@ -277,24 +277,24 @@ function DeliveryBoyDashboard() {
           </div>
 
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1'>
-            <div className='flex items-center justify-between mb-4'>
+            {/* <div className='flex items-center justify-between mb-4'>
               <div className='p-3 bg-blue-100 rounded-xl'>
                 <Navigation className='w-6 h-6 text-blue-600' />
               </div>
               <Clock className='w-5 h-5 text-gray-400' />
-            </div>
+            </div> */}
             <p className='text-sm font-medium text-gray-600'>In Progress</p>
             <p className='text-3xl font-bold text-gray-800 mt-2'>{assignment.filter(a => a.status === 'assigned').length}</p>
             <p className='text-xs text-gray-500 mt-3'>Active deliveries</p>
           </div>
 
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1'>
-            <div className='flex items-center justify-between mb-4'>
+            {/* <div className='flex items-center justify-between mb-4'>
               <div className='p-3 bg-amber-100 rounded-xl'>
                 <Bell className='w-6 h-6 text-amber-600' />
               </div>
               <Zap className='w-5 h-5 text-gray-400' />
-            </div>
+            </div> */}
             <p className='text-sm font-medium text-gray-600'>Pending</p>
             <p className='text-3xl font-bold text-gray-800 mt-2'>{assignment.filter(a => a.status === 'broadcasted').length}</p>
             <p className='text-xs text-gray-500 mt-3'>Awaiting response</p>

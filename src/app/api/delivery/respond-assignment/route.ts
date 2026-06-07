@@ -82,9 +82,9 @@ export async function POST(req: NextRequest) {
         try {
           const user = order.user;
           if (user?.socketId) {
-            const socketUrl = (process.env.NEXT_PUBLIC_SOCKET_SERVER ).replace(/\/+$/, "");
+            const socketUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER;
             if (!socketUrl) throw new Error("SOCKET_SERVER_URL is not configured");
-            await axios.post(`${socketUrl}/emit`, {
+            await axios.post(`${socketUrl.replace(/\/+$/, "")}/emit`, {
               socketId: user.socketId,
               eventName: "orderStatusUpdated",
               payload: { orderId: order._id, status: order.orderStatus }

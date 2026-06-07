@@ -82,7 +82,8 @@ export async function POST(req: NextRequest) {
         try {
           const user = order.user;
           if (user?.socketId) {
-            const socketUrl = (process.env.NEXT_PUBLIC_SOCKET_SERVER || "http://localhost:5000").replace(/\/+$/, "");
+            const socketUrl = (process.env.NEXT_PUBLIC_SOCKET_SERVER ).replace(/\/+$/, "");
+            if (!socketUrl) throw new Error("SOCKET_SERVER_URL is not configured");
             await axios.post(`${socketUrl}/emit`, {
               socketId: user.socketId,
               eventName: "orderStatusUpdated",

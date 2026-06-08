@@ -5,23 +5,10 @@ import User from "./models/userModel";
 import bcrypt from "bcryptjs";
 import Google from "next-auth/providers/google";
 
-// Determine the base URL for NextAuth
-const getAuthUrl = () => {
-  // In production, NEXTAUTH_URL must be set
-  if (process.env.NEXTAUTH_URL) {
-    return process.env.NEXTAUTH_URL;
-  }
-  
-  // Fallback for Vercel deployment using VERCEL_URL
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  
-  // Local development fallback
-  return "http://localhost:3000";
-};
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  basePath: "/api/auth",
+  trustHost: true,
+  useSecureCookies: process.env.NODE_ENV === "production",
   pages: {
     signIn: "/login",
     error: "/login"
@@ -117,6 +104,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 10 * 24 * 60 * 60 // 10 days
   },
   secret: process.env.AUTH_SECRET,
-  basePath: "/api/auth",
 })
 

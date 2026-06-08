@@ -4,7 +4,11 @@ import React from 'react'
 
 function Provider({children} : {children:React.ReactNode}) {
   return (
-    <SessionProvider>
+    <SessionProvider 
+      basePath="/api/auth"
+      refetchInterval={0}
+      refetchOnWindowFocus={true}
+    >
         {children}
     </SessionProvider>
   )

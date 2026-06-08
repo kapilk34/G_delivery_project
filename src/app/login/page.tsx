@@ -24,10 +24,11 @@ const Login = () => {
         const result = await signIn("credentials", {
             email,
             password,
-            redirect: false
+            redirect: false,
+            callbackUrl: "/"
         })
         if (result?.ok) {
-            router.push("/")
+            router.push(result.url || "/")
         } else {
             setError(result?.error || "Login failed. Please try again.")
         }
@@ -81,7 +82,7 @@ const Login = () => {
           <span className='flex-1 h-px bg-gray-200'></span>
         </div>
 
-        <div className='w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 py-3 rounded-xl text-gray-700 font-medium transition-all duration-200' onClick={()=>signIn("google",{callbackUrl:"/"})}>
+        <div className='w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 py-3 rounded-xl text-gray-700 font-medium transition-all duration-200 cursor-pointer' onClick={() => signIn("google", { callbackUrl: "/" })}>
           <Image src={Google} width={20} height={20} alt='google'/>
           Continue with Google
         </div>

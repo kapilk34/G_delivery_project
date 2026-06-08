@@ -149,19 +149,22 @@ export async function POST(
             const user = order.user as any;
 
             if (user && user.socketId) {
-                const socketUrl = (
-                    process.env.NEXT_PUBLIC_SOCKET_SERVER ||
-                    "http://localhost:4000"
-                ).replace(/\/+$/, "");
-
-                await axios.post(`${socketUrl}/emit`, {
-                    socketId: user.socketId,
-                    eventName: "orderStatusUpdated",
-                    payload: {
-                        orderId: order._id,
-                        status: order.orderStatus,
-                    },
-                });
+                const socketUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER;
+                
+                if (!socketUrl) {
+                    console.warn("NEXT_PUBLIC_SOCKET_SERVER is not configured");
+                } else {
+                    const cleanSocketUrl = socketUrl.replace(/\/+$/, "");
+                    
+                    await axios.post(`${cleanSocketUrl}/emit`, {
+                        socketId: user.socketId,
+                        eventName: "orderStatusUpdated",
+                        payload: {
+                            orderId: order._id,
+                            status: order.orderStatus,
+                        },
+                    });
+                }
             }
         } catch (socketErr) {
             console.error("Socket emit failed:", socketErr);

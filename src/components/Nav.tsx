@@ -23,7 +23,7 @@ interface Iuser {
   image?: string
 }
 
-function NavBar({ user }: { user: Iuser }) {
+function NavBar({ user }: { user: Iuser | null }) {
   const [open, setOpen] = useState(false)
   const profileDropDown = useRef<HTMLDivElement>(null)
   const [searchBarOpen, setSearchBarOpen] = useState(false)
@@ -60,10 +60,10 @@ function NavBar({ user }: { user: Iuser }) {
         </div>
 
         <div className="flex items-center gap-3 p-3 mt-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all shadow-inner">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-green-400/60 shadow-lg">{user.image ? <Image src={user.image} alt="user" fill className="object-cover rounded-full"/> : <User/>}</div>
+          <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-green-400/60 shadow-lg">{user?.image ? <Image src={user.image} alt="user" fill className="object-cover rounded-full"/> : <User/>}</div>
           <div className="flex flex-col">
-            <h2 className="text-lg font-semibold text-white">{user.name}</h2>
-            <p className="text-xs text-green-200 capitalize tracking-wide">{user.role}</p>
+            <h2 className="text-lg font-semibold text-white">{user?.name}</h2>
+            <p className="text-xs text-green-200 capitalize tracking-wide">{user?.role}</p>
           </div>
         </div>
 
@@ -96,16 +96,19 @@ function NavBar({ user }: { user: Iuser }) {
       <div className="flex items-center justify-between px-5 md:px-8 py-4 rounded-2xl bg-linear-to-r from-green-600 via-green-500 to-emerald-600 shadow-xl shadow-black/20 backdrop-blur-md border border-white/10">
         <Link href={"/"} className="text-white font-semibold text-xl md:text-2xl tracking-wide hover:scale-105 transition duration-300">FreshKart</Link>
 
-        {user.role == "user" && 
-          <form onSubmit={(e) => { e.preventDefault(); handleSearch() }} className="hidden md:flex items-center bg-white/95 backdrop-blur-md rounded-full px-4 py-2 w-[45%] max-w-lg shadow-md focus-within:ring-2 focus-within:ring-green-400 transition">
-            <Search className="text-gray-500 w-5 h-5 mr-2" />
-            <input type="text" placeholder="Search groceries, fruits, vegetables..." value={query} onChange={(e) => setQuery(e.target.value)} className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400 text-sm" />
-            {query && <button type="button" onClick={() => { setQuery(""); dispatch(setSearchQuery("")) }} className="ml-1"><X className="w-4 h-4 text-gray-400" /></button>}
-          </form>
-        }
+        {!user && (
+          <div className="hidden md:flex items-center gap-4">
+            <Link href="/login" className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-2 rounded-full transition-all">
+              Login
+            </Link>
+            <Link href="/register" className="flex items-center gap-2 bg-white text-green-700 font-semibold px-6 py-2 rounded-full hover:bg-green-100 transition-all">
+              Sign Up
+            </Link>
+          </div>
+        )}
 
         <div className="flex items-center gap-4 md:gap-6">
-          {user.role == "user" && <>
+          {user && user.role == "user" && <>
             <div className="bg-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:scale-105 transition cursor-pointer md:hidden" onClick={() => setSearchBarOpen(true)}>
             <Search className="text-green-600 w-6 h-6" />
             </div>
@@ -128,7 +131,7 @@ function NavBar({ user }: { user: Iuser }) {
             </Link>
           </>}
 
-          {user.role == "admin" && <>
+          {user && user.role == "admin" && <>
             <div className="hidden md:flex items-center gap-4">
               <Link href={"/admin/add-grocery"} className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all">
                 <PlusCircle className="w-5 h-5"/>
@@ -149,7 +152,7 @@ function NavBar({ user }: { user: Iuser }) {
             </div>
           </>}
 
-          <div className="relative">
+          {user && <div className="relative">
             <div className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-white font-semibold cursor-pointer hover:bg-white/40 transition" onClick={() => setOpen((prev) => !prev)}>
               {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User />)}
             </div>
@@ -189,7 +192,7 @@ function NavBar({ user }: { user: Iuser }) {
                 </div>
               )}
             </div>
-          </div>
+          </div>}
         </div>
       </div>
       {sideBar}

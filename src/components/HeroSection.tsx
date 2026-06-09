@@ -10,6 +10,12 @@ import "swiper/css/navigation";
 import "swiper/css/effect-fade";
 
 const HeroSection = () => {
+  const scrollToGroceries = () => {
+    const element = document.getElementById("groceryCards");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
   const heroSlides = [
     {
       id: 1,
@@ -26,7 +32,7 @@ const HeroSection = () => {
       subtitle: "Farm to Table",
       description:"Handpicked organic fruits and vegetables sourced directly from trusted local farms.",
       buttonText: "Explore Organic",
-      buttonLink: "/organic",
+      buttonLink: "/shop",
       image:"https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=2070&q=80",
     },
     {
@@ -35,7 +41,7 @@ const HeroSection = () => {
       subtitle: "30 Minutes or Less",
       description: "Experience ultra-fast delivery with real-time tracking and instant updates.",
       buttonText: "Order Now",
-      buttonLink: "/delivery",
+      buttonLink: "/shop",
       image:"https://images.unsplash.com/photo-1590779033100-9f60a05a013d?auto=format&fit=crop&w=2070&q=80",
     },
   ];
@@ -68,9 +74,9 @@ const HeroSection = () => {
                                         {slide.buttonText}
                                     </Link>
 
-                                    <Link href="/categories" className="px-8 py-4 bg-white/10 border border-white/30 backdrop-blur-lg text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105">
+                                    <button onClick={scrollToGroceries} className="px-8 py-4 bg-white/10 border border-white/30 backdrop-blur-lg text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105">
                                     Browse Categories
-                                    </Link>
+                                    </button>
                                 </motion.div>
 
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="grid grid-cols-3 gap-4 mt-12">

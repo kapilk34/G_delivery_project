@@ -68,7 +68,7 @@ function UserDashboard() {
     <>
       <HeroSection />
       <CategorySlider />
-      <div ref={grocerySectionRef} className="w-[90%] md:w-[80%] mx-auto mt-10 scroll-mt-28">
+      <div id="groceryCards" ref={grocerySectionRef} className="w-[90%] md:w-[80%] mx-auto mt-10 scroll-mt-28">
         <h2 className="text-2xl md:text-2xl font-bold text-green-700 mb-6 text-center">
           Popular Grocery Items
         </h2>

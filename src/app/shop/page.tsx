@@ -8,7 +8,16 @@ import { setSearchQuery } from "@/redux/searchSlice";
 import toast from "react-hot-toast";
 import NavBar from "@/components/Nav";
 import Footer from "@/components/Footer";
-import { Search, Filter, X, ShoppingBag, Leaf, TrendingUp, ChevronRight, SlidersHorizontal } from "lucide-react";
+import {
+  Search,
+  Filter,
+  X,
+  ShoppingBag,
+  Leaf,
+  TrendingUp,
+  ChevronRight,
+  SlidersHorizontal,
+} from "lucide-react";
 
 interface IGrocery {
   _id: string;
@@ -28,7 +37,6 @@ interface IUser {
   image?: string;
 }
 
-// ─── Skeleton Loader Component ───
 const ProductSkeleton = () => (
   <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
     <div className="aspect-[4/3] bg-gray-200" />
@@ -43,20 +51,19 @@ const ProductSkeleton = () => (
   </div>
 );
 
-// ─── Category Icon Map ───
 const getCategoryIcon = (category: string) => {
   const icons: Record<string, string> = {
-    "fruits": "🍎",
-    "vegetables": "🥬",
-    "dairy": "🥛",
-    "bakery": "🥖",
-    "meat": "🥩",
-    "seafood": "🦐",
-    "beverages": "🥤",
-    "snacks": "🍿",
-    "frozen": "🧊",
-    "pantry": "🥫",
-    "organic": "🌿",
+    fruits: "🍎",
+    vegetables: "🥬",
+    dairy: "🥛",
+    bakery: "🥖",
+    meat: "🥩",
+    seafood: "🦐",
+    beverages: "🥤",
+    snacks: "🍿",
+    frozen: "🧊",
+    pantry: "🥫",
+    organic: "🌿",
   };
   return icons[category.toLowerCase()] || "🛒";
 };
@@ -67,11 +74,13 @@ const ShopPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [categories, setCategories] = useState<string[]>([]);
   const [user, setUser] = useState<IUser | null>(null);
-  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name">("default");
+  const [sortBy, setSortBy] = useState<
+    "default" | "price-asc" | "price-desc" | "name"
+  >("default");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [maxPrice, setMaxPrice] = useState(1000);
-  
+
   const searchQuery = useSelector((state: RootState) => state.search.query);
   const dispatch = useDispatch<AppDispatch>();
   const prevQuery = useRef("");
@@ -82,7 +91,6 @@ const ShopPage = () => {
     prevQuery.current = "";
   };
 
-  // Fetch user session
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -98,7 +106,6 @@ const ShopPage = () => {
     fetchUser();
   }, []);
 
-  // Fetch groceries
   useEffect(() => {
     const fetchGroceries = async () => {
       try {
@@ -107,10 +114,14 @@ const ShopPage = () => {
         const data = await response.json();
         setGroceries(data);
 
-        const uniqueCategories = [...new Set(data.map((item: IGrocery) => item.category))];
+        const uniqueCategories = [
+          ...new Set(data.map((item: IGrocery) => item.category)),
+        ];
         setCategories(uniqueCategories as string[]);
-        
-        const prices = data.map((item: IGrocery) => parseFloat(item.price) || 0);
+
+        const prices = data.map(
+          (item: IGrocery) => parseFloat(item.price) || 0,
+        );
         const max = Math.max(...prices, 100);
         setMaxPrice(Math.ceil(max / 10) * 10);
         setPriceRange([0, Math.ceil(max / 10) * 10]);
@@ -132,20 +143,26 @@ const ShopPage = () => {
         g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         g.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCategory = selectedCategory === "all" || g.category === selectedCategory;
-      
+      const matchesCategory =
+        selectedCategory === "all" || g.category === selectedCategory;
+
       const itemPrice = parseFloat(g.price) || 0;
-      const matchesPrice = itemPrice >= priceRange[0] && itemPrice <= priceRange[1];
+      const matchesPrice =
+        itemPrice >= priceRange[0] && itemPrice <= priceRange[1];
 
       return matchesSearch && matchesCategory && matchesPrice;
     });
 
     switch (sortBy) {
       case "price-asc":
-        result.sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
+        result.sort(
+          (a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0),
+        );
         break;
       case "price-desc":
-        result.sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0));
+        result.sort(
+          (a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0),
+        );
         break;
       case "name":
         result.sort((a, b) => a.name.localeCompare(b.name));
@@ -157,7 +174,6 @@ const ShopPage = () => {
     return result;
   }, [groceries, searchQuery, selectedCategory, sortBy, priceRange]);
 
-  // Auto-scroll and toast on search
   useEffect(() => {
     if (!searchQuery || searchQuery === prevQuery.current) return;
     prevQuery.current = searchQuery;
@@ -167,10 +183,12 @@ const ShopPage = () => {
     if (filtered.length > 0) {
       toast.success(
         `Found ${filtered.length} result${filtered.length > 1 ? "s" : ""} for "${searchQuery}"`,
-        { icon: "🔍", duration: 2000 }
+        { icon: "🔍", duration: 2000 },
       );
     } else {
-      toast.error(`No groceries found for "${searchQuery}"`, { duration: 2000 });
+      toast.error(`No groceries found for "${searchQuery}"`, {
+        duration: 2000,
+      });
     }
 
     if (mainRef.current) {
@@ -179,90 +197,50 @@ const ShopPage = () => {
   }, [searchQuery, filtered.length, groceries.length]);
 
   // Stats
-  const stats = useMemo(() => ({
-    totalProducts: groceries.length,
-    totalCategories: categories.length,
-    avgPrice: groceries.length > 0 
-      ? (groceries.reduce((sum, g) => sum + (parseFloat(g.price) || 0), 0) / groceries.length).toFixed(2)
-      : "0.00"
-  }), [groceries, categories]);
+  const stats = useMemo(
+    () => ({
+      totalProducts: groceries.length,
+      totalCategories: categories.length,
+      avgPrice:
+        groceries.length > 0
+          ? (
+              groceries.reduce(
+                (sum, g) => sum + (parseFloat(g.price) || 0),
+                0,
+              ) / groceries.length
+            ).toFixed(2)
+          : "0.00",
+    }),
+    [groceries, categories],
+  );
 
   return (
     <>
-      <NavBar user={user} />
-
-      {/* ─── MOBILE FILTER OVERLAY ─── */}
       {showMobileFilters && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setShowMobileFilters(false)}
         />
       )}
 
-      {/* pt clears fixed navbar (~72px pill + 16px top offset) */}
-      <div className="flex h-screen overflow-hidden pt-[88px] bg-gray-50/80">
-
-        {/* ── LEFT SIDEBAR ── */}
-        <aside 
+      <div className="flex h-screen overflow-hidden  bg-gray-50/80">
+        <aside
           className={`
             fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-64 shrink-0 h-full 
             overflow-y-auto bg-white/95 backdrop-blur-xl 
-            border-r border-gray-200/80 px-5 py-6 flex flex-col gap-6
+            border-r border-gray-200/80 px-5 py-6 flex flex-col gap-4
             shadow-2xl lg:shadow-none transform transition-transform duration-300 ease-out
             ${showMobileFilters ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           `}
         >
-          {/* Mobile close button */}
           <div className="lg:hidden flex justify-end mb-2">
-            <button 
+            <button
               onClick={() => setShowMobileFilters(false)}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
               <X size={20} className="text-gray-500" />
             </button>
           </div>
-
-          {/* Brand Header */}
-          <div className="flex items-center gap-3 px-1">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
-              <Leaf size={20} className="text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-gray-800 text-lg leading-tight">FreshMart</h2>
-              <p className="text-xs text-gray-400">Premium Groceries</p>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3 ml-1">
-              Search
-            </p>
-            <div className="relative group">
-              <div className="absolute inset-0 bg-green-100 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur-xl" />
-              <div className="relative flex items-center gap-2.5 bg-gray-50 border border-gray-200/80 rounded-2xl px-4 py-3 focus-within:border-green-400 focus-within:bg-white focus-within:shadow-lg focus-within:shadow-green-100/50 transition-all duration-300">
-                <Search size={16} className="text-green-500 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                  className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400 text-sm font-medium"
-                />
-                {searchQuery && (
-                  <button 
-                    onClick={clearSearch} 
-                    className="text-gray-400 hover:text-red-500 shrink-0 transition-colors p-0.5 hover:bg-red-50 rounded-full"
-                  >
-                    <X size={14} strokeWidth={2.5} />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
           {/* Category Filter */}
           <div>
@@ -280,16 +258,21 @@ const ShopPage = () => {
                   className={`
                     w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
                     flex items-center gap-3 group
-                    ${selectedCategory === cat
-                      ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md shadow-green-200/60 scale-[1.02]"
-                      : "text-gray-600 hover:bg-green-50/80 hover:text-green-700 hover:pl-5"
+                    ${
+                      selectedCategory === cat
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md shadow-green-200/60 scale-[1.02]"
+                        : "text-gray-600 hover:bg-green-50/80 hover:text-green-700 hover:pl-5"
                     }
                   `}
                 >
-                  <span className={`text-lg transition-transform duration-200 ${selectedCategory === cat ? "scale-110" : "group-hover:scale-110"}`}>
+                  <span
+                    className={`text-lg transition-transform duration-200 ${selectedCategory === cat ? "scale-110" : "group-hover:scale-110"}`}
+                  >
                     {cat === "all" ? "🛍️" : getCategoryIcon(cat)}
                   </span>
-                  <span className="flex-1">{cat === "all" ? "All Products" : cat}</span>
+                  <span className="flex-1">
+                    {cat === "all" ? "All Products" : cat}
+                  </span>
                   {selectedCategory === cat && (
                     <ChevronRight size={14} className="opacity-70" />
                   )}
@@ -315,39 +298,17 @@ const ShopPage = () => {
                     min={0}
                     max={maxPrice}
                     value={priceRange[1]}
-                    onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+                    onChange={(e) =>
+                      setPriceRange([0, parseInt(e.target.value)])
+                    }
                     className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-green-500"
                   />
                   <div className="flex justify-between mt-2 text-xs font-semibold text-gray-500">
                     <span>$0</span>
                     <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                      Up to ${priceRange[1]}
+                      Up to Rs.{priceRange[1]}
                     </span>
                   </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Stats */}
-          {!loading && (
-            <>
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 text-center border border-green-100/50">
-                  <ShoppingBag size={16} className="text-green-500 mx-auto mb-1" />
-                  <p className="text-lg font-bold text-green-700">{stats.totalProducts}</p>
-                  <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Items</p>
-                </div>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 text-center border border-blue-100/50">
-                  <Filter size={16} className="text-blue-500 mx-auto mb-1" />
-                  <p className="text-lg font-bold text-blue-700">{stats.totalCategories}</p>
-                  <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Cats</p>
-                </div>
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-3 text-center border border-amber-100/50">
-                  <TrendingUp size={16} className="text-amber-500 mx-auto mb-1" />
-                  <p className="text-lg font-bold text-amber-700">${stats.avgPrice}</p>
-                  <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Avg</p>
                 </div>
               </div>
             </>
@@ -356,7 +317,6 @@ const ShopPage = () => {
 
         {/* ── MAIN CONTENT ── */}
         <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth">
-          
           {/* Hero Banner */}
           {!searchQuery && selectedCategory === "all" && !loading && (
             <div className="mx-6 mt-6 mb-6">
@@ -366,24 +326,33 @@ const ShopPage = () => {
                 <div className="relative z-10">
                   <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4">
                     <Leaf size={14} className="text-white" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Fresh & Organic</span>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                      Fresh & Organic
+                    </span>
                   </div>
                   <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
                     Farm to Table
                   </h1>
                   <p className="text-green-50 text-sm lg:text-base max-w-md mb-6">
-                    Discover premium quality groceries sourced directly from local farms. Freshness guaranteed.
+                    Discover premium quality groceries sourced directly from
+                    local farms. Freshness guaranteed.
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex -space-x-2">
-                      {[1,2,3,4].map(i => (
-                        <div key={i} className="w-8 h-8 rounded-full bg-white/30 border-2 border-white/50 flex items-center justify-center text-xs text-white font-bold">
-                          {getCategoryIcon(categories[i-1] || "organic")}
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className="w-8 h-8 rounded-full bg-white/30 border-2 border-white/50 flex items-center justify-center text-xs text-white font-bold"
+                        >
+                          {getCategoryIcon(categories[i - 1] || "organic")}
                         </div>
                       ))}
                     </div>
                     <p className="text-white/80 text-sm font-medium">
-                      <span className="text-white font-bold">{stats.totalProducts}+</span> products available
+                      <span className="text-white font-bold">
+                        {stats.totalProducts}+
+                      </span>{" "}
+                      products available
                     </p>
                   </div>
                 </div>
@@ -408,14 +377,19 @@ const ShopPage = () => {
                     </>
                   ) : (
                     <>
-                      <span className="text-2xl">{getCategoryIcon(selectedCategory)}</span>
+                      <span className="text-2xl">
+                        {getCategoryIcon(selectedCategory)}
+                      </span>
                       {selectedCategory}
                     </>
                   )}
                 </h2>
                 <p className="text-sm text-gray-400 mt-1 font-medium">
-                  {filtered.length} item{filtered.length !== 1 ? "s" : ""} available
-                  {selectedCategory !== "all" && !searchQuery && ` in ${selectedCategory}`}
+                  {filtered.length} item{filtered.length !== 1 ? "s" : ""}{" "}
+                  available
+                  {selectedCategory !== "all" &&
+                    !searchQuery &&
+                    ` in ${selectedCategory}`}
                 </p>
               </div>
 
@@ -441,7 +415,42 @@ const ShopPage = () => {
                     <option value="price-desc">Price: High to Low</option>
                     <option value="name">Name: A-Z</option>
                   </select>
-                  <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none" />
+                  <ChevronRight
+                    size={14}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Sticky Search Bar */}
+            <div className="sticky top-0 z-30 py-4 mb-6 backdrop-blur-md">
+              <div className="max-w-lg mx-auto">
+                <div className="relative group">
+                  {/* Glow Effect */}
+                  <div className="absolute inset-0 bg-green-100 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-all duration-300 blur-xl" />
+
+                  {/* Search Container */}
+                  <div className="relative flex items-center gap-3 bg-white/95 border border-gray-200 rounded-2xl px-5 py-3 shadow-sm hover:shadow-md focus-within:border-green-500 focus-within:shadow-lg focus-within:shadow-green-100 transition-all duration-300">
+                    <Search size={18} className="text-green-500 shrink-0" />
+
+                    <input
+                      type="text"
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+                      className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400 text-sm font-medium"
+                    />
+
+                    {searchQuery && (
+                      <button
+                        onClick={clearSearch}
+                        className="p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                      >
+                        <X size={15} strokeWidth={2.5} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -455,9 +464,16 @@ const ShopPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">
-                      <span className="font-bold text-green-700 text-lg">{filtered.length}</span>
-                      <span className="text-gray-500"> result{filtered.length !== 1 ? "s" : ""} for </span>
-                      <span className="font-bold text-gray-800 bg-white px-2 py-0.5 rounded-lg border border-gray-200">&ldquo;{searchQuery}&rdquo;</span>
+                      <span className="font-bold text-green-700 text-lg">
+                        {filtered.length}
+                      </span>
+                      <span className="text-gray-500">
+                        {" "}
+                        result{filtered.length !== 1 ? "s" : ""} for{" "}
+                      </span>
+                      <span className="font-bold text-gray-800 bg-white px-2 py-0.5 rounded-lg border border-gray-200">
+                        &ldquo;{searchQuery}&rdquo;
+                      </span>
                     </p>
                     {selectedCategory !== "all" && (
                       <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
@@ -486,7 +502,7 @@ const ShopPage = () => {
             ) : filtered.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
                 {filtered.map((item, index) => (
-                  <div 
+                  <div
                     key={item._id}
                     className="animate-fadeIn"
                     style={{ animationDelay: `${index * 50}ms` }}
@@ -505,7 +521,9 @@ const ShopPage = () => {
                     <X size={16} className="text-red-400" />
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">No results found</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  No results found
+                </h3>
                 <p className="text-sm text-gray-400 max-w-sm mb-8 leading-relaxed">
                   {searchQuery
                     ? `We couldn't find anything matching "${searchQuery}". Try adjusting your search or filters.`
@@ -516,16 +534,16 @@ const ShopPage = () => {
                     onClick={clearSearch}
                     className="group flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-green-200/50 hover:shadow-xl hover:shadow-green-200/60 hover:-translate-y-0.5"
                   >
-                    <X size={16} className="group-hover:rotate-90 transition-transform" />
+                    <X
+                      size={16}
+                      className="group-hover:rotate-90 transition-transform"
+                    />
                     Clear Search
                   </button>
                 )}
               </div>
             )}
-
-            {/* Bottom spacing */}
-            <div className="h-12" />
-            <Footer />
+            <div className="h-2" />
           </div>
         </main>
       </div>

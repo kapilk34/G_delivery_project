@@ -7,6 +7,7 @@ import GroceryCards from "./GroceryCards";
 import UserBanner from "./UserBanner";
 import Testimonials from "./Testimonials";
 import Footer from "./Footer";
+import Chatbot from "./Chatbot";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { setSearchQuery } from "@/redux/searchSlice";
@@ -111,6 +112,7 @@ function UserDashboard() {
       <UserBanner />
       <Testimonials />
       <Footer />
+      <Chatbot />
     </>
   );
 }

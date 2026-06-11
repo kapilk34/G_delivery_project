@@ -8,6 +8,7 @@ import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import { getSocket } from '@/lib/socket'
 import { MapPin, Package, Navigation, CheckCircle, XCircle, Wallet, TrendingUp, Bell, User, Clock, Truck, Award, Zap, IndianRupee } from 'lucide-react'
+import Chatbot from './Chatbot'
 
 const defaultIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -487,6 +488,7 @@ function DeliveryBoyDashboard() {
           </div>
         )}
       </div>
+      <Chatbot />
     </div>
   )
 }

@@ -350,12 +350,14 @@ function NavBar({ user }: { user: Iuser | null }) {
                 <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
                   <div className="flex items-center gap-4">
                     <div className="relative w-14 h-14">
+                      <Link href="/user/profile">
                       {user.image ? (<Image src={user.image} alt="user" fill className="object-cover rounded-full border-2 border-gray-200" />
                       ) : (
                         <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200">
                           <User className="text-gray-500 w-6 h-6" />
                         </div>
                       )}
+                      </Link>
                     </div>
 
                     <div>

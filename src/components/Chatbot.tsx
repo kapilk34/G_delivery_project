@@ -57,7 +57,7 @@ export default function Chatbot() {
             <div className="flex items-center gap-3">
               <div className="p-0.5 bg-white rounded-xl shadow-inner shrink-0">
                 <img 
-                  src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" 
+                  src="https://png.pngtree.com/png-vector/20220423/ourmid/pngtree-girl-holding-laptop-png-image_4552658.png" 
                   alt="Bot Avatar" 
                   className="w-8 h-8 object-contain"
                 />

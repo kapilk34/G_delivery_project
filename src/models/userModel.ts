@@ -1,4 +1,16 @@
 import mongoose from "mongoose";
+interface IAddress {
+    _id?: mongoose.Types.ObjectId | string;
+    homeAddress?: string;
+    workAddress?: string;
+    otherAddress?: string;
+    city: string;
+    state: string;
+    pincode: string;
+    landmark?: string;
+    isDefault: boolean;
+}
+
 interface Iuser{
     _id?:mongoose.Types.ObjectId
     name:string
@@ -7,6 +19,8 @@ interface Iuser{
     mobile?:string
     role:"user" | "deliveryBoy" | "admin"
     image?:string
+    membershipStatus?: "Regular" | "Premium" | "Gold"
+    addresses?: IAddress[]
     location?:{
         type:{
             type:StringConstructor;
@@ -47,6 +61,23 @@ const userSchema = new mongoose.Schema<Iuser>({
     image:{
         type:String
     },
+    membershipStatus:{
+        type:String,
+        enum:["Regular","Premium","Gold"],
+        default:"Regular"
+    },
+    addresses:[
+        {
+            homeAddress: String,
+            workAddress: String,
+            otherAddress: String,
+            city: { type: String, required: true },
+            state: { type: String, required: true },
+            pincode: { type: String, required: true },
+            landmark: String,
+            isDefault: { type: Boolean, default: false }
+        }
+    ],
     location:{
         type:{
             type:String,

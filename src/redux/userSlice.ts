@@ -1,14 +1,30 @@
 import { createSlice } from "@reduxjs/toolkit";
 import mongoose from "mongoose";
 
+interface IAddress {
+    _id?: string;
+    homeAddress?: string;
+    workAddress?: string;
+    otherAddress?: string;
+    city: string;
+    state: string;
+    pincode: string;
+    landmark?: string;
+    isDefault: boolean;
+}
+
 interface Iuser{
-    _id?:mongoose.Types.ObjectId
+    _id?:mongoose.Types.ObjectId | string
     name:string
     email:string
     password?:string
     mobile?:string
     role:"user" | "deliveryBoy" | "admin"
     image?:string
+    membershipStatus?: "Regular" | "Premium" | "Gold"
+    addresses?: IAddress[]
+    createdAt?: string
+    updatedAt?: string
 }
 
 interface IuserSlice{

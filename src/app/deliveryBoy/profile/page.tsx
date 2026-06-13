@@ -1078,7 +1078,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ─── Edit Profile Modal ────────────────────────────────────── */}
       <PremiumModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
@@ -1189,7 +1188,6 @@ export default function ProfilePage() {
         </form>
       </PremiumModal>
 
-      {/* ─── Address Modal ─────────────────────────────────────────── */}
       <PremiumModal
         isOpen={isAddressModalOpen}
         onClose={() => {

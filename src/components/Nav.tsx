@@ -340,7 +340,7 @@ function NavBar({ user }: { user: Iuser | null }) {
             </div>
           </>}
 
-          {user && <div className="relative">
+          {user && user.role != "deliveryBoy" && <div className="relative">
             <div className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-white font-semibold cursor-pointer hover:bg-white/40 transition" onClick={() => setOpen((prev) => !prev)}>
               {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User />)}
             </div>
@@ -383,6 +383,49 @@ function NavBar({ user }: { user: Iuser | null }) {
               )}
             </div>
           </div>}
+
+          {user && user.role == "deliveryBoy" && <>
+            <div className="md:hidden bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md" onClick={() => setMenuOpen(prev => !prev)}>
+              <Menu className="text-green-600 w-6 h-6" />
+            </div>
+
+            <div className="relative">
+              <div className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-white font-semibold cursor-pointer hover:bg-white/40 transition" onClick={() => setOpen((prev) => !prev)}>
+                {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User />)}
+              </div>
+
+              <div className="relative" ref={profileDropDown}>
+                {open && (
+                  <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex items-center gap-4">
+                      <div className="relative w-14 h-14">
+                        <Link href="/deliveryBoy/profile">
+                        {user.image ? (<Image src={user.image} alt="user" fill className="object-cover rounded-full border-2 border-gray-200" />
+                        ) : (
+                          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200">
+                            <User className="text-gray-500 w-6 h-6" />
+                          </div>
+                        )}
+                        </Link>
+                      </div>
+
+                      <div>
+                        <div className="text-gray-900 font-semibold text-base">{user.name}</div>
+                        <div className="text-sm text-gray-500 capitalize">{user.role}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <button className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition text-sm font-medium text-gray-700" onClick={() => { setOpen(false); signOut({ callbackUrl: "/login" }) }}>
+                        <LogOut />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>}
         </div>
       </div>
       {sideBar}

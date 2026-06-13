@@ -1,14 +1,19 @@
 'use client'
 
 import axios from 'axios'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useSession } from "next-auth/react"
 import "leaflet/dist/leaflet.css"
 import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import { getSocket } from '@/lib/socket'
-import { MapPin, Package, Navigation, CheckCircle, XCircle, Wallet, TrendingUp, Bell, User, Clock, Truck, Award, Zap, IndianRupee } from 'lucide-react'
+import { MapPin, Package, Navigation, CheckCircle, XCircle, Bell, User, Clock, Truck, IndianRupee, Mail, Phone, Calendar, Edit3, Home, Briefcase, Plus, Trash2, X, Crown, Sparkles, Check, Building, Camera, Loader2, AlertCircle, Shield, Save, MapPinned, Pin } from 'lucide-react'
 import Chatbot from './Chatbot'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState, AppDispatch } from '@/redux/store'
+import { setUserData } from '@/redux/userSlice'
+import toast from 'react-hot-toast'
+import { motion, AnimatePresence } from 'motion/react'
 
 const defaultIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -75,14 +80,233 @@ const statusConfig = {
   },
 }
 
+interface IAddress {
+  _id?: string;
+  homeAddress?: string;
+  workAddress?: string;
+  otherAddress?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  landmark?: string;
+  isDefault: boolean;
+}
+
+interface UserData {
+  name?: string;
+  email?: string;
+  mobile?: string;
+  membershipStatus?: 'Regular' | 'Premium' | 'Gold';
+  role?: string;
+  image?: string;
+  createdAt?: string;
+  addresses?: IAddress[];
+}
+
+function PremiumInput({ id, label, icon: Icon, value, onChange, onBlur, error, touched, placeholder, type = 'text', required = false }: any) {
+  const hasError = touched && error;
+  return (
+    <div className='group'>
+      <label htmlFor={id} className='mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 transition-colors group-focus-within:text-slate-800'>
+        {label}{required && <span className='text-rose-500'>*</span>}
+      </label>
+      <div className='relative'>
+        <span className={`absolute inset-y-0 left-0 flex items-center pl-3.5 transition-colors ${hasError ? 'text-rose-400' : 'text-slate-400 group-focus-within:text-slate-600'}`}>
+          <Icon className='h-[18px] w-[18px]' />
+        </span>
+        <input type={type} id={id} value={value} onChange={onChange} onBlur={onBlur} placeholder={placeholder}
+          className={`w-full rounded-xl border bg-white py-2.5 pl-11 pr-4 text-sm font-medium text-slate-800 outline-none transition-all duration-200 placeholder:font-normal placeholder:text-slate-400 ${hasError ? 'border-rose-300 bg-rose-50/30 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' : 'border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:ring-4 focus:ring-slate-800/5'}`}
+        />
+      </div>
+      <AnimatePresence>
+        {hasError && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            className='flex items-center gap-1.5 overflow-hidden text-xs font-medium text-rose-500 mt-1.5'>
+            <AlertCircle className='h-3.5 w-3.5 flex-shrink-0' /><span>{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function PremiumModal({ isOpen, onClose, title, icon: Icon, children, maxWidth = 'md' }: any) {
+  const maxWidths: Record<string, string> = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl' };
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-[9999] flex items-center justify-center px-4 py-6'>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='absolute inset-0 bg-slate-950/40 backdrop-blur-sm' onClick={onClose} />
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className={`relative w-full ${maxWidths[maxWidth]} overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl`}>
+            <div className='flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4'>
+              <h3 className='flex items-center gap-2.5 text-lg font-bold text-slate-900'>
+                {Icon && <span className='flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white'><Icon className='h-4 w-4' /></span>}
+                {title}
+              </h3>
+              <button onClick={onClose} className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600'>
+                <X className='h-4 w-4' />
+              </button>
+            </div>
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function DeliveryBoyDashboard() {
   const { data: session } = useSession()
+  const dispatch = useDispatch<AppDispatch>()
+  const userData = useSelector((state: RootState) => state.user.userData) as UserData | null
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'profile'>('dashboard')
   const [assignment, setAssignment] = useState<AssignmentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPosition, setCurrentPosition] = useState<LatLng | null>(null)
   const [notification, setNotification] = useState<{ show: boolean; message: string; type: string }>({ show: false, message: '', type: '' })
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null)
-  
+
+  // Profile state
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
+  const [editingAddress, setEditingAddress] = useState<IAddress | null>(null)
+  const [profileForm, setProfileForm] = useState({ name: '', mobile: '', membershipStatus: 'Regular' as 'Regular' | 'Premium' | 'Gold', image: '' })
+  const [addressForm, setAddressForm] = useState({ homeAddress: '', workAddress: '', otherAddress: '', city: '', state: '', pincode: '', landmark: '', isDefault: false })
+  const [profileErrors, setProfileErrors] = useState({ name: '', mobile: '' })
+  const [addressErrors, setAddressErrors] = useState({ city: '', state: '', pincode: '', addressLines: '' })
+  const [profileTouched, setProfileTouched] = useState({ name: false, mobile: false })
+  const [addressTouched, setAddressTouched] = useState({ city: false, state: false, pincode: false, addressLines: false })
+
+  const validateProfile = useCallback((form: typeof profileForm) => {
+    const errors = { name: '', mobile: '' };
+    if (!form.name.trim()) errors.name = 'Full Name is required';
+    else if (form.name.trim().length < 2) errors.name = 'Must be at least 2 characters';
+    else if (!/^[A-Za-z\s'\-]+$/.test(form.name.trim())) errors.name = 'Only letters, spaces, and hyphens allowed';
+    if (form.mobile && !/^\d{10}$/.test(form.mobile)) errors.mobile = 'Must be exactly 10 digits';
+    setProfileErrors(errors);
+    return !errors.name && !errors.mobile;
+  }, []);
+
+  const validateAddress = useCallback((form: typeof addressForm) => {
+    const errors = { city: '', state: '', pincode: '', addressLines: '' };
+    if (!form.city.trim()) errors.city = 'City is required';
+    else if (!/^[A-Za-z\s.\-]+$/.test(form.city.trim())) errors.city = 'Invalid city name';
+    if (!form.state.trim()) errors.state = 'State is required';
+    else if (!/^[A-Za-z\s.\-]+$/.test(form.state.trim())) errors.state = 'Invalid state name';
+    if (!form.pincode.trim()) errors.pincode = 'Pincode is required';
+    else if (!/^\d{6}$/.test(form.pincode)) errors.pincode = 'Must be 6 digits';
+    if (!form.homeAddress.trim() && !form.workAddress.trim() && !form.otherAddress.trim()) errors.addressLines = 'At least one address type required';
+    setAddressErrors(errors);
+    return !errors.city && !errors.state && !errors.pincode && !errors.addressLines;
+  }, []);
+
+  useEffect(() => { validateProfile(profileForm); }, [profileForm, validateProfile]);
+  useEffect(() => { validateAddress(addressForm); }, [addressForm, validateAddress]);
+
+  useEffect(() => {
+    if (userData) {
+      setProfileForm({ name: userData.name || '', mobile: userData.mobile || '', membershipStatus: userData.membershipStatus || 'Regular', image: userData.image || '' });
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    if (!userData && activeTab === 'profile') {
+      axios.get('/api/me').then(res => dispatch(setUserData(res.data))).catch(console.error);
+    }
+  }, [userData, activeTab, dispatch]);
+
+  const openEditProfile = () => {
+    setProfileForm({ name: userData?.name || '', mobile: userData?.mobile || '', membershipStatus: userData?.membershipStatus || 'Regular', image: userData?.image || '' });
+    setProfileTouched({ name: false, mobile: false });
+    setProfileErrors({ name: '', mobile: '' });
+    setIsEditProfileOpen(true);
+  };
+
+  const openAddressModal = (address: IAddress | null) => {
+    setEditingAddress(address);
+    setAddressForm(address ? { homeAddress: address.homeAddress || '', workAddress: address.workAddress || '', otherAddress: address.otherAddress || '', city: address.city || '', state: address.state || '', pincode: address.pincode || '', landmark: address.landmark || '', isDefault: address.isDefault || false } : { homeAddress: '', workAddress: '', otherAddress: '', city: '', state: '', pincode: '', landmark: '', isDefault: false });
+    setAddressTouched({ city: false, state: false, pincode: false, addressLines: false });
+    setAddressErrors({ city: '', state: '', pincode: '', addressLines: '' });
+    setIsAddressModalOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please upload an image file.'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB.'); return; }
+    const formData = new FormData();
+    formData.append('image', file);
+    setIsUploadingImage(true);
+    const id = toast.loading('Uploading...');
+    try {
+      const res = await axios.post('/api/user/profile/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      dispatch(setUserData(res.data));
+      toast.success('Profile photo updated!', { id });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Upload failed.', { id });
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileTouched({ name: true, mobile: true });
+    if (!validateProfile(profileForm)) { toast.error('Please fix the errors before saving.'); return; }
+    try {
+      const res = await axios.put('/api/user/profile', profileForm);
+      dispatch(setUserData(res.data));
+      toast.success('Profile updated successfully!');
+      setIsEditProfileOpen(false);
+    } catch (err: any) { toast.error(err.response?.data?.message || 'Update failed.'); }
+  };
+
+  const handleAddressSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddressTouched({ city: true, state: true, pincode: true, addressLines: true });
+    if (!validateAddress(addressForm)) { toast.error('Please fix the errors before saving.'); return; }
+    try {
+      if (editingAddress) {
+        const res = await axios.put('/api/user/address', { addressId: editingAddress._id, ...addressForm });
+        dispatch(setUserData(res.data)); toast.success('Address updated!');
+      } else {
+        const res = await axios.post('/api/user/address', addressForm);
+        dispatch(setUserData(res.data)); toast.success('Address added!');
+      }
+      setIsAddressModalOpen(false); setEditingAddress(null);
+    } catch (err: any) { toast.error(err.response?.data?.message || 'Save failed.'); }
+  };
+
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+    try {
+      const res = await axios.delete('/api/user/address', { data: { addressId } });
+      dispatch(setUserData(res.data)); toast.success('Address deleted.');
+    } catch (err: any) { toast.error(err.response?.data?.message || 'Delete failed.'); }
+  };
+
+  const handleSetDefault = async (addressId: string) => {
+    try {
+      const res = await axios.patch('/api/user/address', { addressId });
+      dispatch(setUserData(res.data)); toast.success('Default address updated!');
+    } catch (err: any) { toast.error(err.response?.data?.message || 'Update failed.'); }
+  };
+
+  const getMembershipConfig = (status?: string) => {
+    switch (status) {
+      case 'Gold': return { badge: 'bg-amber-100 text-amber-800 border-amber-200', icon: <Crown className='h-3.5 w-3.5 text-amber-600' />, ring: 'ring-amber-400/30' };
+      case 'Premium': return { badge: 'bg-purple-100 text-purple-800 border-purple-200', icon: <Sparkles className='h-3.5 w-3.5 text-purple-600' />, ring: 'ring-purple-400/30' };
+      default: return { badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: <Check className='h-3.5 w-3.5 text-emerald-600' />, ring: 'ring-emerald-400/30' };
+    }
+  };
+
+  const formatDate = (dateStr?: string) => dateStr ? new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
   const PER_DELIVERY_AMOUNT = 120
 
   const { completedDeliveries, totalEarnings, completionRate } = useMemo(() => {
@@ -215,7 +439,7 @@ function DeliveryBoyDashboard() {
       )}
 
       {/* Header */}
-      <header className='sticky top-0 z-40'>
+      <header className='sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
@@ -224,24 +448,212 @@ function DeliveryBoyDashboard() {
               </div>
               <div>
                 <h1 className='text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent'>
-                  Delivery Dashboard
+                  {activeTab === 'profile' ? 'My Profile' : 'Delivery Dashboard'}
                 </h1>
                 <p className='text-sm text-gray-500'>Welcome back, {session?.user?.name || 'Driver'}</p>
               </div>
             </div>
             <div className='flex items-center gap-3'>
-              <div className='flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl'>
-                <div className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></div>
-                <span className='text-sm font-medium text-green-700'>Online</span>
-              </div>
-              <button className='p-2 hover:bg-gray-100 rounded-xl transition-colors'>
-                <User className='w-5 h-5 text-gray-600' />
+              {activeTab === 'dashboard' && (
+                <div className='flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl'>
+                  <div className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></div>
+                  <span className='text-sm font-medium text-green-700'>Online</span>
+                </div>
+              )}
+              <button
+                onClick={() => setActiveTab(activeTab === 'profile' ? 'dashboard' : 'profile')}
+                className={`p-2 rounded-xl transition-colors ${activeTab === 'profile' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100 text-gray-600'}`}
+              >
+                <User className='w-5 h-5' />
               </button>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Profile Tab */}
+      {activeTab === 'profile' && (
+        <div className='max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+          {/* Profile Header Card */}
+          <div className='relative overflow-hidden rounded-3xl border border-white/60 bg-white shadow-xl mb-6'>
+            <div className='flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-start sm:gap-8 sm:p-8'>
+              {/* Avatar */}
+              <div className='relative flex-shrink-0'>
+                <div
+                  className={`group relative h-28 w-28 cursor-pointer overflow-hidden rounded-full border-4 border-white shadow-xl ring-4 ${getMembershipConfig(userData?.membershipStatus).ring} sm:h-32 sm:w-32`}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {userData?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={userData.image} alt={userData.name} className='h-full w-full object-cover' />
+                  ) : (
+                    <div className='flex h-full w-full items-center justify-center bg-slate-100'>
+                      <User className='h-14 w-14 text-slate-400' />
+                    </div>
+                  )}
+                  <div className='absolute inset-0 flex flex-col items-center justify-center bg-slate-950/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100'>
+                    <Camera className='h-6 w-6 text-white' />
+                    <span className='mt-1 text-[10px] font-bold uppercase tracking-wider text-white/90'>Change</span>
+                  </div>
+                  {isUploadingImage && (
+                    <div className='absolute inset-0 flex items-center justify-center bg-slate-950/60'>
+                      <Loader2 className='h-6 w-6 animate-spin text-white' />
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className='absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-slate-900 text-white shadow-lg transition-colors hover:bg-slate-800'
+                >
+                  <Camera className='h-4 w-4' />
+                </button>
+                <input type='file' ref={fileInputRef} onChange={handleImageUpload} accept='image/*' className='hidden' />
+              </div>
+
+              {/* Info */}
+              <div className='flex-1 text-center sm:text-left'>
+                <div className='flex flex-col items-center gap-3 sm:flex-row sm:justify-between'>
+                  <div>
+                    <div className='flex flex-wrap items-center justify-center gap-3 sm:justify-start'>
+                      <h2 className='text-2xl font-bold tracking-tight text-slate-900'>{userData?.name}</h2>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${getMembershipConfig(userData?.membershipStatus).badge}`}>
+                        {getMembershipConfig(userData?.membershipStatus).icon}
+                        {userData?.membershipStatus || 'Regular'}
+                      </span>
+                    </div>
+                    <p className='mt-1 text-sm font-medium text-slate-500 capitalize'>{userData?.role} Account</p>
+                  </div>
+                  <button
+                    onClick={openEditProfile}
+                    className='inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors'
+                  >
+                    <Edit3 className='h-4 w-4' /> Edit Profile
+                  </button>
+                </div>
+
+                <div className='mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3'>
+                  {[
+                    { icon: Mail, label: 'Email', value: userData?.email },
+                    { icon: Phone, label: 'Mobile', value: userData?.mobile || 'Not provided' },
+                    { icon: Calendar, label: 'Joined', value: formatDate(userData?.createdAt) },
+                  ].map((item) => (
+                    <div key={item.label} className='flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5'>
+                      <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white shadow-sm'>
+                        <item.icon className='h-4 w-4 text-slate-600' />
+                      </div>
+                      <div className='min-w-0'>
+                        <p className='text-[10px] font-bold uppercase tracking-wider text-slate-400'>{item.label}</p>
+                        <p className='truncate text-sm font-semibold text-slate-700'>{item.value}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className='grid grid-cols-2 gap-4 sm:grid-cols-4 mb-10'>
+            {[
+              { icon: MapPinned, label: 'Saved Addresses', value: (userData?.addresses || []).length, color: 'from-emerald-500/10 to-emerald-600/5 text-emerald-600 border-emerald-200/50' },
+              { icon: IndianRupee, label: 'Total Earnings', value: `₹${completedDeliveries * PER_DELIVERY_AMOUNT}`, color: 'from-blue-500/10 to-blue-600/5 text-blue-600 border-blue-200/50' },
+              { icon: Clock, label: 'Member Since', value: userData?.createdAt ? new Date(userData.createdAt).getFullYear() : 'N/A', color: 'from-amber-500/10 to-amber-600/5 text-amber-600 border-amber-200/50' },
+              { icon: Shield, label: 'Account Status', value: userData?.membershipStatus || 'Regular', color: 'from-purple-500/10 to-purple-600/5 text-purple-600 border-purple-200/50' },
+            ].map((stat) => (
+              <div key={stat.label} className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br ${stat.color} p-5`}>
+                <div className='flex items-start justify-between'>
+                  <div>
+                    <p className='text-xs font-semibold uppercase tracking-wider opacity-60'>{stat.label}</p>
+                    <p className='mt-1 text-2xl font-bold tracking-tight'>{stat.value}</p>
+                  </div>
+                  <div className='rounded-xl p-2.5 bg-white/60 shadow-sm'>
+                    <stat.icon className='h-5 w-5' />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Addresses Section */}
+          <div className='flex items-center justify-between mb-6'>
+            <div className='flex items-center gap-3'>
+              <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white'>
+                <MapPin className='h-5 w-5' />
+              </div>
+              <div>
+                <h3 className='text-xl font-bold text-slate-900'>Delivery Locations</h3>
+                <p className='text-sm text-slate-500'>Manage your saved addresses</p>
+              </div>
+            </div>
+            <button
+              onClick={() => openAddressModal(null)}
+              className='inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors shadow-sm'
+            >
+              <Plus className='h-4 w-4' /> Add Address
+            </button>
+          </div>
+
+          <div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
+            <AnimatePresence mode='popLayout'>
+              {(userData?.addresses || []).length > 0 ? (
+                (userData?.addresses || []).map((address, index) => (
+                  <motion.div layout key={address._id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${address.isDefault ? 'border-emerald-300/60 ring-1 ring-emerald-500/10' : 'border-slate-200/80 hover:border-slate-300'}`}>
+                    {address.isDefault && (
+                      <div className='absolute -right-8 top-4 rotate-45 bg-emerald-500 px-8 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white'>Default</div>
+                    )}
+                    <div className='mb-4 flex items-start justify-between'>
+                      <div className='flex flex-wrap gap-1.5'>
+                        {address.homeAddress?.trim() && <span className='inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700 border border-blue-100'><Home className='h-3 w-3' />HOME</span>}
+                        {address.workAddress?.trim() && <span className='inline-flex items-center gap-1 rounded-lg bg-purple-50 px-2 py-1 text-[10px] font-bold text-purple-700 border border-purple-100'><Building className='h-3 w-3' />WORK</span>}
+                        {address.otherAddress?.trim() && <span className='inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 border border-amber-100'><Briefcase className='h-3 w-3' />OTHER</span>}
+                      </div>
+                      <div className='flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100'>
+                        <button onClick={() => openAddressModal(address)} className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700'><Edit3 className='h-3.5 w-3.5' /></button>
+                        <button onClick={() => handleDeleteAddress(address._id!)} className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600'><Trash2 className='h-3.5 w-3.5' /></button>
+                      </div>
+                    </div>
+                    <div className='space-y-2.5 text-sm'>
+                      {address.homeAddress?.trim() && <div><p className='text-[10px] font-bold uppercase tracking-wider text-blue-500'>Home</p><p className='mt-0.5 font-semibold text-slate-800'>{address.homeAddress}</p></div>}
+                      {address.workAddress?.trim() && <div><p className='text-[10px] font-bold uppercase tracking-wider text-purple-500'>Work</p><p className='mt-0.5 font-semibold text-slate-800'>{address.workAddress}</p></div>}
+                      {address.otherAddress?.trim() && <div><p className='text-[10px] font-bold uppercase tracking-wider text-amber-500'>Other</p><p className='mt-0.5 font-semibold text-slate-800'>{address.otherAddress}</p></div>}
+                      {address.landmark?.trim() && (
+                        <div className='rounded-xl border border-slate-100 bg-slate-50/80 p-2.5'>
+                          <p className='text-[10px] font-bold uppercase tracking-wider text-slate-400'>Landmark</p>
+                          <p className='mt-0.5 text-xs font-medium text-slate-600'>{address.landmark}</p>
+                        </div>
+                      )}
+                      <div className='flex items-center gap-1.5 border-t border-slate-100 pt-3 text-xs font-semibold text-slate-600'>
+                        <MapPin className='h-3.5 w-3.5 text-emerald-500' />
+                        {address.city}, {address.state} — {address.pincode}
+                      </div>
+                    </div>
+                    {!address.isDefault && (
+                      <button onClick={() => handleSetDefault(address._id!)} className='mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-500 transition-all hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-700'>
+                        <Pin className='h-3.5 w-3.5' /> Set as Default
+                      </button>
+                    )}
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='col-span-full flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-16 px-6 text-center'>
+                  <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50'>
+                    <MapPin className='h-8 w-8 text-slate-300' />
+                  </div>
+                  <h3 className='text-lg font-bold text-slate-800'>No Addresses Saved</h3>
+                  <p className='mt-1 max-w-xs text-sm text-slate-500'>Add your delivery locations for faster checkouts.</p>
+                  <button onClick={() => openAddressModal(null)} className='mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors'>
+                    <Plus className='h-4 w-4' /> Add Your First Address
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
+
+      {/* Dashboard Tab */}
+      {activeTab === 'dashboard' && (
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         {/* Stats Grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
@@ -488,6 +900,8 @@ function DeliveryBoyDashboard() {
           </div>
         )}
       </div>
+      )}
+
       <Chatbot />
     </div>
   )

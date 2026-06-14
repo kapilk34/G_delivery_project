@@ -1,6 +1,6 @@
 "use client"
 
-import { EyeIcon, EyeOff, Loader2, LogIn, ArrowRight, Mail, Lock, Sparkles } from 'lucide-react'
+import { EyeIcon, EyeOff, Loader2, LogIn, Mail, Lock } from 'lucide-react'
 import React, { FormEvent, useState } from 'react'
 import { motion, AnimatePresence } from "motion/react"
 import Image from 'next/image'

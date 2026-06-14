@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useMemo } from "react";
+import { getSocket } from "@/lib/socket";
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -76,12 +77,6 @@ const STATUS_CONFIG: Record<OrderStatus, {
     dot: "bg-emerald-500",
     description: "Your order has been delivered",
   },
-};
-
-// ─── Mock Socket (replace with your actual socket implementation) ───
-
-const getSocket = () => {
-  return null;
 };
 
 // ─── Utility Components ────────────────────────────────────────────
@@ -261,18 +256,12 @@ const OrderCard = ({
       })
     : "";
 
-  // Mock items - replace with actual order.items
-  const items = order.items || [
-    { name: "Premium Wireless Headphones", quantity: 1, price: 299.99, image: "/api/placeholder/80/80" },
-    { name: "USB-C Charging Cable", quantity: 2, price: 19.99, image: "/api/placeholder/80/80" },
-  ];
+  const items = order.items || [];
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = order.shippingCost || 0;
-  const tax = order.tax || subtotal * 0.08;
-  const total = order.totalAmount || subtotal + shipping + tax;
+  const subtotal = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+  const total = order.totalAmmount || subtotal;
 
-  const deliveryBoy = order.assignedDeliveryBoy;
+  const deliveryBoy = order.assignedDeliveryBoy as any;
   const deliveryBoyName = typeof deliveryBoy === "object" ? deliveryBoy?.name || "Delivery Partner" : "Delivery Partner";
   const deliveryBoyPhone = typeof deliveryBoy === "object" ? deliveryBoy?.phone : undefined;
 
@@ -348,16 +337,6 @@ const OrderCard = ({
                 <span className="text-gray-500">Subtotal</span>
                 <span className="font-medium text-gray-700">${subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Shipping</span>
-                <span className="font-medium text-gray-700">
-                  {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Tax</span>
-                <span className="font-medium text-gray-700">${tax.toFixed(2)}</span>
-              </div>
               <div className="h-px bg-gray-200 my-2" />
               <div className="flex justify-between">
                 <span className="font-semibold text-gray-900">Total</span>
@@ -366,7 +345,7 @@ const OrderCard = ({
               <div className="flex items-center gap-2 pt-1">
                 <CreditCard className="w-4 h-4 text-gray-400" />
                 <span className="text-xs text-gray-500">
-                  {order.paymentMethod || "Card ending in 4242"}
+                  {order.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
                 </span>
               </div>
             </div>
@@ -406,7 +385,9 @@ const OrderCard = ({
                 Shipping Address
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                {order.shippingAddress || "123 Main Street, Apt 4B, New York, NY 10001"}
+                {order.address
+                  ? `${order.address.fullAddress}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}`
+                  : "Address not available"}
               </p>
             </div>
           </div>

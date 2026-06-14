@@ -15,6 +15,9 @@ interface DashboardStats {
     totalProducts: number
     totalOrders: number
     totalRevenue: number
+    weeklyLabels: string[]
+    weeklyOrders: number[]
+    weeklyRevenue: number[]
 }
 
 interface AreaIncomeData {
@@ -118,7 +121,7 @@ function SectionLabel({ label }: { label: string }) {
 
 function AdminDashboard() {
     const { data: session } = useSession()
-    const [stats, setStats] = useState<DashboardStats>({ totalProducts: 0, totalOrders: 0, totalRevenue: 0 })
+    const [stats, setStats] = useState<DashboardStats>({ totalProducts: 0, totalOrders: 0, totalRevenue: 0, weeklyLabels: [], weeklyOrders: [], weeklyRevenue: [] })
     const [areaIncomeData, setAreaIncomeData] = useState<AreaIncomeData[]>([])
     const [userRevenueData, setUserRevenueData] = useState<UserRevenueData[]>([])
     const [loading, setLoading] = useState(true)
@@ -192,10 +195,10 @@ function AdminDashboard() {
     })
 
     const ordersData = {
-        labels: DAYS,
+        labels: stats.weeklyLabels.length ? stats.weeklyLabels : DAYS,
         datasets: [{
             label: "Orders",
-            data: [82, 110, 97, 143, 161, 198, 132],
+            data: stats.weeklyOrders.length ? stats.weeklyOrders : Array(7).fill(0),
             backgroundColor: "rgba(249,115,22,0.75)",
             borderRadius: 6,
             borderSkipped: false as const,
@@ -203,10 +206,10 @@ function AdminDashboard() {
     }
 
     const revenueData = {
-        labels: DAYS,
+        labels: stats.weeklyLabels.length ? stats.weeklyLabels : DAYS,
         datasets: [{
             label: "Revenue",
-            data: [12400, 18200, 15800, 22600, 26300, 31400, 20800],
+            data: stats.weeklyRevenue.length ? stats.weeklyRevenue : Array(7).fill(0),
             backgroundColor: "rgba(139,92,246,0.75)",
             borderRadius: 6,
             borderSkipped: false as const,
@@ -303,7 +306,9 @@ function AdminDashboard() {
                         <div className="bg-white rounded-2xl border border-orange-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-1">
                                 <p className="text-sm font-semibold text-slate-700">Orders this week</p>
-                                <span className="text-xs font-semibold bg-orange-50 text-orange-500 px-2.5 py-1 rounded-full">+12.4%</span>
+                                <span className="text-xs font-semibold bg-orange-50 text-orange-500 px-2.5 py-1 rounded-full">
+                                    {stats.weeklyOrders.reduce((a, b) => a + b, 0)} total
+                                </span>
                             </div>
                             <p className="text-xs text-slate-400 mb-4">Daily order volume</p>
                             <div className="h-40">
@@ -327,7 +332,9 @@ function AdminDashboard() {
                         <div className="bg-white rounded-2xl border border-violet-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-1">
                                 <p className="text-sm font-semibold text-slate-700">Revenue this week</p>
-                                <span className="text-xs font-semibold bg-violet-50 text-violet-600 px-2.5 py-1 rounded-full">+18.7%</span>
+                                <span className="text-xs font-semibold bg-violet-50 text-violet-600 px-2.5 py-1 rounded-full">
+                                    ₹{stats.weeklyRevenue.reduce((a, b) => a + b, 0).toLocaleString("en-IN")}
+                                </span>
                             </div>
                             <p className="text-xs text-slate-400 mb-4">Daily revenue in ₹</p>
                             <div className="h-40">

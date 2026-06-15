@@ -26,6 +26,8 @@ export interface IOrder{
         latitude : number,
         longitude : number
     }
+    isPickedUp?:boolean,
+    pickedUpAt?:Date,
     assignment?:mongoose.Types.ObjectId,
     assignedDeliveryBoy?: mongoose.Types.ObjectId,
     orderStatus:"pending" | "Out of Delivery" | "delivered",
@@ -72,6 +74,13 @@ const orderSchema = new mongoose.Schema<IOrder>({
         fullAddress : String,
         latitude : Number,
         longitude : Number
+    },
+    isPickedUp:{
+        type:Boolean,
+        default:false
+    },
+    pickedUpAt:{
+        type:Date
     },
     assignment:{
         type:mongoose.Schema.Types.ObjectId,

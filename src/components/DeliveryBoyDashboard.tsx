@@ -1,26 +1,30 @@
-'use client'
+"use client";
 
-import axios from 'axios'
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
-import { useSession } from "next-auth/react"
-import "leaflet/dist/leaflet.css"
-import { MapContainer, Marker, TileLayer } from 'react-leaflet'
-import L from 'leaflet'
-import { getSocket } from '@/lib/socket'
-import { 
-  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, User, Clock, 
-  Truck, IndianRupee, Mail, Phone, Calendar, Edit3, Home, Briefcase, Plus, 
-  Trash2, X, Crown, Sparkles, Check, Building, Camera, Loader2, AlertCircle, 
+export const dynamic = 'force-dynamic';
+
+import axios from 'axios';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useSession } from "next-auth/react";
+import "leaflet/dist/leaflet.css";
+import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import L from 'leaflet';
+import { getSocket } from '@/lib/socket';
+import {
+  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, User, Clock,
+  Truck, IndianRupee, Mail, Phone, Calendar, Edit3, Home, Briefcase, Plus,
+  Trash2, X, Crown, Sparkles, Check, Building, Camera, Loader2, AlertCircle,
   Shield, Save, MapPinned, Pin, TrendingUp, Wallet, Zap, Award, ChevronRight,
-  Star, ArrowUpRight, ArrowDownRight, Activity, Layers, Target, Route
-} from 'lucide-react'
-import Chatbot from './Chatbot'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState, AppDispatch } from '@/redux/store'
-import { setUserData } from '@/redux/userSlice'
-import toast from 'react-hot-toast'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'motion/react'
-import NewSection from './DeliveryStatistics'
+  Star, ArrowUpRight, ArrowDownRight, Activity, Layers, Target, Route,
+  ChevronDown, Expand, Minimize2, LocateFixed, Timer, DollarSign, Hash,
+  GripVertical, MoreHorizontal, Eye, Ban, PhoneCall
+} from 'lucide-react';
+import Chatbot from './Chatbot';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '@/redux/store';
+import { setUserData } from '@/redux/userSlice';
+import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'motion/react';
+import NewSection from './DeliveryStatistics';
 
 const defaultIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -28,9 +32,9 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
-})
+});
 
-L.Marker.prototype.options.icon = defaultIcon
+L.Marker.prototype.options.icon = defaultIcon;
 
 type AssignmentItem = {
   _id: string;
@@ -38,6 +42,7 @@ type AssignmentItem = {
   order: {
     _id: string;
     orderStatus: 'pending' | 'Out of Delivery' | 'delivered';
+    isPickedUp?: boolean;
     address: {
       fullAddress: string;
       latitude: number;
@@ -59,36 +64,39 @@ interface AxiosError {
 
 const statusConfig = {
   broadcasted: {
-    border: 'border-l-amber-400',
-    headerBg: 'bg-gradient-to-r from-amber-50/80 to-orange-50/80',
+    border: 'border-l-4 border-l-amber-500',
+    headerBg: 'bg-amber-50/50',
     iconBg: 'bg-amber-100',
     iconColor: 'text-amber-600',
-    badge: 'bg-amber-100 text-amber-700 border border-amber-200',
+    badge: 'bg-amber-100 text-amber-700 border-amber-200',
     label: 'New Request',
     gradient: 'from-amber-500 to-orange-500',
     glow: 'shadow-amber-500/20',
+    pulse: true,
   },
   assigned: {
-    border: 'border-l-blue-500',
-    headerBg: 'bg-gradient-to-r from-blue-50/80 to-indigo-50/80',
+    border: 'border-l-4 border-l-blue-500',
+    headerBg: 'bg-blue-50/50',
     iconBg: 'bg-blue-100',
     iconColor: 'text-blue-600',
-    badge: 'bg-blue-100 text-blue-700 border border-blue-200',
+    badge: 'bg-blue-100 text-blue-700 border-blue-200',
     label: 'In Progress',
     gradient: 'from-blue-500 to-indigo-500',
     glow: 'shadow-blue-500/20',
+    pulse: false,
   },
   completed: {
-    border: 'border-l-emerald-500',
-    headerBg: 'bg-gradient-to-r from-emerald-50/80 to-teal-50/80',
+    border: 'border-l-4 border-l-emerald-500',
+    headerBg: 'bg-emerald-50/50',
     iconBg: 'bg-emerald-100',
     iconColor: 'text-emerald-600',
-    badge: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+    badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     label: 'Completed',
     gradient: 'from-emerald-500 to-teal-500',
     glow: 'shadow-emerald-500/20',
+    pulse: false,
   },
-}
+};
 
 interface IAddress {
   _id?: string;
@@ -113,7 +121,7 @@ interface UserData {
   addresses?: IAddress[];
 }
 
-/* ─── Premium Glass Input ─── */
+/* ─── Premium Input ─── */
 function PremiumInput({ id, label, icon: Icon, value, onChange, onBlur, error, touched, placeholder, type = 'text', required = false }: any) {
   const hasError = touched && error;
   return (
@@ -125,21 +133,21 @@ function PremiumInput({ id, label, icon: Icon, value, onChange, onBlur, error, t
         <span className={`absolute inset-y-0 left-0 flex items-center pl-4 transition-all duration-300 ${hasError ? 'text-rose-400' : 'text-slate-400 group-focus-within:text-indigo-500'}`}>
           <Icon className='h-[18px] w-[18px]' />
         </span>
-        <input 
-          type={type} 
-          id={id} 
-          value={value} 
-          onChange={onChange} 
-          onBlur={onBlur} 
+        <input
+          type={type}
+          id={id}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
           placeholder={placeholder}
           className={`w-full rounded-2xl border bg-white/80 backdrop-blur-sm py-3 pl-12 pr-4 text-sm font-semibold text-slate-800 outline-none transition-all duration-300 placeholder:font-normal placeholder:text-slate-400 ${hasError ? 'border-rose-300 bg-rose-50/50 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' : 'border-slate-200/80 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'}`}
         />
       </div>
       <AnimatePresence>
         {hasError && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10, height: 0 }} 
-            animate={{ opacity: 1, y: 0, height: 'auto' }} 
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -10, height: 0 }}
             className='flex items-center gap-1.5 overflow-hidden text-xs font-bold text-rose-500 mt-2'
           >
@@ -158,23 +166,23 @@ function PremiumModal({ isOpen, onClose, title, icon: Icon, children, maxWidth =
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          exit={{ opacity: 0 }} 
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           className='fixed inset-0 z-[9999] flex items-center justify-center px-4 py-6'
         >
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            className='absolute inset-0 bg-slate-950/60 backdrop-blur-md' 
-            onClick={onClose} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='absolute inset-0 bg-slate-950/60 backdrop-blur-md'
+            onClick={onClose}
           />
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 30, rotateX: 10 }} 
-            animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} 
-            exit={{ opacity: 0, scale: 0.9, y: 30, rotateX: 10 }} 
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 30, rotateX: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 30, rotateX: 10 }}
             transition={{ type: 'spring', damping: 25, stiffness: 400 }}
             className={`relative w-full ${maxWidths[maxWidth]} overflow-hidden rounded-3xl border border-white/30 bg-white/95 backdrop-blur-xl shadow-2xl`}
           >
@@ -187,8 +195,8 @@ function PremiumModal({ isOpen, onClose, title, icon: Icon, children, maxWidth =
                 )}
                 {title}
               </h3>
-              <button 
-                onClick={onClose} 
+              <button
+                onClick={onClose}
                 className='flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700 hover:rotate-90'
               >
                 <X className='h-4 w-4' />
@@ -205,53 +213,373 @@ function PremiumModal({ isOpen, onClose, title, icon: Icon, children, maxWidth =
 /* ─── Animated Counter ─── */
 function AnimatedCounter({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
   const [displayValue, setDisplayValue] = useState(0);
-  
+
   useEffect(() => {
     const duration = 1000;
     const start = displayValue;
     const end = value;
     const startTime = performance.now();
-    
+
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const easeOut = 1 - Math.pow(1 - progress, 3);
       setDisplayValue(Math.floor(start + (end - start) * easeOut));
-      
+
       if (progress < 1) requestAnimationFrame(animate);
     };
-    
+
     requestAnimationFrame(animate);
   }, [value]);
-  
+
   return <span>{prefix}{displayValue}{suffix}</span>;
+}
+
+/* ─── Horizontal Delivery Card ─── */
+function HorizontalDeliveryCard({
+  assignment,
+  index,
+  currentPosition,
+  selectedAssignment,
+  setSelectedAssignment,
+  respondToAssignment,
+  completeDelivery,
+  pickupOrder,
+  PER_DELIVERY_AMOUNT,
+}: {
+  assignment: AssignmentItem;
+  index: number;
+  currentPosition: LatLng | null;
+  selectedAssignment: string | null;
+  setSelectedAssignment: (id: string | null) => void;
+  respondToAssignment: (id: string, action: 'accept' | 'reject') => void;
+  completeDelivery: (id: string) => void;
+  pickupOrder: (id: string) => void;
+  PER_DELIVERY_AMOUNT: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const cfg = statusConfig[assignment.status];
+  const orderId = assignment?.order?._id?.toString() || '';
+  const shortId = orderId.slice(-6).toUpperCase();
+
+  const getStatusIcon = () => {
+    switch (assignment.status) {
+      case 'broadcasted': return <Bell className="w-5 h-5" />;
+      case 'assigned': return <Truck className="w-5 h-5" />;
+      case 'completed': return <CheckCircle className="w-5 h-5" />;
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08, duration: 0.4 }}
+      className={`group relative bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden ${cfg.border}`}
+    >
+      {/* Main Horizontal Layout */}
+      <div className="flex flex-col lg:flex-row">
+        
+        {/* Left Section: Status & Order Info */}
+        <div className={`flex-1 p-5 ${cfg.headerBg}`}>
+          <div className="flex items-start gap-4">
+            {/* Status Icon */}
+            <div className={`relative flex-shrink-0 w-14 h-14 ${cfg.iconBg} rounded-2xl flex items-center justify-center shadow-sm`}>
+              {getStatusIcon()}
+              {cfg.pulse && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md animate-pulse" />
+              )}
+            </div>
+
+            {/* Order Details */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="font-mono text-sm font-bold text-slate-700 bg-white/80 border border-slate-200/60 px-3 py-1 rounded-lg tracking-wider">
+                  #{shortId}
+                </span>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${cfg.badge}`}>
+                  {cfg.label}
+                </span>
+                {assignment.status === 'assigned' && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200">
+                    <Timer className="w-3 h-3" />
+                    Active
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-3 flex items-center gap-4 text-sm text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-slate-400" />
+                  <span className="line-clamp-1 max-w-[300px]">{assignment?.order?.address?.fullAddress}</span>
+                </div>
+              </div>
+
+              <div className="mt-2 flex items-center gap-4 text-xs text-slate-500">
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  Just now
+                </span>
+                <span className="flex items-center gap-1">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  ₹{PER_DELIVERY_AMOUNT}
+                </span>
+                <span className="flex items-center gap-1 capitalize">
+                  <Package className="w-3.5 h-3.5" />
+                  {assignment?.order?.orderStatus}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Section: Quick Actions */}
+        <div className="flex items-center gap-3 px-5 py-4 lg:py-0 lg:border-l border-slate-100 bg-white">
+          {assignment.status === 'broadcasted' && (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => respondToAssignment(assignment._id, 'accept')}
+                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Accept
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => respondToAssignment(assignment._id, 'reject')}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 hover:border-rose-300 rounded-xl text-sm font-bold transition-all"
+              >
+                <Ban className="w-4 h-4" />
+                Decline
+              </motion.button>
+            </>
+          )}
+
+          {assignment.status === 'assigned' && (
+            <div className="flex items-center gap-3 flex-wrap">
+              {!assignment.order.isPickedUp && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => pickupOrder(assignment._id)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20 transition-all"
+                >
+                  <Package className="w-4 h-4" />
+                  Pick Up Order
+                </motion.button>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => completeDelivery(assignment._id)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Mark as Delivered
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setExpanded(!expanded)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold transition-all"
+              >
+                <Navigation className="w-4 h-4" />
+                {expanded ? 'Hide Map' : 'Navigate'}
+              </motion.button>
+            </div>
+          )}
+
+          {assignment.status === 'completed' && (
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
+              <div>
+                <p className="text-sm font-bold text-emerald-700">Delivered</p>
+                <p className="text-xs text-emerald-600">+₹{PER_DELIVERY_AMOUNT} earned</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Section: Expand & More */}
+        <div className="flex items-center gap-2 px-5 py-4 lg:py-0 lg:border-l border-slate-100 bg-white">
+          {assignment.status === 'assigned' && (
+            <div className="hidden lg:flex flex-col items-end mr-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                <LocateFixed className="w-3.5 h-3.5 text-green-500" />
+                <span>Live</span>
+              </div>
+              {currentPosition && (
+                <p className="text-[10px] text-slate-400 mt-0.5 font-mono">
+                  {currentPosition[0].toFixed(4)}, {currentPosition[1].toFixed(4)}
+                </p>
+              )}
+            </div>
+          )}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="p-2.5 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-slate-600"
+          >
+            {expanded ? <Minimize2 className="w-5 h-5" /> : <Expand className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Expanded Map Section */}
+      <AnimatePresence>
+        {expanded && assignment.status === 'assigned' && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 320, opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="overflow-hidden border-t border-slate-100"
+          >
+            <div className="p-4 h-full">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-indigo-100 rounded-lg">
+                    <Route className="w-4 h-4 text-indigo-600" />
+                  </div>
+                  <span className="text-sm font-bold text-slate-700">Live Navigation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 rounded-lg border border-green-200">
+                    <div className="relative">
+                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                      <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                    </div>
+                    <span className="text-xs font-bold text-green-700">Tracking Active</span>
+                  </div>
+                </div>
+              </div>
+              <div className="h-[240px] rounded-xl border border-slate-200 overflow-hidden shadow-inner">
+                <MapContainer
+                  center={currentPosition ?? [assignment.order.address.latitude, assignment.order.address.longitude]}
+                  zoom={14}
+                  scrollWheelZoom={true}
+                  className="h-full w-full"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                  />
+                  <Marker
+                    position={[assignment.order.address.latitude, assignment.order.address.longitude]}
+                    title="Delivery Location"
+                  />
+                  {currentPosition && (
+                    <Marker position={currentPosition} title="Your Location" />
+                  )}
+                </MapContainer>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Expanded Details for Completed/Broadcasted */}
+      <AnimatePresence>
+        {expanded && assignment.status !== 'assigned' && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden border-t border-slate-100"
+          >
+            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-slate-50 rounded-xl p-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Delivery Address</p>
+                <p className="text-sm font-semibold text-slate-700 leading-relaxed">{assignment?.order?.address?.fullAddress}</p>
+                <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {assignment?.order?.address?.latitude.toFixed(4)}, {assignment?.order?.address?.longitude.toFixed(4)}
+                </div>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Order Details</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Order ID</span>
+                    <span className="font-mono font-semibold text-slate-700">#{shortId}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Status</span>
+                    <span className="font-semibold text-slate-700 capitalize">{assignment?.order?.orderStatus}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Earnings</span>
+                    <span className="font-bold text-emerald-600">₹{PER_DELIVERY_AMOUNT}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Actions</p>
+                <div className="space-y-2">
+                  {assignment.status === 'broadcasted' && (
+                    <>
+                      <button
+                        onClick={() => respondToAssignment(assignment._id, 'accept')}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-all"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Accept Delivery
+                      </button>
+                      <button
+                        onClick={() => respondToAssignment(assignment._id, 'reject')}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-bold transition-all"
+                      >
+                        <Ban className="w-4 h-4" />
+                        Decline
+                      </button>
+                    </>
+                  )}
+                  {assignment.status === 'completed' && (
+                    <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 rounded-xl p-3 border border-emerald-200">
+                      <Award className="w-5 h-5" />
+                      <div>
+                        <p className="text-sm font-bold">Completed Successfully</p>
+                        <p className="text-xs text-emerald-600">Payment: ₹{PER_DELIVERY_AMOUNT}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
 }
 
 /* ─── Main Dashboard ─── */
 function DeliveryBoyDashboard() {
-  const { data: session } = useSession()
-  const dispatch = useDispatch<AppDispatch>()
-  const userData = useSelector((state: RootState) => state.user.userData) as UserData | null
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'profile'>('dashboard')
-  const [assignment, setAssignment] = useState<AssignmentItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [currentPosition, setCurrentPosition] = useState<LatLng | null>(null)
-  const [notification, setNotification] = useState<{ show: boolean; message: string; type: string }>({ show: false, message: '', type: '' })
-  const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null)
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+  const { data: session } = useSession();
+  const dispatch = useDispatch<AppDispatch>();
+  const userData = useSelector((state: RootState) => state.user.userData) as UserData | null;
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'profile'>('dashboard');
+  const [assignment, setAssignment] = useState<AssignmentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPosition, setCurrentPosition] = useState<LatLng | null>(null);
+  const [notification, setNotification] = useState<{ show: boolean; message: string; type: string }>({ show: false, message: '', type: '' });
+  const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
 
   // Profile state
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
-  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
-  const [editingAddress, setEditingAddress] = useState<IAddress | null>(null)
-  const [profileForm, setProfileForm] = useState({ name: '', mobile: '', membershipStatus: 'Regular' as 'Regular' | 'Premium' | 'Gold', image: '' })
-  const [addressForm, setAddressForm] = useState({ homeAddress: '', workAddress: '', otherAddress: '', city: '', state: '', pincode: '', landmark: '', isDefault: false })
-  const [profileErrors, setProfileErrors] = useState({ name: '', mobile: '' })
-  const [addressErrors, setAddressErrors] = useState({ city: '', state: '', pincode: '', addressLines: '' })
-  const [profileTouched, setProfileTouched] = useState({ name: false, mobile: false })
-  const [addressTouched, setAddressTouched] = useState({ city: false, state: false, pincode: false, addressLines: false })
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<IAddress | null>(null);
+  const [profileForm, setProfileForm] = useState({ name: '', mobile: '', membershipStatus: 'Regular' as 'Regular' | 'Premium' | 'Gold', image: '' });
+  const [addressForm, setAddressForm] = useState({ homeAddress: '', workAddress: '', otherAddress: '', city: '', state: '', pincode: '', landmark: '', isDefault: false });
+  const [profileErrors, setProfileErrors] = useState({ name: '', mobile: '' });
+  const [addressErrors, setAddressErrors] = useState({ city: '', state: '', pincode: '', addressLines: '' });
+  const [profileTouched, setProfileTouched] = useState({ name: false, mobile: false });
+  const [addressTouched, setAddressTouched] = useState({ city: false, state: false, pincode: false, addressLines: false });
 
   const validateProfile = useCallback((form: typeof profileForm) => {
     const errors = { name: '', mobile: '' };
@@ -372,23 +700,23 @@ function DeliveryBoyDashboard() {
 
   const getMembershipConfig = (status?: string) => {
     switch (status) {
-      case 'Gold': return { 
-        badge: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-200', 
-        icon: <Crown className='h-3.5 w-3.5 text-amber-600' />, 
+      case 'Gold': return {
+        badge: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-200',
+        icon: <Crown className='h-3.5 w-3.5 text-amber-600' />,
         ring: 'ring-amber-400/40',
         gradient: 'from-amber-500 to-yellow-500',
         shadow: 'shadow-amber-500/30'
       };
-      case 'Premium': return { 
-        badge: 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border-purple-200', 
-        icon: <Sparkles className='h-3.5 w-3.5 text-purple-600' />, 
+      case 'Premium': return {
+        badge: 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border-purple-200',
+        icon: <Sparkles className='h-3.5 w-3.5 text-purple-600' />,
         ring: 'ring-purple-400/40',
         gradient: 'from-purple-500 to-indigo-500',
         shadow: 'shadow-purple-500/30'
       };
-      default: return { 
-        badge: 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-200', 
-        icon: <Check className='h-3.5 w-3.5 text-emerald-600' />, 
+      default: return {
+        badge: 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-200',
+        icon: <Check className='h-3.5 w-3.5 text-emerald-600' />,
         ring: 'ring-emerald-400/40',
         gradient: 'from-emerald-500 to-teal-500',
         shadow: 'shadow-emerald-500/30'
@@ -398,38 +726,38 @@ function DeliveryBoyDashboard() {
 
   const formatDate = (dateStr?: string) => dateStr ? new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
 
-  const PER_DELIVERY_AMOUNT = 120
+  const PER_DELIVERY_AMOUNT = 120;
 
   const { completedDeliveries, totalEarnings, completionRate, inProgressCount, pendingCount } = useMemo(() => {
-    const completed = assignment.filter(a => a.status === 'completed').length
-    const inProgress = assignment.filter(a => a.status === 'assigned').length
-    const pending = assignment.filter(a => a.status === 'broadcasted').length
-    const total = assignment.length
-    const rate = total > 0 ? (completed / total) * 100 : 0
+    const completed = assignment.filter(a => a.status === 'completed').length;
+    const inProgress = assignment.filter(a => a.status === 'assigned').length;
+    const pending = assignment.filter(a => a.status === 'broadcasted').length;
+    const total = assignment.length;
+    const rate = total > 0 ? (completed / total) * 100 : 0;
     return {
       completedDeliveries: completed,
       totalEarnings: completed * PER_DELIVERY_AMOUNT,
       completionRate: rate,
       inProgressCount: inProgress,
       pendingCount: pending
-    }
-  }, [assignment])
+    };
+  }, [assignment]);
 
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
-    setNotification({ show: true, message, type })
-    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 4000)
-  }
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 4000);
+  };
 
   const fetchAssignment = async () => {
     try {
-      const result = await axios.get("/api/delivery/getAssignments")
-      setAssignment(result.data)
+      const result = await axios.get("/api/delivery/getAssignments");
+      setAssignment(result.data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -455,33 +783,46 @@ function DeliveryBoyDashboard() {
     );
 
     return () => navigator.geolocation.clearWatch(watcher);
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   const respondToAssignment = async (assignmentId: string, action: 'accept' | 'reject') => {
     try {
-      await axios.post('/api/delivery/respond-assignment', { assignmentId, action })
-      await fetchAssignment()
-      showNotification(`Successfully ${action}ed the delivery!`, 'success')
+      await axios.post('/api/delivery/respond-assignment', { assignmentId, action });
+      await fetchAssignment();
+      showNotification(`Successfully ${action}ed the delivery!`, 'success');
     } catch (error: unknown) {
-      const err = error as AxiosError
+      const err = error as AxiosError;
       const msg = err?.response?.data?.message || err?.message;
-      showNotification(`Failed to ${action} assignment: ${msg}`, 'error')
-      console.error(`Failed to ${action} assignment`, error)
+      showNotification(`Failed to ${action} assignment: ${msg}`, 'error');
+      console.error(`Failed to ${action} assignment`, error);
     }
-  }
+  };
 
   const completeDelivery = async (assignmentId: string) => {
     try {
-      await axios.post('/api/delivery/deliver-order', { assignmentId })
-      await fetchAssignment()
-      showNotification('Delivery completed successfully! 🎉', 'success')
+      await axios.post('/api/delivery/deliver-order', { assignmentId });
+      await fetchAssignment();
+      showNotification('Delivery completed successfully! 🎉', 'success');
     } catch (error: unknown) {
-      const err = error as AxiosError
+      const err = error as AxiosError;
       const msg = err?.response?.data?.message || err?.message;
-      showNotification(`Failed to complete delivery: ${msg}`, 'error')
-      console.error('Failed to complete delivery', error)
+      showNotification(`Failed to complete delivery: ${msg}`, 'error');
+      console.error('Failed to complete delivery', error);
     }
-  }
+  };
+
+  const pickupOrder = async (assignmentId: string) => {
+    try {
+      await axios.post('/api/delivery/pickup-order', { assignmentId });
+      await fetchAssignment();
+      showNotification('Order picked up successfully! 📦', 'success');
+    } catch (error: unknown) {
+      const err = error as AxiosError;
+      const msg = err?.response?.data?.message || err?.message;
+      showNotification(`Failed to pick up order: ${msg}`, 'error');
+      console.error('Failed to pick up order', error);
+    }
+  };
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -491,7 +832,7 @@ function DeliveryBoyDashboard() {
 
     const handleAssignmentUpdate = async () => {
       await fetchAssignment();
-      showNotification('New assignment available!', 'info')
+      showNotification('New assignment available!', 'info');
     };
 
     socket.on('order-status-update', handleAssignmentUpdate);
@@ -513,7 +854,7 @@ function DeliveryBoyDashboard() {
     if (session?.user?.id) {
       fetchAssignment();
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 relative overflow-hidden'>
@@ -527,7 +868,7 @@ function DeliveryBoyDashboard() {
       {/* Notification Toast */}
       <AnimatePresence>
         {notification.show && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 0.9 }}
@@ -555,7 +896,7 @@ function DeliveryBoyDashboard() {
           {/* Stats Grid */}
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
             {/* Earnings Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ y: -8, scale: 1.02 }}
@@ -576,7 +917,7 @@ function DeliveryBoyDashboard() {
             </motion.div>
 
             {/* Completed Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -591,7 +932,7 @@ function DeliveryBoyDashboard() {
                 </p>
                 <div className='mt-4 flex items-center gap-2'>
                   <div className='flex-1 h-2 bg-slate-100 rounded-full overflow-hidden'>
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${completionRate}%` }}
                       transition={{ duration: 1, delay: 0.5 }}
@@ -604,7 +945,7 @@ function DeliveryBoyDashboard() {
             </motion.div>
 
             {/* In Progress Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -625,7 +966,7 @@ function DeliveryBoyDashboard() {
             </motion.div>
 
             {/* Pending Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -646,7 +987,7 @@ function DeliveryBoyDashboard() {
             </motion.div>
           </div>
 
-          <NewSection/>
+          <NewSection />
 
           {/* Section Header */}
           <div className='flex items-center justify-between mb-6'>
@@ -665,11 +1006,10 @@ function DeliveryBoyDashboard() {
             </div>
           </div>
 
-
-          {/* Assignments Section */}
+          {/* Horizontal Assignment Cards */}
           {loading ? (
             <div className='flex flex-col items-center justify-center py-32'>
-              <motion.div 
+              <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 className='relative'
@@ -681,7 +1021,7 @@ function DeliveryBoyDashboard() {
               <p className="text-sm text-slate-400 mt-1">Fetching real-time data</p>
             </div>
           ) : assignment.length === 0 ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className='bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg shadow-slate-200/30 border border-slate-100 py-24 text-center'
@@ -692,7 +1032,7 @@ function DeliveryBoyDashboard() {
               </div>
               <h3 className='text-2xl font-black text-slate-700 mt-8'>No Active Deliveries</h3>
               <p className='text-slate-500 mt-2 max-w-sm mx-auto font-semibold'>You're all caught up! New assignments will appear here automatically.</p>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -706,193 +1046,21 @@ function DeliveryBoyDashboard() {
               </motion.div>
             </motion.div>
           ) : (
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {assignment.map((a, index) => {
-                const cfg = statusConfig[a.status]
-                return (
-                  <motion.div
-                    key={a._id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.5 }}
-                    whileHover={{ y: -8, scale: 1.02 }}
-                    onHoverStart={() => setHoveredCard(a._id)}
-                    onHoverEnd={() => setHoveredCard(null)}
-                    className={`relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg shadow-slate-200/30 border border-white/60 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col ${hoveredCard === a._id ? 'ring-2 ring-indigo-500/20' : ''}`}
-                  >
-                    {/* Status Glow */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${cfg.gradient} opacity-0 transition-opacity duration-500 ${hoveredCard === a._id ? 'opacity-5' : ''}`} />
-
-                    {/* Card Header Band */}
-                    <div className={`relative ${cfg.headerBg} px-5 py-4 flex items-center justify-between gap-2 border-b border-slate-100/80`}>
-                      <div className='flex items-center gap-3'>
-                        <div className={`relative p-2.5 ${cfg.iconBg} rounded-xl shadow-sm`}>
-                          <Package className={`w-5 h-5 ${cfg.iconColor}`} />
-                          {a.status === 'broadcasted' && (
-                            <span className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white shadow-sm' />
-                          )}
-                        </div>
-                        <span className='text-xs font-mono bg-white/80 border border-slate-200/60 px-3 py-1 rounded-lg text-slate-600 tracking-wider font-bold shadow-sm'>
-                          #ORD-{a?.order?._id?.toString().slice(-6).toUpperCase()}
-                        </span>
-                      </div>
-                      <span className={`text-xs px-3 py-1.5 rounded-full font-bold shadow-sm ${cfg.badge}`}>
-                        {cfg.label}
-                      </span>
-                    </div>
-
-                    {/* Card Body */}
-                    <div className='relative p-5 flex flex-col flex-1 gap-4'>
-                      {/* Meta row */}
-                      <div className='flex items-center justify-between'>
-                        <div className='flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 rounded-xl px-3 py-1.5'>
-                          <Clock className='w-3.5 h-3.5' />
-                          <span className='capitalize'>{a?.order?.orderStatus}</span>
-                        </div>
-                        <div className='flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200/60 rounded-xl shadow-sm'>
-                          <IndianRupee className='w-3.5 h-3.5 text-emerald-600' />
-                          <span className='text-xs font-black text-emerald-700'>{PER_DELIVERY_AMOUNT}</span>
-                        </div>
-                      </div>
-
-                      {/* Address */}
-                      <div className='flex items-start gap-3 bg-slate-50/80 rounded-2xl p-4 border border-slate-100'>
-                        <div className='mt-0.5 p-2 bg-white rounded-xl shadow-sm shrink-0'>
-                          <MapPin className='w-4 h-4 text-indigo-500' />
-                        </div>
-                        <div>
-                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1'>Delivery Address</p>
-                          <p className='text-sm font-bold text-slate-800 leading-relaxed line-clamp-2'>{a?.order?.address?.fullAddress}</p>
-                        </div>
-                      </div>
-
-                      {/* Ready for pickup badge */}
-                      {a.status === 'assigned' && (
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className='flex items-center gap-2 px-4 py-2.5 bg-green-50 border border-green-200/60 rounded-xl w-fit shadow-sm'
-                        >
-                          <Truck className='w-4 h-4 text-green-600 animate-pulse' />
-                          <span className='text-xs font-black text-green-700'>Ready for Pickup</span>
-                        </motion.div>
-                      )}
-
-                      {/* Action Buttons */}
-                      <div className='flex flex-col gap-2.5 mt-auto pt-3 border-t border-slate-100/80'>
-                        {a.status === 'broadcasted' && (
-                          <>
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-3 rounded-2xl text-sm font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all duration-300'
-                              onClick={() => respondToAssignment(a._id, 'accept')}
-                            >
-                              <CheckCircle className='w-4 h-4' /> Accept Delivery
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className='w-full flex items-center justify-center gap-2 bg-white hover:bg-rose-50 text-rose-500 border border-rose-200 hover:border-rose-300 py-3 rounded-2xl text-sm font-bold transition-all duration-300 shadow-sm hover:shadow-md'
-                              onClick={() => respondToAssignment(a._id, 'reject')}
-                            >
-                              <XCircle className='w-4 h-4' /> Decline
-                            </motion.button>
-                          </>
-                        )}
-
-                        {a.status === 'assigned' && (
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white py-3 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl transition-all duration-300'
-                            onClick={() => completeDelivery(a._id)}
-                          >
-                            <CheckCircle className='w-4 h-4' /> Mark as Delivered
-                          </motion.button>
-                        )}
-
-                        {a.status === 'completed' && (
-                          <div className='w-full flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200/60 text-emerald-700 py-3 rounded-2xl text-sm font-bold shadow-sm'>
-                            <CheckCircle className='w-4 h-4 text-emerald-500' /> Delivered Successfully
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Map Section */}
-                    {a.status === 'assigned' && (
-                      <div className='border-t border-slate-100/80'>
-                        <div className='p-5'>
-                          <div className='flex items-center justify-between mb-3'>
-                            <div className='flex items-center gap-2'>
-                              <div className='p-1.5 bg-indigo-100 rounded-lg'>
-                                <Route className='w-4 h-4 text-indigo-600' />
-                              </div>
-                              <span className='text-xs font-black text-slate-700 uppercase tracking-wider'>Live Navigation</span>
-                            </div>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => setSelectedAssignment(selectedAssignment === a._id ? null : a._id)}
-                              className='text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition-all border border-indigo-100'
-                            >
-                              {selectedAssignment === a._id ? 'Minimize' : 'Expand'}
-                            </motion.button>
-                          </div>
-                          <motion.div 
-                            animate={{ height: selectedAssignment === a._id ? 280 : 160 }}
-                            className='overflow-hidden rounded-2xl border border-slate-200 shadow-inner'
-                          >
-                            <MapContainer
-                              center={currentPosition ?? [a.order.address.latitude, a.order.address.longitude]}
-                              zoom={14}
-                              scrollWheelZoom={true}
-                              className='h-full w-full'
-                            >
-                              <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                              />
-                              <Marker
-                                position={[a.order.address.latitude, a.order.address.longitude]}
-                                title="Delivery Location"
-                              />
-                              {currentPosition && (
-                                <Marker
-                                  position={currentPosition}
-                                  title="Your Location"
-                                />
-                              )}
-                            </MapContainer>
-                          </motion.div>
-                          {currentPosition && (
-                            <motion.div 
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className='mt-3 px-4 py-2.5 bg-indigo-50/80 rounded-xl border border-indigo-100/60 flex items-center justify-between backdrop-blur-sm'
-                            >
-                              <div className="flex items-center gap-2">
-                                <Navigation className="w-3.5 h-3.5 text-indigo-500" />
-                                <p className='text-xs font-bold text-slate-600'>
-                                  {currentPosition[0].toFixed(4)}, {currentPosition[1].toFixed(4)}
-                                </p>
-                              </div>
-                              <div className='flex items-center gap-1.5'>
-                                <div className='relative'>
-                                  <div className='w-2 h-2 bg-green-500 rounded-full' />
-                                  <div className='absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping' />
-                                </div>
-                                <span className='text-xs font-bold text-green-600'>Live Tracking</span>
-                              </div>
-                            </motion.div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                )
-              })}
+            <div className='space-y-4'>
+              {assignment.map((a, index) => (
+                <HorizontalDeliveryCard
+                  key={a._id}
+                  assignment={a}
+                  index={index}
+                  currentPosition={currentPosition}
+                  selectedAssignment={selectedAssignment}
+                  setSelectedAssignment={setSelectedAssignment}
+                  respondToAssignment={respondToAssignment}
+                  completeDelivery={completeDelivery}
+                  pickupOrder={pickupOrder}
+                  PER_DELIVERY_AMOUNT={PER_DELIVERY_AMOUNT}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -900,7 +1068,7 @@ function DeliveryBoyDashboard() {
 
       <Chatbot />
     </div>
-  )
+  );
 }
 
 export default DeliveryBoyDashboard;

@@ -49,6 +49,11 @@ export async function POST(req: NextRequest) {
     };
     if (order) {
       order.orderStatus = "delivered";
+      // Auto-mark as picked up if delivery boy skipped that step
+      if (!(order as any).isPickedUp) {
+        (order as any).isPickedUp = true;
+        (order as any).pickedUpAt = new Date();
+      }
       // Mark as paid for COD orders when delivered
       if (order.paymentMethod === "cod") {
         order.isPaid = true;

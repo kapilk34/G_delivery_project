@@ -30,6 +30,12 @@ import {
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useMemo } from "react";
 import { getSocket } from "@/lib/socket";
+import dynamicImport from "next/dynamic";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/redux/cartSlice";
+import { useSession } from "next-auth/react";
+
+const DeliveryMapComponent = dynamicImport(() => import("./DeliveryMapComponent"), { ssr: false });
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -94,61 +100,59 @@ const StatusBadge = ({ status }: { status: OrderStatus }) => {
   );
 };
 
-const ProgressBar = ({ status }: { status: OrderStatus }) => {
+const ProgressBar = ({ currentStep }: { currentStep: number }) => {
   const steps = [
-    { label: "Ordered", icon: Box, key: "ordered" },
-    { label: "Processing", icon: Clock, key: "processing" },
-    { label: "Shipped", icon: Package, key: "shipped" },
-    { label: "Delivered", icon: CheckCircle, key: "delivered" },
+    { label: "Confirmed", icon: CheckCircle },
+    { label: "Preparing", icon: Clock },
+    { label: "Picked Up", icon: Package },
+    { label: "Out for Delivery", icon: Truck },
+    { label: "Arriving Soon", icon: Navigation },
+    { label: "Delivered", icon: Box },
   ];
 
-  const getStepStatus = (stepKey: string) => {
-    if (status === "delivered") return "completed";
-    if (status === "Out of Delivery") {
-      return stepKey === "ordered" || stepKey === "processing" || stepKey === "shipped" ? "completed" : "pending";
-    }
-    if (status === "pending") {
-      return stepKey === "ordered" ? "completed" : "pending";
-    }
-    return "pending";
-  };
-
   return (
-    <div className="w-full">
+    <div className="w-full py-4">
       <div className="flex items-center justify-between relative">
         {/* Progress Line */}
         <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-100">
           <div 
             className="h-full bg-indigo-600 transition-all duration-500 rounded-full"
             style={{
-              width: status === "delivered" ? "100%" : status === "Out of Delivery" ? "66%" : "25%"
+              width: `${(currentStep / (steps.length - 1)) * 100}%`
             }}
           />
         </div>
         
         {steps.map((step, index) => {
-          const stepStatus = getStepStatus(step.key);
           const Icon = step.icon;
+          const isCompleted = index <= currentStep;
+          const isActive = index === currentStep;
           
           return (
-            <div key={step.key} className="flex flex-col items-center relative z-10">
+            <div key={index} className="flex flex-col items-center relative z-10 flex-1">
               <div 
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                  stepStatus === "completed"
+                  isCompleted
                     ? "bg-indigo-600 border-indigo-600 text-white"
                     : "bg-white border-gray-200 text-gray-400"
-                }`}
+                } ${isActive ? "ring-4 ring-indigo-100 animate-pulse" : ""}`}
               >
                 <Icon className="w-4 h-4" />
               </div>
-              <span className={`text-xs mt-2 font-medium ${
-                stepStatus === "completed" ? "text-gray-900" : "text-gray-400"
+              <span className={`text-[10px] mt-2 font-semibold text-center hidden sm:block ${
+                isCompleted ? "text-gray-900 font-bold" : "text-gray-400"
               }`}>
                 {step.label}
               </span>
             </div>
           );
         })}
+      </div>
+      {/* Mobile-only active step label */}
+      <div className="text-center sm:hidden mt-2">
+        <span className="text-xs font-bold text-indigo-600">
+          Status: {steps[currentStep]?.label}
+        </span>
       </div>
     </div>
   );
@@ -189,12 +193,18 @@ const OrderItemRow = ({
 
 const DeliveryTracker = ({ 
   location, 
-  status 
+  status,
+  destination,
+  isPickedUp,
+  onRouteUpdate
 }: { 
   location?: { latitude: number; longitude: number }; 
-  status: OrderStatus 
+  status: OrderStatus;
+  destination?: { latitude: number; longitude: number };
+  isPickedUp: boolean;
+  onRouteUpdate: (distanceKm: number, durationMin: number) => void;
 }) => {
-  if (status !== "Out of Delivery" || !location) return null;
+  if (status === "delivered") return null;
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-4">
@@ -204,23 +214,32 @@ const DeliveryTracker = ({
         </div>
         <div>
           <p className="font-semibold text-blue-900 text-sm">Live Tracking</p>
-          <p className="text-xs text-blue-600">Your delivery is on the way</p>
+          <p className="text-xs text-blue-600">
+            {status === "pending" 
+              ? "Preparing your order..." 
+              : isPickedUp 
+                ? "Your order is out for delivery!" 
+                : "Delivery partner heading to the store"}
+          </p>
         </div>
       </div>
       
       <div className="bg-white/60 rounded-lg p-3 space-y-2">
-        <div className="flex items-center gap-2 text-xs text-blue-700">
-          <MapPin className="w-3.5 h-3.5" />
-          <span>Lat: {location.latitude.toFixed(4)}, Lng: {location.longitude.toFixed(4)}</span>
-        </div>
-        <div className="h-24 bg-blue-100 rounded-lg flex items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 opacity-20">
-            <div className="w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.3),transparent_70%)]" />
+        {location && (
+          <div className="flex items-center gap-2 text-xs text-blue-700">
+            <MapPin className="w-3.5 h-3.5" />
+            <span>Lat: {location.latitude.toFixed(4)}, Lng: {location.longitude.toFixed(4)}</span>
           </div>
-          <div className="relative z-10 flex flex-col items-center gap-1">
-            <Truck className="w-8 h-8 text-blue-600" />
-            <span className="text-xs font-medium text-blue-700">Map View</span>
-          </div>
+        )}
+        <div className="h-[250px] bg-blue-100 rounded-lg relative overflow-hidden z-0">
+          <DeliveryMapComponent 
+            deliveryLocation={location ? [location.latitude, location.longitude] : null} 
+            destinationLocation={destination ? [destination.latitude, destination.longitude] : null}
+            isPickedUp={isPickedUp}
+            onRouteCalculated={(data: { distanceKm: number; durationMin: number }) => {
+              onRouteUpdate(data.distanceKm, data.durationMin);
+            }}
+          />
         </div>
       </div>
     </div>
@@ -231,11 +250,17 @@ const DeliveryTracker = ({
 
 const OrderCard = ({ 
   order, 
-  deliveryLocation 
+  deliveryLocation,
+  routeDetails,
+  onRouteUpdate
 }: { 
   order: IOrder; 
   deliveryLocation?: { latitude: number; longitude: number };
+  routeDetails?: { distanceKm: number; durationMin: number };
+  onRouteUpdate: (distanceKm: number, durationMin: number) => void;
 }) => {
+  const router = useRouter();
+  const dispatch = useDispatch();
   const [expanded, setExpanded] = useState(false);
   const status = (order.orderStatus as OrderStatus) || "pending";
   const config = STATUS_CONFIG[status];
@@ -264,6 +289,37 @@ const OrderCard = ({
   const deliveryBoy = order.assignedDeliveryBoy as any;
   const deliveryBoyName = typeof deliveryBoy === "object" ? deliveryBoy?.name || "Delivery Partner" : "Delivery Partner";
   const deliveryBoyPhone = typeof deliveryBoy === "object" ? deliveryBoy?.phone : undefined;
+
+  const handleReorder = () => {
+    items.forEach((item: any) => {
+      dispatch(
+        addToCart({
+          _id: item.grocery?._id || item.grocery || Math.random().toString(),
+          name: item.name,
+          category: "Reordered",
+          price: item.price,
+          unit: item.unit,
+          quantity: item.quantity,
+          image: item.image,
+        })
+      );
+    });
+    router.push("/user/cart");
+  };
+
+  const currentStep = useMemo(() => {
+    if (order.orderStatus === "delivered") return 5;
+    if (order.isPickedUp) {
+      if (routeDetails && routeDetails.distanceKm < 0.5) {
+        return 4; // Arriving Soon
+      }
+      return 3; // Out for Delivery
+    }
+    if (order.assignedDeliveryBoy) {
+      return 1; // Preparing (assigned & heading to store)
+    }
+    return 0; // Order Confirmed
+  }, [order.orderStatus, order.isPickedUp, order.assignedDeliveryBoy, routeDetails]);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -298,9 +354,8 @@ const OrderCard = ({
 
       {/* Card Body */}
       <div className="p-6">
-        {/* Progress Bar */}
         <div className="mb-6">
-          <ProgressBar status={status} />
+          <ProgressBar currentStep={currentStep} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -314,7 +369,7 @@ const OrderCard = ({
               {!expanded && items.length > 2 && (
                 <button 
                   onClick={() => setExpanded(true)}
-                  className="text-xs text-indigo-600 font-medium hover:text-indigo-700"
+                  className="text-xs font-medium hover:text-green-700"
                 >
                   +{items.length - 2} more
                 </button>
@@ -326,6 +381,16 @@ const OrderCard = ({
                 <OrderItemRow key={idx} {...item} />
               ))}
             </div>
+
+            {/* Live Tracking */}
+            <DeliveryTracker 
+              location={deliveryLocation} 
+              status={status} 
+              destination={order.address ? { latitude: order.address.latitude, longitude: order.address.longitude } : undefined} 
+              isPickedUp={!!order.isPickedUp}
+              onRouteUpdate={onRouteUpdate}
+            />
+
           </div>
 
           {/* Right Column: Price & Delivery */}
@@ -375,8 +440,19 @@ const OrderCard = ({
               </div>
             )}
 
-            {/* Live Tracking */}
-            <DeliveryTracker location={deliveryLocation} status={status} />
+            {/* ETA and Distance Summary */}
+            {status !== "delivered" && routeDetails && (
+              <div className="bg-indigo-50 text-indigo-950 p-4 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-gray-900 font-semi-bold">Estimated Arrival</p>
+                  <p className="text-lg font-bold">{routeDetails.durationMin} mins</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-900 font-semi-bold">Distance Remaining</p>
+                  <p className="text-lg font-bold">{routeDetails.distanceKm.toFixed(1)} km</p>
+                </div>
+              </div>
+            )}
 
             {/* Shipping Address */}
             <div className="bg-gray-50 rounded-xl p-4">
@@ -397,12 +473,18 @@ const OrderCard = ({
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
             {status === "delivered" && (
-              <button className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors border border-amber-200">
+              <button 
+                onClick={() => alert("Review feature coming soon!")}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors border border-amber-200"
+              >
                 <Star className="w-4 h-4" />
                 Write a Review
               </button>
             )}
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200">
+            <button 
+              onClick={handleReorder}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+            >
               <RefreshCw className="w-4 h-4" />
               Reorder
             </button>
@@ -410,7 +492,7 @@ const OrderCard = ({
           
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium hover:text-green-700 transition-colors"
           >
             {expanded ? "Show Less" : "View Details"}
             <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expanded ? "rotate-90" : ""}`} />
@@ -425,8 +507,10 @@ const OrderCard = ({
 
 function MyOrder() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [orders, setOrders] = useState<IOrder[]>([]);
-  const [deliveryLocations, setDeliveryLocations] = useState<Record<string, { latitude: number; longitude: number }>>({});
+  const [deliveryLocations, setDeliveryLocations] = useState<Record<string, { latitude: number; longitude: number }>>({} as Record<string, { latitude: number; longitude: number }>);
+  const [orderRouteDetails, setOrderRouteDetails] = useState<Record<string, { distanceKm: number; durationMin: number }>>({} as Record<string, { distanceKm: number; durationMin: number }>);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
@@ -458,10 +542,18 @@ function MyOrder() {
     const socket = getSocket();
     if (!socket) return;
 
-    const handleStatusUpdate = (data: { orderId: string, status: string }) => {
+    if (session?.user?.id) {
+      socket.emit("identity", session.user.id);
+    }
+
+    const handleStatusUpdate = (data: { orderId: string, status: string, isPickedUp?: boolean }) => {
       setOrders(prev => prev.map(o => 
         o._id?.toString() === data.orderId 
-          ? { ...o, orderStatus: data.status as OrderStatus } 
+          ? { 
+              ...o, 
+              orderStatus: data.status as OrderStatus,
+              isPickedUp: data.isPickedUp !== undefined ? data.isPickedUp : o.isPickedUp
+            } 
           : o
       ));
     };
@@ -485,7 +577,7 @@ function MyOrder() {
       socket.off("order-status-update", handleStatusUpdate);
       socket.off("deliveryBoyLocationUpdated", handleLocationUpdate);
     };
-  }, []);
+  }, [session?.user?.id]);
 
   const filteredOrders = useMemo(() => {
     let result = orders;
@@ -536,7 +628,7 @@ function MyOrder() {
               </button>
               <div className="h-6 w-px bg-gray-200" />
               <div className="flex items-center gap-2">
-                <div className="bg-indigo-600 p-1.5 rounded-lg">
+                <div className="bg-green-600 p-1.5 rounded-lg">
                   <ShoppingBag className="w-5 h-5 text-white" />
                 </div>
                 <h1 className="text-xl font-bold text-gray-900 tracking-tight">My Orders</h1>
@@ -584,7 +676,6 @@ function MyOrder() {
             </div>
             
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-              <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
               {(["all", "pending", "Out of Delivery", "delivered"] as const).map((status) => (
                 <button
                   key={status}
@@ -614,7 +705,7 @@ function MyOrder() {
             </p>
             <button
               onClick={() => router.push("/")}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md"
             >
               <ShoppingBag className="w-4 h-4" />
               Start Shopping
@@ -636,11 +727,32 @@ function MyOrder() {
             </p>
             {filteredOrders.map((order) => {
               const deliveryBoyId = getDeliveryBoyId(order.assignedDeliveryBoy);
+              const orderIdStr = order._id?.toString() || "";
+              
+              // Fallback to coordinates stored in database for the delivery boy if socket updates haven't arrived yet
+              let deliveryLoc = deliveryBoyId ? deliveryLocations[deliveryBoyId] : undefined;
+              if (!deliveryLoc && order.assignedDeliveryBoy && typeof order.assignedDeliveryBoy === "object") {
+                const dbBoy = order.assignedDeliveryBoy as any;
+                if (dbBoy.location && dbBoy.location.coordinates && dbBoy.location.coordinates[0] !== 0) {
+                  deliveryLoc = {
+                    latitude: dbBoy.location.coordinates[1],
+                    longitude: dbBoy.location.coordinates[0]
+                  };
+                }
+              }
+              
               return (
                 <OrderCard
-                  key={order._id?.toString()}
+                  key={orderIdStr}
                   order={order}
-                  deliveryLocation={deliveryBoyId ? deliveryLocations[deliveryBoyId] : undefined}
+                  deliveryLocation={deliveryLoc}
+                  routeDetails={orderRouteDetails[orderIdStr]}
+                  onRouteUpdate={(distanceKm, durationMin) => {
+                    setOrderRouteDetails(prev => ({
+                      ...prev,
+                      [orderIdStr]: { distanceKm, durationMin }
+                    }));
+                  }}
                 />
               );
             })}

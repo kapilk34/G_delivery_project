@@ -231,9 +231,7 @@ function AdminDashboard() {
             <div className="jakarta min-h-screen bg-slate-50">
                 <div className="pt-20" />
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
-
-                    {/* ── Hero Banner ── */}
-                            <div className="relative overflow-hidden bg-linear-to-br from-emerald-600 via-emerald-700 to-teal-700 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl shadow-emerald-200 anim anim-1 mt-10">
+                        <div className="relative overflow-hidden bg-linear-to-br from-emerald-600 via-emerald-700 to-teal-700 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl shadow-emerald-200 anim anim-1 mt-10">
                         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full pointer-events-none" />
                         <div className="absolute -bottom-12 right-20 w-36 h-36 bg-white/5 rounded-full pointer-events-none" />
                         <div className="absolute top-6 right-44 w-12 h-12 bg-white/10 rounded-full pointer-events-none" />

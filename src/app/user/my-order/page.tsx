@@ -510,8 +510,6 @@ const OrderCard = ({
   );
 };
 
-// ─── Main Component ────────────────────────────────────────────────
-
 function MyOrder() {
   const router = useRouter();
   const { data: session } = useSession();

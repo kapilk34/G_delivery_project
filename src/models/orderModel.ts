@@ -31,6 +31,11 @@ export interface IOrder{
     assignment?:mongoose.Types.ObjectId,
     assignedDeliveryBoy?: mongoose.Types.ObjectId,
     orderStatus:"pending" | "Out of Delivery" | "delivered",
+    review?: {
+        rating: number,
+        suggestion?: string,
+    },
+    isReviewed?: boolean,
     createdAt?: Date,
     updatedAt?: Date
 }
@@ -95,6 +100,14 @@ const orderSchema = new mongoose.Schema<IOrder>({
         type:String,
         enum:["pending","Out of Delivery","delivered"],
         default:"pending"
+    },
+    review:{
+        rating: { type: Number, min: 1, max: 5 },
+        suggestion: { type: String, default: "" },
+    },
+    isReviewed:{
+        type: Boolean,
+        default: false
     },
 },{timestamps:true})
 

@@ -13,17 +13,12 @@ import {
   Truck, 
   MapPin, 
   ChevronRight, 
-  Calendar, 
   CreditCard, 
   Hash,
   Star,
   RefreshCw,
   Search,
-  Filter,
   Phone,
-  Mail,
-  User,
-  AlertCircle,
   Box,
   Navigation
 } from "lucide-react";
@@ -34,14 +29,14 @@ import dynamicImport from "next/dynamic";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/redux/cartSlice";
 import { useSession } from "next-auth/react";
+import ReviewModal from "./ReviewModal";
 
 const DeliveryMapComponent = dynamicImport(() => import("./DeliveryMapComponent"), { ssr: false });
 
-// ─── Types ─────────────────────────────────────────────────────────
+// ─── Review State ──────────────────────────────────────────────────
+type ReviewModalState = { orderId: string; deliveryBoyName: string } | null;
 
 type OrderStatus = "pending" | "Out of Delivery" | "delivered";
-
-// ─── Status Configuration ──────────────────────────────────────────
 
 const STATUS_CONFIG: Record<OrderStatus, {
   label: string;
@@ -84,8 +79,6 @@ const STATUS_CONFIG: Record<OrderStatus, {
     description: "Your order has been delivered",
   },
 };
-
-// ─── Utility Components ────────────────────────────────────────────
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
@@ -252,12 +245,14 @@ const OrderCard = ({
   order, 
   deliveryLocation,
   routeDetails,
-  onRouteUpdate
+  onRouteUpdate,
+  onOpenReview,
 }: { 
   order: IOrder; 
   deliveryLocation?: { latitude: number; longitude: number };
   routeDetails?: { distanceKm: number; durationMin: number };
   onRouteUpdate: (distanceKm: number, durationMin: number) => void;
+  onOpenReview: (orderId: string, deliveryBoyName: string) => void;
 }) => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -473,13 +468,25 @@ const OrderCard = ({
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
             {status === "delivered" && (
-              <button 
-                onClick={() => alert("Review feature coming soon!")}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors border border-amber-200"
-              >
-                <Star className="w-4 h-4" />
-                Write a Review
-              </button>
+              order.isReviewed ? (
+                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-200">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Reviewed</span>
+                  <div className="flex items-center gap-0.5 ml-1">
+                    {[1,2,3,4,5].map(s => (
+                      <Star key={s} className={`w-3 h-3 ${ s <= (order.review?.rating ?? 0) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}`} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => onOpenReview(orderId, deliveryBoyName)}
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors border border-amber-200"
+                >
+                  <Star className="w-4 h-4" />
+                  Write a Review
+                </button>
+              )
             )}
             <button 
               onClick={handleReorder}
@@ -514,6 +521,7 @@ function MyOrder() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const [reviewModal, setReviewModal] = useState<ReviewModalState>(null);
 
   const getDeliveryBoyId = (assignedDeliveryBoy: any) => {
     if (!assignedDeliveryBoy) return undefined;
@@ -753,12 +761,26 @@ function MyOrder() {
                       [orderIdStr]: { distanceKm, durationMin }
                     }));
                   }}
+                  onOpenReview={(orderId, deliveryBoyName) => setReviewModal({ orderId, deliveryBoyName })}
                 />
               );
             })}
           </div>
         )}
       </main>
+
+      {reviewModal && (
+        <ReviewModal
+          orderId={reviewModal.orderId}
+          deliveryBoyName={reviewModal.deliveryBoyName}
+          onClose={() => setReviewModal(null)}
+          onSuccess={(reviewedOrderId) => {
+            setOrders(prev => prev.map(o =>
+              o._id?.toString() === reviewedOrderId ? { ...o, isReviewed: true } : o
+            ));
+          }}
+        />
+      )}
     </div>
   );
 }

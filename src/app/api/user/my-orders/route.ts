@@ -18,15 +18,8 @@ export async function GET(req: NextRequest) {
             user: session.user.id
         }).populate("user").populate("items.grocery").populate({ path: "assignedDeliveryBoy", select: "location name socketId" }).sort({createdAt:-1})
 
-        if(!orders || orders.length === 0){
-            return NextResponse.json(
-                { message: "Orders not found" },
-                { status: 404 }
-            )
-        }
-
         return NextResponse.json(
-            { orders },
+            { orders: orders || [] },
             { status: 200 }
         )
 

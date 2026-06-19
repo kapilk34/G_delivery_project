@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import mongoose from "mongoose"
 import Link from "next/link"
-import { Box, Clipboard, LogOut, Menu, Package, PlusCircle, Search, SearchIcon, ShoppingCart, User, X } from "lucide-react"
+import { Bike, Box, Clipboard, LogOut, Menu, Package, PlusCircle, Search, SearchIcon, ShoppingCart, User, X } from "lucide-react"
 import Image from "next/image"
 import { signOut } from "next-auth/react"
 import { createPortal } from "react-dom"
@@ -50,7 +50,7 @@ function NavBar({ user }: { user: Iuser | null }) {
     fetch("/api/user/groceries")
       .then((r) => r.json())
       .then((data: IGrocery[]) => setGroceries(data))
-      .catch(() => {})
+      .catch(() => { })
   }, [user])
 
   // Debounced suggestion generation — 300ms after typing stops
@@ -168,11 +168,10 @@ function NavBar({ user }: { user: Iuser | null }) {
           <li
             key={s}
             onMouseDown={() => handleSuggestionClick(s)}
-            className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm font-medium transition-colors ${
-              i === activeSuggestion
+            className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm font-medium transition-colors ${i === activeSuggestion
                 ? "bg-green-50 text-green-700"
                 : "text-gray-700 hover:bg-gray-50"
-            }`}
+              }`}
           >
             <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <span>
@@ -351,12 +350,12 @@ function NavBar({ user }: { user: Iuser | null }) {
                   <div className="flex items-center gap-4">
                     <div className="relative w-14 h-14">
                       <Link href="/user/profile">
-                      {user.image ? (<Image src={user.image} alt="user" fill className="object-cover rounded-full border-2 border-gray-200" />
-                      ) : (
-                        <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200">
-                          <User className="text-gray-500 w-6 h-6" />
-                        </div>
-                      )}
+                        {user.image ? (<Image src={user.image} alt="user" fill className="object-cover rounded-full border-2 border-gray-200" />
+                        ) : (
+                          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200">
+                            <User className="text-gray-500 w-6 h-6" />
+                          </div>
+                        )}
                       </Link>
                     </div>
 
@@ -389,6 +388,13 @@ function NavBar({ user }: { user: Iuser | null }) {
               <Menu className="text-green-600 w-6 h-6" />
             </div>
 
+            <div className="hidden md:block">
+              <Link href="/deliveryBoy/orders" className="flex items-center gap-2 bg-white text-green-700 font-medium px-5 py-2.5 rounded-full shadow-sm hover:bg-green-50 hover:shadow-md transition-all duration-200">
+                <Bike className="w-5 h-5" />
+                <span>Delivery Orders</span>
+              </Link>
+            </div>
+
             <div className="relative">
               <div className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-white font-semibold cursor-pointer hover:bg-white/40 transition" onClick={() => setOpen((prev) => !prev)}>
                 {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User />)}
@@ -400,12 +406,12 @@ function NavBar({ user }: { user: Iuser | null }) {
                     <div className="flex items-center gap-4">
                       <div className="relative w-14 h-14">
                         <Link href="/deliveryBoy/profile">
-                        {user.image ? (<Image src={user.image} alt="user" fill className="object-cover rounded-full border-2 border-gray-200" />
-                        ) : (
-                          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200">
-                            <User className="text-gray-500 w-6 h-6" />
-                          </div>
-                        )}
+                          {user.image ? (<Image src={user.image} alt="user" fill className="object-cover rounded-full border-2 border-gray-200" />
+                          ) : (
+                            <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 border-2 border-gray-200">
+                              <User className="text-gray-500 w-6 h-6" />
+                            </div>
+                          )}
                         </Link>
                       </div>
 

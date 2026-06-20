@@ -188,9 +188,8 @@ function PremiumInput({
       </label>
       <div className="relative">
         <span
-          className={`absolute inset-y-0 left-0 flex items-center pl-3.5 transition-colors ${
-            hasError ? "text-rose-400" : "text-slate-400 group-focus-within:text-slate-600"
-          }`}
+          className={`absolute inset-y-0 left-0 flex items-center pl-3.5 transition-colors ${hasError ? "text-rose-400" : "text-slate-400 group-focus-within:text-slate-600"
+            }`}
         >
           <Icon className="h-[18px] w-[18px]" />
         </span>
@@ -201,11 +200,10 @@ function PremiumInput({
           onChange={onChange}
           onBlur={onBlur}
           placeholder={placeholder}
-          className={`w-full rounded-xl border bg-white py-2.5 pl-11 pr-4 text-sm font-medium text-slate-800 outline-none transition-all duration-200 placeholder:font-normal placeholder:text-slate-400 ${
-            hasError
+          className={`w-full rounded-xl border bg-white py-2.5 pl-11 pr-4 text-sm font-medium text-slate-800 outline-none transition-all duration-200 placeholder:font-normal placeholder:text-slate-400 ${hasError
               ? "border-rose-300 bg-rose-50/30 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
               : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:ring-4 focus:ring-slate-800/5"
-          }`}
+            }`}
         />
       </div>
       <AnimatePresence>
@@ -338,7 +336,6 @@ function PremiumModal({
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────
 
 export default function ProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -351,7 +348,6 @@ export default function ProfilePage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<IAddress | null>(null);
 
-  // ─── Form States ────────────────────────────────────────────────
 
   const [profileForm, setProfileForm] = useState({
     name: "",
@@ -386,8 +382,6 @@ export default function ProfilePage() {
     pincode: false,
     addressLines: false,
   });
-
-  // ─── Validation ─────────────────────────────────────────────────
 
   const validateProfile = useCallback((form: typeof profileForm) => {
     const errors = { name: "", mobile: "" };
@@ -426,8 +420,6 @@ export default function ProfilePage() {
 
   useEffect(() => { validateProfile(profileForm); }, [profileForm, validateProfile]);
   useEffect(() => { validateAddress(addressForm); }, [addressForm, validateAddress]);
-
-  // ─── Modal Helpers ────────────────────────────────────────────────
 
   const openEditProfile = () => {
     setProfileForm({
@@ -470,8 +462,6 @@ export default function ProfilePage() {
     setAddressErrors({ city: "", state: "", pincode: "", addressLines: "" });
     setIsAddressModalOpen(true);
   };
-
-  // ─── Data Sync ────────────────────────────────────────────────────
 
   useEffect(() => {
     if (userData) {
@@ -938,11 +928,10 @@ export default function ProfilePage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
-                      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
-                        address.isDefault
+                      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${address.isDefault
                           ? "border-emerald-300/60 shadow-emerald-500/5 ring-1 ring-emerald-500/10"
                           : "border-slate-200/80 hover:border-slate-300"
-                      }`}
+                        }`}
                     >
                       {/* Default Badge */}
                       {address.isDefault && (
@@ -1155,9 +1144,8 @@ export default function ProfilePage() {
                     key={tier}
                     type="button"
                     onClick={() => setProfileForm({ ...profileForm, membershipStatus: tier })}
-                    className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 text-xs font-bold transition-all active:scale-95 ${
-                      isSelected ? cfg.active : cfg.inactive
-                    }`}
+                    className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 text-xs font-bold transition-all active:scale-95 ${isSelected ? cfg.active : cfg.inactive
+                      }`}
                   >
                     <TierIcon className={`h-4 w-4 ${cfg.iconColor}`} />
                     {tier}

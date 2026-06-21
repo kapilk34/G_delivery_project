@@ -2,13 +2,8 @@
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import GroceryCards from "@/components/GroceryCards";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "@/redux/store";
 import toast from "react-hot-toast";
-import NavBar from "@/components/Nav";
-import Footer from "@/components/Footer";
 import {
-  ArrowLeft,
   Filter,
   X,
   ShoppingBag,
@@ -80,14 +75,12 @@ const ShopPage = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [maxPrice, setMaxPrice] = useState(1000);
 
-  // Scroll state for sticky header behavior
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [bannerHeight, setBannerHeight] = useState(0);
 
   const router = useRouter();
   const mainRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
@@ -135,7 +128,6 @@ const ShopPage = () => {
     fetchGroceries();
   }, []);
 
-  // Measure banner height after render
   useEffect(() => {
     if (bannerRef.current && selectedCategory === "all" && !loading) {
       setBannerHeight(bannerRef.current.offsetHeight + 24); // +24 for margin
@@ -144,22 +136,19 @@ const ShopPage = () => {
     }
   }, [selectedCategory, loading, groceries]);
 
-  // Scroll handler for sticky header behavior
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = mainRef.current?.scrollTop || 0;
-      
+
       if (!toolbarRef.current) return;
 
       const toolbarTop = toolbarRef.current.offsetTop;
       const scrollThreshold = bannerHeight > 0 ? bannerHeight : 0;
 
-      // When scrolling down past the banner, make header sticky
       if (currentScrollY > scrollThreshold && currentScrollY > lastScrollY) {
         setIsHeaderSticky(true);
       }
-      
-      // When scrolling back up and we can see the banner area, unstick
+
       if (currentScrollY <= scrollThreshold && currentScrollY < lastScrollY) {
         setIsHeaderSticky(false);
       }
@@ -179,7 +168,6 @@ const ShopPage = () => {
     };
   }, [lastScrollY, bannerHeight]);
 
-  // Filter and sort groceries
   const filtered = useMemo(() => {
     let result = groceries.filter((g) => {
       const matchesCategory =
@@ -213,7 +201,6 @@ const ShopPage = () => {
     return result;
   }, [groceries, selectedCategory, sortBy, priceRange]);
 
-  // Stats
   const stats = useMemo(
     () => ({
       totalProducts: groceries.length,
@@ -338,9 +325,7 @@ const ShopPage = () => {
           )}
         </aside>
 
-        {/* ── MAIN CONTENT ── */}
         <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth">
-          {/* Hero Banner - scrolls away normally */}
           {selectedCategory === "all" && !loading && (
             <div ref={bannerRef} className="mx-6 mt-6 mb-6 transition-all duration-300">
               <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 p-8 lg:p-10 shadow-xl shadow-green-200/40">
@@ -362,14 +347,26 @@ const ShopPage = () => {
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex -space-x-2">
-                      {[1, 2, 3, 4].map((i) => (
+                      {groceries.slice(0, 4).map((item, i) => (
                         <div
-                          key={i}
-                          className="w-8 h-8 rounded-full bg-white/30 border-2 border-white/50 flex items-center justify-center text-xs text-white font-bold"
+                          key={item._id}
+                          className="w-8 h-8 rounded-full bg-white/30 border-2 border-white/50 overflow-hidden"
                         >
-                          {getCategoryIcon(categories[i - 1] || "organic")}
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/placeholder-grocery.png";
+                            }} />
                         </div>
                       ))}
+                      {groceries.length === 0 &&
+                        [1, 2, 3, 4].map((i) => (
+                          <div
+                            key={i}
+                            className="w-8 h-8 rounded-full bg-white/30 border-2 border-white/50 flex items-center justify-center text-xs text-white font-bold"
+                          >
+                            {getCategoryIcon(categories[i - 1] || "organic")}
+                          </div>
+                        ))}
                     </div>
                     <p className="text-white/80 text-sm font-medium">
                       <span className="text-white font-bold">
@@ -384,14 +381,13 @@ const ShopPage = () => {
           )}
 
           <div className="px-6 py-6">
-            {/* Toolbar - becomes sticky after banner scrolls away */}
             <div
               ref={toolbarRef}
               className={`
                 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6
                 transition-all duration-300 ease-out
-                ${isHeaderSticky 
-                  ? "sticky top-0 z-30 bg-gray-50/95 backdrop-blur-xl py-4 -mx-6 px-6 shadow-sm border-b border-gray-200/50" 
+                ${isHeaderSticky
+                  ? "sticky top-0 z-30 bg-gray-50/95 backdrop-blur-xl py-4 -mx-6 px-6 shadow-sm border-b border-gray-200/50"
                   : ""
                 }
               `}

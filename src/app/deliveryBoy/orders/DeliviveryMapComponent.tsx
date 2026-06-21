@@ -52,7 +52,7 @@ const DeliveryMapComponent: React.FC<DeliveryMapProps> = ({
         const url = `https://router.project-osrm.org/route/v1/driving/${dLng},${dLat};${destLng},${destLat}?overview=full&geometries=geojson`
         const res = await fetch(url)
         const data = await res.json()
-        if (data.routes && data.routes[0]) {
+        if (data.routes?.[0]) {
           const route = data.routes[0]
           const coords: [number, number][] = route.geometry.coordinates.map(
             ([lng, lat]: [number, number]) => [lat, lng]
@@ -69,7 +69,7 @@ const DeliveryMapComponent: React.FC<DeliveryMapProps> = ({
     }
 
     fetchRoute()
-  }, [deliveryLocation, destinationLocation])
+  }, [deliveryLocation?.[0], deliveryLocation?.[1], destinationLocation?.[0], destinationLocation?.[1]])
 
   if (!deliveryLocation && !destinationLocation) return null
 

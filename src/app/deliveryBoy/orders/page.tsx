@@ -73,7 +73,12 @@ const STATUS_CONFIG: Record<AssignmentStatus, {
   },
 };
 
-const PER_DELIVERY_AMOUNT = 120;
+const calculateEarning = (distanceKm: number | null): { amount: number; breakdown: string } => {
+  if (distanceKm === null) return { amount: 40, breakdown: "Base fare (distance pending)" };
+  if (distanceKm < 3) return { amount: 40, breakdown: `Flat rate for <3 km` };
+  const amount = Math.round(distanceKm * 12);
+  return { amount, breakdown: `${distanceKm.toFixed(1)} km × ₹12/km` };
+};
 
 const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.broadcasted;
@@ -262,6 +267,33 @@ function PremiumDeliveryCard({
   const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; durationMin: number } | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const status = assignment.status;
+
+  // Fetch route data independently so ETA/distance shows without opening the map
+  useEffect(() => {
+    if (status === "completed" || !currentPosition || !assignment.order?.address) return;
+    const { latitude, longitude } = assignment.order.address;
+    if (!latitude || !longitude) return;
+
+    const controller = new AbortController();
+    const [dLat, dLng] = currentPosition;
+    fetch(
+      `https://router.project-osrm.org/route/v1/driving/${dLng},${dLat};${longitude},${latitude}?overview=false`,
+      { signal: controller.signal }
+    )
+      .then(r => r.json())
+      .then(data => {
+        if (data.routes?.[0]) {
+          const route = data.routes[0];
+          setRouteInfo({
+            distanceKm: parseFloat((route.distance / 1000).toFixed(2)),
+            durationMin: Math.round(route.duration / 60),
+          });
+        }
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, [currentPosition?.[0], currentPosition?.[1], status]);
   const config = STATUS_CONFIG[status];
 
   const orderId = assignment.order?._id?.toString() || "ORD-0000";
@@ -388,27 +420,7 @@ function PremiumDeliveryCard({
                 onRouteCalculated={setRouteInfo}
               />
             )}
-          </div>
 
-          {/* Right Column: Earnings breakdown & Info */}
-          <div className="lg:col-span-5 space-y-4">
-            {/* Earnings Breakdown */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2.5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Earnings & Payment</h3>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Your Earning</span>
-                <span className="font-bold text-emerald-600 text-lg">₹{PER_DELIVERY_AMOUNT}</span>
-              </div>
-              <div className="h-px bg-gray-200 my-2" />
-              <div className="flex items-center gap-2 pt-1">
-                <CreditCard className="w-4 h-4 text-gray-400" />
-                <span className="text-xs text-gray-500">
-                  {assignment.order?.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
-                </span>
-              </div>
-            </div>
-
-            {/* Customer Info */}
             {status === "assigned" && (
               <div className="bg-blue-50 rounded-xl border border-blue-100 p-4">
                 <div className="flex items-center gap-3 mb-3">
@@ -434,18 +446,57 @@ function PremiumDeliveryCard({
                 )}
               </div>
             )}
+          </div>
+
+          {/* Right Column: Earnings breakdown & Info */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* Earnings Breakdown */}
+            {(() => {
+              const earning = calculateEarning(routeInfo?.distanceKm ?? null);
+              return (
+                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1">Earnings & Payment</h3>
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-gray-500">Your Earning</span>
+                    <span className="font-bold text-emerald-600 text-lg">₹{earning.amount}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400">
+                    {/* <span>{earning.breakdown}</span> */}
+                    {!routeInfo && status !== "completed" && (
+                      <span className="text-amber-500 font-medium">Estimated</span>
+                    )}
+                  </div>
+                  <div className="h-px bg-gray-200 my-2" />
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs text-gray-500">
+                      {assignment.order?.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ETA and Distance Summary */}
-            {status !== "completed" && routeInfo && (
-              <div className="bg-indigo-50 text-indigo-950 p-4 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm">
-                <div>
-                  <p className="text-gray-900 font-semibold text-sm">Estimated Time</p>
-                  <p className="text-lg font-bold">{routeInfo.durationMin} mins</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-gray-900 font-semibold text-sm">Distance Remaining</p>
-                  <p className="text-lg font-bold">{routeInfo.distanceKm.toFixed(1)} km</p>
-                </div>
+            {status !== "completed" && (
+              <div className="bg-indigo-50 text-indigo-950 p-4 rounded-xl border border-indigo-100 shadow-sm">
+                {routeInfo ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-900 font-semibold text-sm">Estimated Time</p>
+                      <p className="text-lg font-bold">{routeInfo.durationMin} min</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-900 font-semibold text-sm">Distance</p>
+                      <p className="text-lg font-bold">{routeInfo.distanceKm.toFixed(1)} km</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-indigo-700 font-medium">Calculating route...</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -528,7 +579,7 @@ function PremiumDeliveryCard({
               ) : (
                 <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-200">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Delivered Successfully (+₹{PER_DELIVERY_AMOUNT})</span>
+                  <span>Delivered Successfully (+₹{calculateEarning(routeInfo?.distanceKm ?? null).amount})</span>
                 </div>
               )
             )}

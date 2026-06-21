@@ -29,7 +29,6 @@ interface AxiosError {
   message?: string;
 }
 
-// ─── Premium Status Configuration ─────────────────────────────────────────────
 type AssignmentStatus = "broadcasted" | "assigned" | "completed";
 
 const STATUS_CONFIG: Record<AssignmentStatus, {
@@ -94,7 +93,6 @@ const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
   );
 };
 
-// ─── Progress Bar ──────────────────────────────────────────────────────────
 const ProgressBar = ({ currentStep }: { currentStep: number }) => {
   const steps = [
     { label: "Confirmed", icon: CheckCircle },
@@ -180,7 +178,6 @@ const OrderItemRow = ({
   );
 };
 
-// ─── Delivery Tracker Map ──────────────────────────────────────────────────
 const DeliveryTracker = ({
   location,
   status,
@@ -323,9 +320,6 @@ function PremiumDeliveryCard({
       : "";
 
   const items = assignment.order?.items || [];
-
-  // const subtotal = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
-  // const total = assignment.order?.totalAmmount || subtotal;
 
   const currentStep = useMemo(() => {
     if (assignment.status === "completed" || assignment.order?.orderStatus === "delivered") return 5;

@@ -75,7 +75,6 @@ const STATUS_CONFIG: Record<AssignmentStatus, {
 
 const PER_DELIVERY_AMOUNT = 120;
 
-// ─── Status Badge ──────────────────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.broadcasted;
   const Icon = config.icon;
@@ -146,7 +145,6 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
   );
 };
 
-// ─── Order Item Row ────────────────────────────────────────────────────────
 const OrderItemRow = ({
   name,
   quantity,
@@ -171,10 +169,6 @@ const OrderItemRow = ({
       <div className="flex-1 min-w-0">
         <p className="font-medium text-gray-900 text-sm truncate">{name}</p>
         <p className="text-xs text-gray-500 mt-0.5">Qty: {quantity}</p>
-      </div>
-      <div className="text-right">
-        <p className="font-semibold text-gray-900 text-sm">₹{(numPrice * quantity).toFixed(2)}</p>
-        <p className="text-xs text-gray-400">₹{numPrice.toFixed(2)} each</p>
       </div>
     </div>
   );
@@ -299,8 +293,8 @@ function PremiumDeliveryCard({
 
   const items = assignment.order?.items || [];
 
-  const subtotal = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
-  const total = assignment.order?.totalAmmount || subtotal;
+  // const subtotal = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+  // const total = assignment.order?.totalAmmount || subtotal;
 
   const currentStep = useMemo(() => {
     if (assignment.status === "completed" || assignment.order?.orderStatus === "delivered") return 5;
@@ -406,10 +400,6 @@ function PremiumDeliveryCard({
                 <span className="font-bold text-emerald-600 text-lg">₹{PER_DELIVERY_AMOUNT}</span>
               </div>
               <div className="h-px bg-gray-200 my-2" />
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Order Total</span>
-                <span className="font-medium text-gray-700">₹{total.toFixed(2)}</span>
-              </div>
               <div className="flex items-center gap-2 pt-1">
                 <CreditCard className="w-4 h-4 text-gray-400" />
                 <span className="text-xs text-gray-500">
@@ -754,7 +744,6 @@ export default function DeliveryOrdersPage() {
           </div>
         </motion.div>
 
-        {/* ─── Content ──────────────────────────────────────────────────── */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
             <motion.div

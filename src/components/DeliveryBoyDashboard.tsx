@@ -108,7 +108,6 @@ const DeliveryBoyDashboard = () => {
     }
   }, []);
 
-  // Fetch real earnings data from API
   const fetchEarnings = useCallback(async () => {
     try {
       const res = await fetch("/api/delivery/earnings");
@@ -118,7 +117,6 @@ const DeliveryBoyDashboard = () => {
       }
     } catch (err) {
       console.error("Failed to fetch earnings:", err);
-      // Fallback: calculate from assignments if API fails
       calculateEarningsFromAssignments();
     } finally {
       setEarningsLoading(false);

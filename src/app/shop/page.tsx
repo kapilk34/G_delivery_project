@@ -4,20 +4,19 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import GroceryCards from "@/components/GroceryCards";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { setSearchQuery } from "@/redux/searchSlice";
 import toast from "react-hot-toast";
 import NavBar from "@/components/Nav";
 import Footer from "@/components/Footer";
 import {
-  Search,
+  ArrowLeft,
   Filter,
   X,
   ShoppingBag,
   Leaf,
-  TrendingUp,
   ChevronRight,
   SlidersHorizontal,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface IGrocery {
   _id: string;
@@ -81,15 +80,16 @@ const ShopPage = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [maxPrice, setMaxPrice] = useState(1000);
 
-  const searchQuery = useSelector((state: RootState) => state.search.query);
-  const dispatch = useDispatch<AppDispatch>();
-  const prevQuery = useRef("");
-  const mainRef = useRef<HTMLDivElement>(null);
+  // Scroll state for sticky header behavior
+  const [isHeaderSticky, setIsHeaderSticky] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [bannerHeight, setBannerHeight] = useState(0);
 
-  const clearSearch = () => {
-    dispatch(setSearchQuery(""));
-    prevQuery.current = "";
-  };
+  const router = useRouter();
+  const mainRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -135,14 +135,53 @@ const ShopPage = () => {
     fetchGroceries();
   }, []);
 
+  // Measure banner height after render
+  useEffect(() => {
+    if (bannerRef.current && selectedCategory === "all" && !loading) {
+      setBannerHeight(bannerRef.current.offsetHeight + 24); // +24 for margin
+    } else {
+      setBannerHeight(0);
+    }
+  }, [selectedCategory, loading, groceries]);
+
+  // Scroll handler for sticky header behavior
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = mainRef.current?.scrollTop || 0;
+      
+      if (!toolbarRef.current) return;
+
+      const toolbarTop = toolbarRef.current.offsetTop;
+      const scrollThreshold = bannerHeight > 0 ? bannerHeight : 0;
+
+      // When scrolling down past the banner, make header sticky
+      if (currentScrollY > scrollThreshold && currentScrollY > lastScrollY) {
+        setIsHeaderSticky(true);
+      }
+      
+      // When scrolling back up and we can see the banner area, unstick
+      if (currentScrollY <= scrollThreshold && currentScrollY < lastScrollY) {
+        setIsHeaderSticky(false);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    const mainElement = mainRef.current;
+    if (mainElement) {
+      mainElement.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    return () => {
+      if (mainElement) {
+        mainElement.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [lastScrollY, bannerHeight]);
+
   // Filter and sort groceries
   const filtered = useMemo(() => {
     let result = groceries.filter((g) => {
-      const matchesSearch =
-        !searchQuery ||
-        g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.category.toLowerCase().includes(searchQuery.toLowerCase());
-
       const matchesCategory =
         selectedCategory === "all" || g.category === selectedCategory;
 
@@ -150,7 +189,7 @@ const ShopPage = () => {
       const matchesPrice =
         itemPrice >= priceRange[0] && itemPrice <= priceRange[1];
 
-      return matchesSearch && matchesCategory && matchesPrice;
+      return matchesCategory && matchesPrice;
     });
 
     switch (sortBy) {
@@ -172,29 +211,7 @@ const ShopPage = () => {
     }
 
     return result;
-  }, [groceries, searchQuery, selectedCategory, sortBy, priceRange]);
-
-  useEffect(() => {
-    if (!searchQuery || searchQuery === prevQuery.current) return;
-    prevQuery.current = searchQuery;
-
-    if (groceries.length === 0) return;
-
-    if (filtered.length > 0) {
-      toast.success(
-        `Found ${filtered.length} result${filtered.length > 1 ? "s" : ""} for "${searchQuery}"`,
-        { icon: "🔍", duration: 2000 },
-      );
-    } else {
-      toast.error(`No groceries found for "${searchQuery}"`, {
-        duration: 2000,
-      });
-    }
-
-    if (mainRef.current) {
-      mainRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [searchQuery, filtered.length, groceries.length]);
+  }, [groceries, selectedCategory, sortBy, priceRange]);
 
   // Stats
   const stats = useMemo(
@@ -204,11 +221,11 @@ const ShopPage = () => {
       avgPrice:
         groceries.length > 0
           ? (
-              groceries.reduce(
-                (sum, g) => sum + (parseFloat(g.price) || 0),
-                0,
-              ) / groceries.length
-            ).toFixed(2)
+            groceries.reduce(
+              (sum, g) => sum + (parseFloat(g.price) || 0),
+              0,
+            ) / groceries.length
+          ).toFixed(2)
           : "0.00",
     }),
     [groceries, categories],
@@ -223,7 +240,7 @@ const ShopPage = () => {
         />
       )}
 
-      <div className="flex h-screen overflow-hidden  bg-gray-50/80">
+      <div className="flex h-screen overflow-hidden bg-gray-50/80">
         <aside
           className={`
             fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-64 shrink-0 h-full 
@@ -243,6 +260,13 @@ const ShopPage = () => {
           </div>
 
           {/* Category Filter */}
+          <button
+            onClick={() => router.back()}
+            className="flex items-center justify-center gap-1 px-5 py-2.5 rounded-full bg-white border border-gray-200/80 text-gray-700 hover:border-green-400 hover:text-green-600 hover:bg-green-50/80 hover:shadow-md hover:shadow-green-100/50 hover:-translate-x-0.5 transition-all duration-300 ease-out shadow-sm group"
+            title="Go back"
+          >
+            <span className="text-sm font-semibold tracking-wide">Back To Home</span>
+          </button>
           <div>
             <div className="flex items-center gap-2 mb-3 ml-1">
               <Filter size={13} className="text-green-500" />
@@ -258,10 +282,9 @@ const ShopPage = () => {
                   className={`
                     w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
                     flex items-center gap-3 group
-                    ${
-                      selectedCategory === cat
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md shadow-green-200/60 scale-[1.02]"
-                        : "text-gray-600 hover:bg-green-50/80 hover:text-green-700 hover:pl-5"
+                    ${selectedCategory === cat
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md shadow-green-200/60 scale-[1.02]"
+                      : "text-gray-600 hover:bg-green-50/80 hover:text-green-700 hover:pl-5"
                     }
                   `}
                 >
@@ -317,9 +340,9 @@ const ShopPage = () => {
 
         {/* ── MAIN CONTENT ── */}
         <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth">
-          {/* Hero Banner */}
-          {!searchQuery && selectedCategory === "all" && !loading && (
-            <div className="mx-6 mt-6 mb-6">
+          {/* Hero Banner - scrolls away normally */}
+          {selectedCategory === "all" && !loading && (
+            <div ref={bannerRef} className="mx-6 mt-6 mb-6 transition-all duration-300">
               <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 p-8 lg:p-10 shadow-xl shadow-green-200/40">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/3" />
@@ -361,36 +384,42 @@ const ShopPage = () => {
           )}
 
           <div className="px-6 py-6">
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                  {searchQuery ? (
-                    <>
-                      <Search size={24} className="text-green-500" />
-                      Search Results
-                    </>
-                  ) : selectedCategory === "all" ? (
-                    <>
-                      <ShoppingBag size={24} className="text-green-500" />
-                      All Products
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-2xl">
-                        {getCategoryIcon(selectedCategory)}
-                      </span>
-                      {selectedCategory}
-                    </>
-                  )}
-                </h2>
-                <p className="text-sm text-gray-400 mt-1 font-medium">
-                  {filtered.length} item{filtered.length !== 1 ? "s" : ""}{" "}
-                  available
-                  {selectedCategory !== "all" &&
-                    !searchQuery &&
-                    ` in ${selectedCategory}`}
-                </p>
+            {/* Toolbar - becomes sticky after banner scrolls away */}
+            <div
+              ref={toolbarRef}
+              className={`
+                flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6
+                transition-all duration-300 ease-out
+                ${isHeaderSticky 
+                  ? "sticky top-0 z-30 bg-gray-50/95 backdrop-blur-xl py-4 -mx-6 px-6 shadow-sm border-b border-gray-200/50" 
+                  : ""
+                }
+              `}
+            >
+              <div className="flex items-center gap-3">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    {selectedCategory === "all" ? (
+                      <>
+                        <ShoppingBag size={24} className="text-green-500" />
+                        All Products
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl">
+                          {getCategoryIcon(selectedCategory)}
+                        </span>
+                        {selectedCategory}
+                      </>
+                    )}
+                  </h2>
+                  <p className="text-sm text-gray-400 mt-1 font-medium">
+                    {filtered.length} item{filtered.length !== 1 ? "s" : ""}{" "}
+                    available
+                    {selectedCategory !== "all" &&
+                      ` in ${selectedCategory}`}
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -423,75 +452,6 @@ const ShopPage = () => {
               </div>
             </div>
 
-            {/* Sticky Search Bar */}
-            <div className="sticky top-0 z-30 py-4 mb-6 backdrop-blur-md">
-              <div className="max-w-lg mx-auto">
-                <div className="relative group">
-                  {/* Glow Effect */}
-                  <div className="absolute inset-0 bg-green-100 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-all duration-300 blur-xl" />
-
-                  {/* Search Container */}
-                  <div className="relative flex items-center gap-3 bg-white/95 border border-gray-200 rounded-2xl px-5 py-3 shadow-sm hover:shadow-md focus-within:border-green-500 focus-within:shadow-lg focus-within:shadow-green-100 transition-all duration-300">
-                    <Search size={18} className="text-green-500 shrink-0" />
-
-                    <input
-                      type="text"
-                      placeholder="Search products..."
-                      value={searchQuery}
-                      onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                      className="w-full bg-transparent outline-none text-gray-700 placeholder:text-gray-400 text-sm font-medium"
-                    />
-
-                    {searchQuery && (
-                      <button
-                        onClick={clearSearch}
-                        className="p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
-                      >
-                        <X size={15} strokeWidth={2.5} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Active search banner */}
-            {searchQuery && (
-              <div className="flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/80 rounded-2xl px-6 py-4 mb-6 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <Search size={18} className="text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-bold text-green-700 text-lg">
-                        {filtered.length}
-                      </span>
-                      <span className="text-gray-500">
-                        {" "}
-                        result{filtered.length !== 1 ? "s" : ""} for{" "}
-                      </span>
-                      <span className="font-bold text-gray-800 bg-white px-2 py-0.5 rounded-lg border border-gray-200">
-                        &ldquo;{searchQuery}&rdquo;
-                      </span>
-                    </p>
-                    {selectedCategory !== "all" && (
-                      <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                        <Filter size={10} /> Filtered by {selectedCategory}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={clearSearch}
-                  className="flex items-center gap-2 text-sm font-bold text-green-700 hover:text-green-900 bg-green-100 hover:bg-green-200 px-4 py-2 rounded-xl transition-all"
-                >
-                  <X size={14} />
-                  Clear
-                </button>
-              </div>
-            )}
-
             {/* Grid / States */}
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
@@ -515,32 +475,18 @@ const ShopPage = () => {
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <div className="relative mb-6">
                   <div className="w-24 h-24 bg-gradient-to-br from-green-50 to-emerald-100 rounded-full flex items-center justify-center">
-                    <Search size={40} className="text-green-400" />
+                    <ShoppingBag size={40} className="text-green-400" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-8 h-8 bg-red-50 rounded-full flex items-center justify-center">
                     <X size={16} className="text-red-400" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  No results found
+                  No items found
                 </h3>
                 <p className="text-sm text-gray-400 max-w-sm mb-8 leading-relaxed">
-                  {searchQuery
-                    ? `We couldn't find anything matching "${searchQuery}". Try adjusting your search or filters.`
-                    : `No items available in ${selectedCategory}. Try selecting a different category.`}
+                  No items available in {selectedCategory}. Try selecting a different category.
                 </p>
-                {searchQuery && (
-                  <button
-                    onClick={clearSearch}
-                    className="group flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-green-200/50 hover:shadow-xl hover:shadow-green-200/60 hover:-translate-y-0.5"
-                  >
-                    <X
-                      size={16}
-                      className="group-hover:rotate-90 transition-transform"
-                    />
-                    Clear Search
-                  </button>
-                )}
               </div>
             )}
             <div className="h-2" />

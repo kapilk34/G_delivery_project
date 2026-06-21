@@ -5,11 +5,12 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import nextDynamic from "next/dynamic";
 import {
-  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, Clock, Truck, Layers, Target, Route, Expand, Minimize2, LocateFixed, Timer, DollarSign, Ban, Award, ChevronRight, ArrowUpRight, Phone, Calendar, Star, ShieldCheck, Zap, TrendingUp, Sparkles, Info, Hash, Box, ShoppingBag, CreditCard
+  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, Clock, Truck, Layers, Target, Route, Expand, Minimize2, LocateFixed, Timer, DollarSign, Ban, Award, ChevronRight, ArrowUpRight, Phone, Calendar, Star, ShieldCheck, Zap, TrendingUp, Sparkles, Info, Hash, Box, ShoppingBag, CreditCard, ArrowLeft, Home
 } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 import { motion, AnimatePresence } from "motion/react";
 import { IOrder } from "@/models/orderModel";
+import Link from "next/link";
 
 const DeliveryMapComponent = nextDynamic(() => import("./DeliviveryMapComponent"), { ssr: false });
 
@@ -235,7 +236,6 @@ const DeliveryTracker = ({
   );
 };
 
-// ─── Utility: Format relative time ──────────────────────────────────────────
 function getRelativeTime(date?: Date | string): string {
   if (!date) return "Just now";
   const now = new Date();
@@ -247,7 +247,6 @@ function getRelativeTime(date?: Date | string): string {
   return `${Math.floor(diff / 86400)} days ago`;
 }
 
-// ─── Premium Delivery Card Component ──────────────────────────────────────────
 function PremiumDeliveryCard({
   assignment,
   index,
@@ -392,7 +391,7 @@ function PremiumDeliveryCard({
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
-                Items ({items.length})
+                Items
               </h3>
               {!expanded && items.length > 2 && (
                 <button
@@ -693,8 +692,14 @@ export default function DeliveryOrdersPage() {
   };
 
   const filteredAssignments = activeFilter === "all"
-    ? assignment
-    : assignment.filter(a => a.status === activeFilter);
+    ? [...assignment].sort((a, b) => {
+        const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
+        return statusOrder[a.status] - statusOrder[b.status];
+      })
+    : [...assignment].filter(a => a.status === activeFilter).sort((a, b) => {
+        const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
+        return statusOrder[a.status] - statusOrder[b.status];
+      });
 
   const counts = {
     all: assignment.length,
@@ -742,7 +747,21 @@ export default function DeliveryOrdersPage() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 mt-16">
+      {/* ─── Back Button ────────────────────────────────────────────── */}
+      <div className="fixed top-4 left-4 z-50">
+        <Link href="/">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 group"
+          >
+            <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-900 transition-colors" />
+            <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">Back</span>
+          </motion.button>
+        </Link>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 mt-12">
         {/* ─── Page Header ────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -753,22 +772,24 @@ export default function DeliveryOrdersPage() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-                  <Layers className="w-5 h-5 text-white" strokeWidth={2} />
+                <div className="p-2.5 bg-gray-900 rounded-xl shadow-sm">
+                  <Truck className="w-5 h-5 text-white" strokeWidth={2} />
                 </div>
-                <h1 className="text-2xl font-black text-slate-800 tracking-tight">My Deliveries</h1>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Deliveries</h1>
+                  <p className="text-[13px] text-gray-500 font-medium">
+                    {assignment.length} assignment{assignment.length !== 1 ? "s" : ""} total
+                  </p>
+                </div>
               </div>
-              <p className="text-[13px] text-slate-500 font-medium ml-[52px]">
-                {assignment.length} assignment{assignment.length !== 1 ? "s" : ""} total
-              </p>
             </div>
 
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-sm">
               <div className="relative">
                 <div className="w-2 h-2 bg-green-500 rounded-full" />
                 <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
               </div>
-              <span className="text-[12px] font-bold text-slate-600">Live Updates</span>
+              <span className="text-[12px] font-bold text-gray-600">Live Updates</span>
             </div>
           </div>
 
@@ -781,12 +802,12 @@ export default function DeliveryOrdersPage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveFilter(filter)}
                 className={`relative px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all duration-300 whitespace-nowrap ${activeFilter === filter
-                    ? "bg-slate-800 text-white shadow-lg shadow-slate-800/20"
-                    : "bg-white text-slate-600 border border-slate-200/60 hover:bg-slate-50"
+                    ? "bg-gray-900 text-white shadow-md shadow-gray-900/10"
+                    : "bg-white text-gray-600 border border-gray-200/60 hover:bg-gray-50"
                   }`}
               >
                 <span className="capitalize">{filter === "all" ? "All Orders" : filter}</span>
-                <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[10px] font-black ${activeFilter === filter ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[10px] font-black ${activeFilter === filter ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
                   }`}>
                   {counts[filter]}
                 </span>
@@ -802,38 +823,38 @@ export default function DeliveryOrdersPage() {
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               className="relative"
             >
-              <div className="w-16 h-16 border-[3px] border-slate-100 border-t-indigo-500 rounded-full" />
-              <Truck className="w-5 h-5 text-indigo-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" strokeWidth={2} />
+              <div className="w-16 h-16 border-[3px] border-gray-100 border-t-gray-900 rounded-full" />
+              <Truck className="w-5 h-5 text-gray-900 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" strokeWidth={2} />
             </motion.div>
-            <p className="mt-6 text-slate-500 font-bold text-lg">Loading your deliveries...</p>
-            <p className="text-[13px] text-slate-400 mt-1 font-medium">Fetching real-time data</p>
+            <p className="mt-6 text-gray-500 font-bold text-lg">Loading your deliveries...</p>
+            <p className="text-[13px] text-gray-400 mt-1 font-medium">Fetching real-time data</p>
           </div>
         ) : filteredAssignments.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 py-24 text-center"
+            className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-sm border border-gray-100 py-24 text-center"
           >
             <div className="relative inline-block mb-6">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full blur-3xl opacity-15 animate-pulse" />
-              <Package className="w-20 h-20 text-slate-300 mx-auto relative" strokeWidth={1.5} />
+              <div className="absolute inset-0 bg-gray-400 rounded-full blur-3xl opacity-10 animate-pulse" />
+              <Package className="w-20 h-20 text-gray-300 mx-auto relative" strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-black text-slate-700">No Active Deliveries</h3>
-            <p className="text-slate-500 mt-2 max-w-sm mx-auto font-medium text-[14px]">
+            <h3 className="text-xl font-black text-gray-700">No Active Deliveries</h3>
+            <p className="text-gray-500 mt-2 max-w-sm mx-auto font-medium text-[14px]">
               You&apos;re all caught up! New assignments will appear here automatically.
             </p>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="mt-8 inline-flex items-center gap-2.5 px-5 py-3 bg-emerald-50 border border-emerald-200/60 rounded-2xl"
+              className="mt-8 inline-flex items-center gap-2.5 px-5 py-3 bg-gray-50 border border-gray-200/60 rounded-2xl"
             >
               <div className="relative">
-                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />
-                <div className="absolute inset-0 w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
+                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" />
+                <div className="absolute inset-0 w-2.5 h-2.5 bg-gray-500 rounded-full animate-ping" />
               </div>
-              <span className="text-[13px] font-bold text-emerald-700">Waiting for new orders...</span>
+              <span className="text-[13px] font-bold text-gray-600">Waiting for new orders...</span>
             </motion.div>
           </motion.div>
         ) : (

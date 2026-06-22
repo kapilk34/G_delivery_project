@@ -256,7 +256,7 @@ function PremiumDeliveryCard({
   index: number;
   currentPosition: LatLng | null;
   respondToAssignment: (id: string, action: "accept" | "reject") => void;
-  completeDelivery: (id: string) => void;
+  completeDelivery: (id: string, earningAmount: number) => void;
   pickupOrder: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -542,7 +542,7 @@ function PremiumDeliveryCard({
                   </button>
                 )}
                 <button
-                  onClick={() => completeDelivery(assignment._id)}
+                  onClick={() => completeDelivery(assignment._id, calculateEarning(routeInfo?.distanceKm ?? null).amount)}
                   className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   <CheckCircle className="w-4 h-4" />
@@ -663,9 +663,9 @@ export default function DeliveryOrdersPage() {
     }
   };
 
-  const completeDelivery = async (assignmentId: string) => {
+  const completeDelivery = async (assignmentId: string, earningAmount: number) => {
     try {
-      await axios.post("/api/delivery/deliver-order", { assignmentId });
+      await axios.post("/api/delivery/deliver-order", { assignmentId, earningAmount });
       await fetchAssignment();
       showNotification("Delivery completed successfully! 🎉", "success");
     } catch (error: unknown) {

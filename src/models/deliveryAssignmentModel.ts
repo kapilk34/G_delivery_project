@@ -6,6 +6,7 @@ export interface IDeliveryAssignment {
     assignedTo: mongoose.Types.ObjectId | null,
     status: "broadcasted" | "assigned" | "completed"
     acceptedAt: Date
+    earningAmount?: number
     createdAt?: Date
     updatedAt?: Date
 }
@@ -32,6 +33,10 @@ const deliveryAssignmentSchema = new mongoose.Schema<IDeliveryAssignment>({
     },
     acceptedAt: {
         type: Date
+    },
+    earningAmount: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true })
 

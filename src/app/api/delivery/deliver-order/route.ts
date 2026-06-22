@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: `Forbidden: not a deliveryBoy. Current role: ${userRole}` }, { status: 403 });
     }
 
-    const { assignmentId } = await req.json();
+    const { assignmentId, earningAmount } = await req.json();
     if (!assignmentId) {
       return NextResponse.json({ message: "assignmentId is required" }, { status: 400 });
     }
@@ -36,6 +36,9 @@ export async function POST(req: NextRequest) {
     }
 
     assignment.status = "completed";
+    if (earningAmount !== undefined) {
+      assignment.earningAmount = earningAmount;
+    }
     await assignment.save();
 
     const order = assignment.order as {

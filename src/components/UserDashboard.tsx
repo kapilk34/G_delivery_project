@@ -12,6 +12,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { setSearchQuery } from "@/redux/searchSlice";
 import toast from "react-hot-toast";
+import SeasonalProducts from "./SeasonalProducts";
 
 interface IGrocery {
   _id: string;
@@ -110,6 +111,7 @@ function UserDashboard() {
         </div>
       </div>
       <UserBanner />
+      <SeasonalProducts/>
       <Testimonials />
       <Footer />
       <Chatbot />

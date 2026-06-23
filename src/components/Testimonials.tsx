@@ -113,7 +113,7 @@ export default function TestimonialSection() {
       </style>
 
       <div className="relative flex overflow-hidden group w-full">
-        <div className="animate-marquee flex flex-row gap-8 pr-8 min-w-max">
+        <div className="animate-marquee flex flex-row gap-8 pr-8 min-w-max mb-5">
           {testimonials.map((user, index) => (
             <div
               key={index}

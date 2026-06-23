@@ -44,7 +44,7 @@ function getGreeting() {
 
 const EarningsBarChart = ({ data }: { data: EarningsData["dailyBreakdown"] }) => {
   const maxAmount = Math.max(...data.map((d) => d.amount), 1);
-  
+
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
@@ -57,7 +57,7 @@ const EarningsBarChart = ({ data }: { data: EarningsData["dailyBreakdown"] }) =>
           Earnings (₹)
         </div>
       </div>
-      
+
       <div className="h-64 flex items-end gap-3">
         {data.map((item, index) => (
           <div key={item.day} className="flex-1 flex flex-col items-center gap-2 group">
@@ -68,7 +68,7 @@ const EarningsBarChart = ({ data }: { data: EarningsData["dailyBreakdown"] }) =>
               </div>
               <div
                 className="w-full max-w-[48px] bg-emerald-500 rounded-t-lg hover:bg-emerald-600 transition-all duration-300 relative overflow-hidden"
-                style={{ 
+                style={{
                   height: `${(item.amount / maxAmount) * 180}px`,
                   animationDelay: `${index * 0.1}s`
                 }}
@@ -153,17 +153,17 @@ const DeliveryBoyDashboard = () => {
         .filter((a) => {
           if (!a.updatedAt) return false;
           const d = new Date(a.updatedAt);
-          return d.getDate() === date.getDate() && 
-                 d.getMonth() === date.getMonth() && 
-                 d.getFullYear() === date.getFullYear();
+          return d.getDate() === date.getDate() &&
+            d.getMonth() === date.getMonth() &&
+            d.getFullYear() === date.getFullYear();
         })
         .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
       const dayDeliveries = completed.filter((a) => {
         if (!a.updatedAt) return false;
         const d = new Date(a.updatedAt);
-        return d.getDate() === date.getDate() && 
-               d.getMonth() === date.getMonth() && 
-               d.getFullYear() === date.getFullYear();
+        return d.getDate() === date.getDate() &&
+          d.getMonth() === date.getMonth() &&
+          d.getFullYear() === date.getFullYear();
       }).length;
 
       return { day: dayName, amount: dayEarnings, deliveries: dayDeliveries };
@@ -187,7 +187,7 @@ const DeliveryBoyDashboard = () => {
     if (!session?.user?.id) return;
     const socket = getSocket();
     if (!socket) return;
-    
+
     socket.emit("identity", session.user.id);
 
     const handleUpdate = () => {
@@ -544,7 +544,7 @@ const DeliveryBoyDashboard = () => {
           {/* Delivery Statistics */}
           <div className="anim anim-6">
             <SectionLabel label="Performance" />
-            <DeliveryStatistics 
+            <DeliveryStatistics
               totalDeliveries={totalDeliveries}
               totalEarnings={totalEarningsAllTime}
               avgRating={avgRating}

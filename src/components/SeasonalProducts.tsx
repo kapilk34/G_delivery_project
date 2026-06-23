@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Leaf, 
-  Snowflake, 
-  Sun, 
-  Wind,  
-  Heart, 
-  Star, 
+import {
+  Leaf,
+  Snowflake,
+  Sun,
+  Wind,
+  Heart,
+  Star,
   ArrowRight,
   Timer,
   TrendingUp
@@ -304,7 +304,7 @@ const ProductCard: React.FC<{ product: Product; seasonColor: string; accentColor
           className="object-cover transition-transform duration-500 group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
         />
-        
+
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {discount && (
             <span className={`${accentColor} text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm`}>
@@ -339,7 +339,7 @@ const ProductCard: React.FC<{ product: Product; seasonColor: string; accentColor
             {product.name}
           </h3>
         </div>
-        
+
         <p className="text-gray-500 text-sm mb-3 line-clamp-1">{product.description}</p>
         <div className="flex items-center gap-1.5 mb-3">
           <div className="flex items-center gap-0.5">
@@ -365,11 +365,11 @@ const SeasonalProducts: React.FC = () => {
   return (
     <section className="w-full py-16 md:py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="text-center">
           <h2 className="text-2xl font-bold text-green-700 mb-5 text-center">
-            Shop by Category
+            Trending Grocery of the Season
           </h2>
         </div>
 
@@ -383,8 +383,8 @@ const SeasonalProducts: React.FC = () => {
                 onClick={() => setActiveSeason(season.id)}
                 className={`
                   relative flex items-center gap-2.5 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300
-                  ${isActive 
-                    ? `${season.color} bg-white shadow-lg scale-105 ring-2 ring-offset-2 ring-gray-100` 
+                  ${isActive
+                    ? `${season.color} bg-white shadow-lg scale-105 ring-2 ring-offset-2 ring-gray-100`
                     : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-md bg-white/50'
                   }
                 `}

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import connectDb from "@/lib/db";
 import deliveryAssignment from "@/models/deliveryAssignmentModel";
+import "@/models/orderModel"; // Import to register the model for populate
 import { NextResponse } from "next/server";
 
 export async function GET() {

@@ -93,32 +93,22 @@ export default function DeliveryDashboard({
     <div className=" bg-slate-50 p-6 md:p-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         {stats.map((stat, index) => (
-          <div
-            key={index}
-            className={`group relative bg-white rounded-2xl border ${stat.borderColor} p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
-          >
-            {/* Top accent bar */}
+          <div key={index} className={`group relative bg-white rounded-2xl border ${stat.borderColor} p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden`}>
             <div className={`absolute top-0 left-0 right-0 h-1.5 ${stat.accentColor} opacity-80`} />
-
-            {/* Subtle gradient overlay on hover */}
             <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-b ${stat.color.split(" ")[0]} to-transparent pointer-events-none`} style={{ opacity: 0.03 }} />
 
-            {/* Icon */}
             <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${stat.color} mb-5 shadow-sm`}>
               {stat.icon}
             </div>
 
-            {/* Title */}
             <p className="text-sm font-semibold text-slate-700 tracking-wider mb-1">
               {stat.title}
             </p>
 
-            {/* Value */}
             <p className="text-3xl font-bold text-slate-800 mb-3">
               {stat.value}
             </p>
 
-            {/* Trend */}
             <div className="flex items-center gap-1.5 ">
               <span className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${stat.trendUp ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
                 <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

@@ -18,6 +18,7 @@ type AssignmentItem = {
   _id: string;
   status: "broadcasted" | "assigned" | "completed";
   order: IOrder;
+  earningAmount?: number;
   createdAt?: Date | string;
   acceptedAt?: Date | string;
 };
@@ -125,8 +126,8 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
             <div key={index} className="flex flex-col items-center relative z-10 flex-1">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isCompleted
-                    ? "bg-indigo-600 border-indigo-600 text-white"
-                    : "bg-white border-gray-200 text-gray-400"
+                  ? "bg-indigo-600 border-indigo-600 text-white"
+                  : "bg-white border-gray-200 text-gray-400"
                   } ${isActive ? "ring-4 ring-indigo-100 animate-pulse" : ""}`}
               >
                 <Icon className="w-4 h-4" />
@@ -286,7 +287,7 @@ function PremiumDeliveryCard({
           });
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => controller.abort();
   }, [currentPosition?.[0], currentPosition?.[1], status]);
@@ -446,12 +447,20 @@ function PremiumDeliveryCard({
             {/* Earnings Breakdown */}
             {(() => {
               const earning = calculateEarning(routeInfo?.distanceKm ?? null);
+              const displayEarning = status === "completed" && assignment.earningAmount 
+                ? assignment.earningAmount 
+                : earning.amount;
+
               return (
                 <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                   <h3 className="text-sm font-semibold text-gray-900 mb-1">Earnings & Payment</h3>
                   <div className="flex justify-between text-sm items-center">
+                    <span className="text-gray-500">Order Amount</span>
+                    <span className="font-bold text-gray-900 text-lg">₹{assignment.order?.totalAmmount || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
                     <span className="text-gray-500">Your Earning</span>
-                    <span className="font-bold text-emerald-600 text-lg">₹{earning.amount}</span>
+                    <span className="font-bold text-emerald-600 text-lg">₹{displayEarning}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-400">
                     {/* <span>{earning.breakdown}</span> */}
@@ -687,13 +696,13 @@ export default function DeliveryOrdersPage() {
 
   const filteredAssignments = activeFilter === "all"
     ? [...assignment].sort((a, b) => {
-        const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
-        return statusOrder[a.status] - statusOrder[b.status];
-      })
+      const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
+      return statusOrder[a.status] - statusOrder[b.status];
+    })
     : [...assignment].filter(a => a.status === activeFilter).sort((a, b) => {
-        const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
-        return statusOrder[a.status] - statusOrder[b.status];
-      });
+      const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
+      return statusOrder[a.status] - statusOrder[b.status];
+    });
 
   const counts = {
     all: assignment.length,
@@ -727,8 +736,8 @@ export default function DeliveryOrdersPage() {
             className="fixed top-6 right-6 z-50"
           >
             <div className={`rounded-2xl shadow-2xl shadow-black/10 px-6 py-4 flex items-center gap-4 backdrop-blur-xl border ${notification.type === "success" ? "bg-emerald-500/95 text-white border-emerald-400/30" :
-                notification.type === "error" ? "bg-rose-500/95 text-white border-rose-400/30" :
-                  "bg-blue-500/95 text-white border-blue-400/30"
+              notification.type === "error" ? "bg-rose-500/95 text-white border-rose-400/30" :
+                "bg-blue-500/95 text-white border-blue-400/30"
               }`}>
               <div className="p-1.5 bg-white/20 rounded-xl">
                 {notification.type === "success" && <CheckCircle className="w-5 h-5" strokeWidth={2.5} />}
@@ -796,8 +805,8 @@ export default function DeliveryOrdersPage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveFilter(filter)}
                 className={`relative px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all duration-300 whitespace-nowrap ${activeFilter === filter
-                    ? "bg-gray-900 text-white shadow-md shadow-gray-900/10"
-                    : "bg-white text-gray-600 border border-gray-200/60 hover:bg-gray-50"
+                  ? "bg-gray-900 text-white shadow-md shadow-gray-900/10"
+                  : "bg-white text-gray-600 border border-gray-200/60 hover:bg-gray-50"
                   }`}
               >
                 <span className="capitalize">{filter === "all" ? "All Orders" : filter}</span>

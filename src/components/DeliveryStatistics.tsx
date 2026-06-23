@@ -91,15 +91,6 @@ export default function DeliveryDashboard({
 
   return (
     <div className=" bg-slate-50 p-6 md:p-12">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-10 text-center">
-        <h1 className="text-3xl md:text-2xl font-bold text-green-700 tracking-tight">
-          Delivery Statistics
-        </h1>
-        <div className="mt-4 mx-auto w-20 h-1 bg-gradient-to-r from-blue-500 via-emerald-500 to-amber-500 rounded-full" />
-      </div>
-
-      {/* Cards Grid */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         {stats.map((stat, index) => (
           <div

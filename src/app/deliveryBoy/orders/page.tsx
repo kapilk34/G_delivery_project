@@ -5,7 +5,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import nextDynamic from "next/dynamic";
 import {
-  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, Clock, Truck, Layers, Target, Route, Expand, Minimize2, LocateFixed, Timer, DollarSign, Ban, Award, ChevronRight, ArrowUpRight, Phone, Calendar, Star, ShieldCheck, Zap, TrendingUp, Sparkles, Info, Hash, Box, ShoppingBag, CreditCard, ArrowLeft, Home
+  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, Clock, Truck, Ban, ChevronRight, Phone, Star, Hash, Box, ShoppingBag, CreditCard, ArrowLeft
 } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 import { motion, AnimatePresence } from "motion/react";
@@ -195,7 +195,7 @@ const DeliveryTracker = ({
   if (status === "completed") return null;
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-4">
+    <div className="p-4">
       <div className="flex items-center gap-3 mb-3">
         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
           <Navigation className="w-5 h-5 text-blue-600 animate-pulse" />
@@ -764,8 +764,7 @@ export default function DeliveryOrdersPage() {
         </Link>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 mt-12">
-        {/* ─── Page Header ────────────────────────────────────────────── */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 mt-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -786,17 +785,8 @@ export default function DeliveryOrdersPage() {
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-sm">
-              <div className="relative">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
-                <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
-              </div>
-              <span className="text-[12px] font-bold text-gray-600">Live Updates</span>
-            </div>
           </div>
 
-          {/* Filter Tabs */}
           <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-2">
             {(["all", "broadcasted", "assigned", "completed"] as const).map((filter) => (
               <motion.button

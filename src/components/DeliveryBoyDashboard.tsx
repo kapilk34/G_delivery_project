@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import DeliveryStatistics from "./DeliveryStatistics";
 import { getSocket } from "@/lib/socket";
+import Chatbot from "./Chatbot";
 
 interface AssignmentItem {
   _id: string;
@@ -555,6 +556,7 @@ const DeliveryBoyDashboard = () => {
 
         </div>
       </div>
+      <Chatbot/>
     </>
   );
 };

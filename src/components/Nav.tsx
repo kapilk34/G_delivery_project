@@ -160,15 +160,15 @@ function NavBar({ user }: { user: Iuser | null }) {
       <ul
         className={
           mobile
-            ? "w-[90%] max-w-xl mt-2 bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
-            : "absolute top-full left-0 mt-2 w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 z-50"
+            ? "w-[90%] max-w-xl mt-2 bg-white/90 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden border border-gray-100/60"
+            : "absolute top-full left-0 mt-2 w-full bg-white/90 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden border border-gray-100/60 z-50"
         }
       >
         {suggestions.map((s, i) => (
           <li
             key={s}
             onMouseDown={() => handleSuggestionClick(s)}
-            className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm font-medium transition-colors ${i === activeSuggestion
+            className={`flex items-center gap-3 px-4 py-3 cursor-pointer text-sm font-medium transition-colors ${i === activeSuggestion
                 ? "bg-green-50 text-green-700"
                 : "text-gray-700 hover:bg-gray-50"
               }`}
@@ -238,42 +238,44 @@ function NavBar({ user }: { user: Iuser | null }) {
   ) : null
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 w-[96%] max-w-7xl z-50">
-      <div className="flex items-center justify-between px-5 md:px-8 py-4 rounded-2xl bg-linear-to-r from-green-600 via-green-500 to-emerald-600 shadow-xl shadow-black/20 backdrop-blur-md border border-white/10">
-        <Link href={"/"} className="text-white font-semibold text-xl md:text-2xl tracking-wide hover:scale-105 transition duration-300">FreshKart</Link>
+    <div className="fixed top-0 left-0 w-full z-50">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-16 py-3 bg-white/75 backdrop-blur-2xl border-b border-gray-200/40 shadow-sm shadow-black/5">
+        <Link href={"/"} className="shrink-0 hover:scale-105 transition duration-300">
+          <img src={"https://z2jsknicy5.ufs.sh/f/HcyboFZa5mETeZhyjgHcDxIylbosdVjB0gizWqJutYmG8PLS"} alt="Logo Image" className="h-9 sm:h-10 w-auto drop-shadow-sm"/>
+        </Link>
 
         {!user && (
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-2 rounded-full transition-all">
+          <div className="hidden md:flex items-center gap-3">
+            <Link href="/login" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-5 py-2 rounded-full transition-all text-sm hover:bg-gray-100">
               Login
             </Link>
-            <Link href="/register" className="flex items-center gap-2 bg-white text-green-700 font-semibold px-6 py-2 rounded-full hover:bg-green-100 transition-all">
+            <Link href="/register" className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-full transition-all text-sm shadow-lg shadow-green-600/20 hover:shadow-green-600/30">
               Sign Up
             </Link>
           </div>
         )}
 
-        <div className="flex items-center gap-4 md:gap-6">
-          {user && user.role == "user" && <div className="relative flex items-center gap-4 md:gap-6">
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-5">
+          {user && user.role == "user" && <div className="relative flex items-center gap-2 sm:gap-4 md:gap-5">
 
             {/* Desktop search */}
             <div ref={desktopSearchRef} className="relative hidden md:block">
-              <form onSubmit={(e) => { e.preventDefault(); handleSearch() }} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 transition">
-                <Search className="text-white/60 w-4 h-4" />
+              <form onSubmit={(e) => { e.preventDefault(); handleSearch() }} className="flex items-center gap-2 bg-gray-100/80 hover:bg-gray-100 focus-within:bg-white rounded-full px-4 py-2 transition-all duration-200 border border-gray-200/60 focus-within:border-green-400 focus-within:ring-2 focus-within:ring-green-400/20 focus-within:shadow-md">
+                <Search className="text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Search your grocery..."
                   value={query}
                   onChange={(e) => handleQueryChange(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="bg-transparent outline-none text-white placeholder-white/80 w-48 md:w-64"
+                  className="bg-transparent outline-none text-gray-700 placeholder-gray-400 w-44 lg:w-60 xl:w-72 text-sm"
                 />
-                <button type="button" onClick={handleSearch} className="text-white/90 hover:text-white px-2 py-1 rounded-full">
+                <button type="button" onClick={handleSearch} className="text-green-600 hover:text-green-700 px-1.5 py-1 rounded-full transition hover:bg-green-50">
                   <SearchIcon className="w-4 h-4" />
                 </button>
               </form>
               {searchError && (
-                <p className="absolute top-full left-0 mt-1 text-xs text-red-200 bg-red-600/80 rounded-lg px-3 py-1 whitespace-nowrap z-50">
+                <p className="absolute top-full left-0 mt-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5 whitespace-nowrap z-50 shadow-sm">
                   {searchError}
                 </p>
               )}
@@ -281,14 +283,14 @@ function NavBar({ user }: { user: Iuser | null }) {
             </div>
 
             {/* Mobile search trigger */}
-            <div className="bg-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:scale-105 transition cursor-pointer md:hidden" onClick={() => setSearchBarOpen(true)}>
-              <Search className="text-green-600 w-6 h-6" />
+            <div className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center border border-gray-200/60 hover:bg-gray-200 hover:scale-105 transition cursor-pointer md:hidden" onClick={() => setSearchBarOpen(true)}>
+              <Search className="text-gray-600 w-5 h-5" />
             </div>
 
             {/* Mobile search modal */}
             {searchBarOpen && (
-              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 flex flex-col items-center pt-24">
-                <div ref={searchRef} className="bg-white w-[90%] max-w-xl rounded-full shadow-2xl flex items-center px-4 py-3 gap-3 animate-in fade-in zoom-in duration-300">
+              <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 flex flex-col items-center pt-24">
+                <div ref={searchRef} className="bg-white/95 backdrop-blur-2xl w-[92%] max-w-xl rounded-full shadow-2xl flex items-center px-5 py-3 gap-3 animate-in fade-in zoom-in duration-300 border border-gray-200/60">
                   <Search className="text-gray-400 w-5 h-5" />
                   <input
                     type="text"
@@ -299,12 +301,12 @@ function NavBar({ user }: { user: Iuser | null }) {
                     className="flex-1 outline-none text-gray-700 placeholder-gray-400 bg-transparent"
                     autoFocus
                   />
-                  <button onClick={() => { setSearchBarOpen(false); setSearchError(""); setSuggestions([]) }} className="p-1 hover:bg-gray-100 rounded-full transition">
+                  <button onClick={() => { setSearchBarOpen(false); setSearchError(""); setSuggestions([]) }} className="p-1.5 hover:bg-gray-100 rounded-full transition">
                     <X className="w-5 h-5 text-gray-500" />
                   </button>
                 </div>
                 {searchError && (
-                  <p className="mt-3 text-xs text-red-200 bg-red-500/80 rounded-lg px-4 py-1.5 font-medium">
+                  <p className="mt-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-1.5 font-medium shadow-sm">
                     {searchError}
                   </p>
                 )}
@@ -312,41 +314,41 @@ function NavBar({ user }: { user: Iuser | null }) {
               </div>
             )}
 
-            <Link href="/user/cart" className="relative p-2 rounded-full bg-white/20 hover:bg-white/30 transition duration-300">
-              <ShoppingCart className="text-white w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-medium shadow-md">{cartData.length}</span>
+            <Link href="/user/cart" className="relative p-2.5 rounded-full bg-gray-100 hover:bg-gray-200 transition duration-300 border border-gray-200/60 group">
+              <ShoppingCart className="text-gray-600 w-5 h-5 group-hover:text-gray-900 transition" />
+              <span className="absolute -top-1 -right-1 bg-green-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-md shadow-green-600/30">{cartData.length}</span>
             </Link>
           </div>}
 
           {user && user.role == "admin" && <>
-            <div className="hidden md:flex items-center gap-4">
-              <Link href={"/admin/add-grocery"} className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all">
-                <PlusCircle className="w-5 h-5" />
-                Add Grocery
+            <div className="hidden lg:flex items-center gap-2">
+              <Link href={"/admin/add-grocery"} className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-full transition-all text-sm border border-gray-200/60 hover:border-gray-300">
+                <PlusCircle className="w-4 h-4" />
+                <span className="hidden xl:inline">Add Grocery</span>
               </Link>
-              <Link href={"/admin/view-grocery"} className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all">
-                <Box className="w-5 h-5" />
-                View Grocery
+              <Link href={"/admin/view-grocery"} className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-full transition-all text-sm border border-gray-200/60 hover:border-gray-300">
+                <Box className="w-4 h-4" />
+                <span className="hidden xl:inline">View Grocery</span>
               </Link>
-              <Link href={"/admin/manage-orders"} className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all">
-                <Clipboard className="w-5 h-5" />
-                Manage Orders
+              <Link href={"/admin/manage-orders"} className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-full transition-all text-sm border border-gray-200/60 hover:border-gray-300">
+                <Clipboard className="w-4 h-4" />
+                <span className="hidden xl:inline">Manage Orders</span>
               </Link>
             </div>
 
-            <div className="md:hidden bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md" onClick={() => setMenuOpen(prev => !prev)}>
-              <Menu className="text-green-600 w-6 h-6" />
+            <div className="lg:hidden bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center border border-gray-200/60 hover:bg-gray-200 transition" onClick={() => setMenuOpen(prev => !prev)}>
+              <Menu className="text-gray-700 w-5 h-5" />
             </div>
           </>}
 
           {user && user.role != "deliveryBoy" && <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-white font-semibold cursor-pointer hover:bg-white/40 transition" onClick={() => setOpen((prev) => !prev)}>
-              {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User />)}
+            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-semibold cursor-pointer hover:bg-gray-200 transition border border-gray-200/60 overflow-hidden" onClick={() => setOpen((prev) => !prev)}>
+              {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User className="w-5 h-5" />)}
             </div>
 
             <div className="relative" ref={profileDropDown}>
               {open && (
-                <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-gray-200/60 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
                   <div className="flex items-center gap-4">
                     <div className="relative w-14 h-14">
                       <Link href="/user/profile">
@@ -365,16 +367,16 @@ function NavBar({ user }: { user: Iuser | null }) {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1 mt-3">
                     {user.role == "user" &&
-                      <Link href="/user/my-order" className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-green-600 transition text-sm font-medium text-gray-700">
-                        <Package />
+                      <Link href="/user/my-order" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 hover:text-green-600 transition text-sm font-medium text-gray-700">
+                        <Package className="w-4 h-4" />
                         My Orders
                       </Link>
                     }
 
-                    <button className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition text-sm font-medium text-gray-700" onClick={() => { setOpen(false); signOut({ callbackUrl: "/login" }) }}>
-                      <LogOut />
+                    <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 hover:text-red-600 transition text-sm font-medium text-gray-700 w-full text-left" onClick={() => { setOpen(false); signOut({ callbackUrl: "/login" }) }}>
+                      <LogOut className="w-4 h-4" />
                       Logout
                     </button>
                   </div>
@@ -384,25 +386,25 @@ function NavBar({ user }: { user: Iuser | null }) {
           </div>}
 
           {user && user.role == "deliveryBoy" && <>
-            <div className="md:hidden bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md" onClick={() => setMenuOpen(prev => !prev)}>
-              <Menu className="text-green-600 w-6 h-6" />
+            <div className="md:hidden bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center border border-gray-200/60 hover:bg-gray-200 transition" onClick={() => setMenuOpen(prev => !prev)}>
+              <Menu className="text-gray-700 w-5 h-5" />
             </div>
 
             <div className="hidden md:block">
-              <Link href="/deliveryBoy/orders" className="flex items-center gap-2 bg-white text-green-700 font-medium px-5 py-2.5 rounded-full shadow-sm hover:bg-green-50 hover:shadow-md transition-all duration-200">
-                <Bike className="w-5 h-5" />
+              <Link href="/deliveryBoy/orders" className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-full transition-all text-sm border border-gray-200/60 hover:border-gray-300">
+                <Bike className="w-4 h-4" />
                 <span>Delivery Orders</span>
               </Link>
             </div>
 
             <div className="relative">
-              <div className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center text-white font-semibold cursor-pointer hover:bg-white/40 transition" onClick={() => setOpen((prev) => !prev)}>
-                {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User />)}
+              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-semibold cursor-pointer hover:bg-gray-200 transition border border-gray-200/60 overflow-hidden" onClick={() => setOpen((prev) => !prev)}>
+                {user.image ? (<Image src={user.image} alt='user' fill className="object-cover rounded-full" />) : (<User className="w-5 h-5" />)}
               </div>
 
               <div className="relative" ref={profileDropDown}>
                 {open && (
-                  <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-gray-200/60 p-4 z-50 animate-in fade-in zoom-in-95 duration-200">
                     <div className="flex items-center gap-4">
                       <div className="relative w-14 h-14">
                         <Link href="/deliveryBoy/profile">
@@ -421,9 +423,9 @@ function NavBar({ user }: { user: Iuser | null }) {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      <button className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition text-sm font-medium text-gray-700" onClick={() => { setOpen(false); signOut({ callbackUrl: "/login" }) }}>
-                        <LogOut />
+                    <div className="flex flex-col gap-1 mt-3">
+                      <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 hover:text-red-600 transition text-sm font-medium text-gray-700 w-full text-left" onClick={() => { setOpen(false); signOut({ callbackUrl: "/login" }) }}>
+                        <LogOut className="w-4 h-4" />
                         Logout
                       </button>
                     </div>
@@ -439,4 +441,4 @@ function NavBar({ user }: { user: Iuser | null }) {
   )
 }
 
-export default NavBar;
+export default NavBar

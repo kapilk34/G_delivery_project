@@ -58,23 +58,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      try {
-        const urlObj = new URL(url, baseUrl);
-        if (urlObj.pathname === "/login") {
-          return `${baseUrl}/login`;
-        }
-        
-        if (url.startsWith("/")) {
-          return `${baseUrl}${url.split("?")[0]}`;
-        }
-
-        if (urlObj.origin === baseUrl) {
-          return `${urlObj.origin}${urlObj.pathname}`;
-        }
-      } catch (error) {
-        return baseUrl;
-      }
-    
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
     async signIn({ user, account }) {

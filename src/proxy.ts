@@ -8,7 +8,17 @@ export async function proxy(req:NextRequest){
         return NextResponse.next();
     }
 
-    const token = await getToken({req, secret:process.env.AUTH_SECRET})
+    const isProduction = process.env.NODE_ENV === "production";
+    const cookieName = isProduction ? "__Secure-authjs.session-token" : "authjs.session-token";
+
+    const token = await getToken({
+        req, 
+        secret: process.env.AUTH_SECRET,
+        cookieName: cookieName,
+        secureCookie: isProduction,
+        salt: cookieName
+    })
+
     if(!token){
         const loginUrl = new URL("/login", req.url)
         loginUrl.searchParams.set("callbackUrl", req.url)

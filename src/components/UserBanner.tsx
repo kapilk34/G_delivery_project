@@ -253,7 +253,7 @@ export default function GroceryBanner() {
                   
                   <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl border-4 border-white ring-4 ring-emerald-100">
                     <Image
-                      src="https://gvu57hqxi3.ufs.sh/f/FOd38ztMu1UwL1xocXfy8AqV9TDIL3MsQnbwrJgB15lmcjU0"
+                      src="https://z2jsknicy5.ufs.sh/f/HcyboFZa5mET7YAsMKl4pFUIHXiVyBxgZcnCs2lSQfb9DL6O"
                       alt="Fresh groceries basket"
                       fill
                       className="object-cover"

@@ -363,7 +363,7 @@ const SeasonalProducts: React.FC = () => {
   const currentSeason = seasonalData.find((s) => s.id === activeSeason)!;
 
   return (
-    <section className="w-full py-16 md:py-24 bg-gray-50">
+    <section className="w-full py-14 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Section Header */}

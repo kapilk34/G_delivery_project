@@ -10,8 +10,11 @@ import {
   Leaf,
   ChevronRight,
   SlidersHorizontal,
+  ShoppingCart,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface IGrocery {
   _id: string;
@@ -84,6 +87,14 @@ const ShopPage = () => {
   const bannerRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
+  // Read cart from Redux store (same as GroceryCards)
+  const { cartData } = useSelector((state: RootState) => state.cart);
+
+  const cartItemCount = useMemo(
+    () => cartData.reduce((sum, item) => sum + (item.quantity || 0), 0),
+    [cartData],
+  );
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -130,7 +141,7 @@ const ShopPage = () => {
 
   useEffect(() => {
     if (bannerRef.current && selectedCategory === "all" && !loading) {
-      setBannerHeight(bannerRef.current.offsetHeight + 24); // +24 for margin
+      setBannerHeight(bannerRef.current.offsetHeight + 24);
     } else {
       setBannerHeight(0);
     }
@@ -142,7 +153,6 @@ const ShopPage = () => {
 
       if (!toolbarRef.current) return;
 
-      const toolbarTop = toolbarRef.current.offsetTop;
       const scrollThreshold = bannerHeight > 0 ? bannerHeight : 0;
 
       if (currentScrollY > scrollThreshold && currentScrollY > lastScrollY) {
@@ -347,7 +357,7 @@ const ShopPage = () => {
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="flex -space-x-2">
-                      {groceries.slice(0, 4).map((item, i) => (
+                      {groceries.slice(0, 4).map((item) => (
                         <div
                           key={item._id}
                           className="w-8 h-8 rounded-full bg-white/30 border-2 border-white/50 overflow-hidden"
@@ -419,6 +429,19 @@ const ShopPage = () => {
               </div>
 
               <div className="flex items-center gap-3">
+                {/* Shopping Cart with Badge */}
+                <button
+                  onClick={() => router.push("/user/cart")}
+                  className="relative flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-600 hover:border-green-400 hover:text-green-600 transition-all shadow-sm"
+                >
+                  <ShoppingCart size={18} />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center rounded-full px-1 shadow-sm">
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
+                    </span>
+                  )}
+                </button>
+
                 {/* Mobile filter toggle */}
                 <button
                   onClick={() => setShowMobileFilters(true)}

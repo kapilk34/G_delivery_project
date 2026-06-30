@@ -4,12 +4,20 @@ import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
+import { auth } from "@/auth";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req:NextRequest) {
     try {
         await connectDb()
-        const {userId, items, paymentMethod, totalAmmount, address} = await req.json()
+        const authSession = await auth()
+        let {userId, items, paymentMethod, totalAmmount, address} = await req.json()
+        
+        if (!userId && authSession?.user?.id) {
+            userId = authSession.user.id
+        }
+
         if(!userId || !items || !paymentMethod || !totalAmmount || !address){
             return NextResponse.json(
                 {message:"please send all credentials"},

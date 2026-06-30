@@ -4,10 +4,18 @@ import Order from "@/models/orderModel";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 
+import { auth } from "@/auth";
+
 export async function POST(req:NextRequest) {
     try {
         await connectDb()
-        const {userId, items, paymentMethod, totalAmmount, address} = await req.json()
+        const authSession = await auth()
+        let {userId, items, paymentMethod, totalAmmount, address} = await req.json()
+        
+        if (!userId && authSession?.user?.id) {
+            userId = authSession.user.id
+        }
+
         if(!userId || !items || !paymentMethod || !totalAmmount || !address){
             return NextResponse.json(
                 {message:"please send all credentials"},

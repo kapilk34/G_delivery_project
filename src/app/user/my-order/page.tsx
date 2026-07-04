@@ -933,13 +933,6 @@ function MyOrder() {
           </button>
         </div>
 
-        {/* Stats Cards - Modern E-commerce Style */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {statCards.map((stat, index) => (
-            <StatCard key={stat.label} {...stat} index={index} />
-          ))}
-        </div>
-
         {/* Modern Filter Bar */}
         <FilterBar 
           searchQuery={searchQuery}

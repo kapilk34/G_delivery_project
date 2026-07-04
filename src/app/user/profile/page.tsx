@@ -8,6 +8,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
+import NavBar from "@/components/Nav";
+import SkeletonLoader from "@/components/SkeletonLoader";
 import {
   User,
   Mail,
@@ -662,13 +664,10 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative h-12 w-12">
-            <div className="absolute inset-0 rounded-full border-4 border-slate-200" />
-            <div className="absolute inset-0 rounded-full border-4 border-t-slate-900 animate-spin" />
-          </div>
-          <p className="text-sm font-medium text-slate-500">Loading your profile...</p>
+      <div className="flex min-h-screen flex-col bg-slate-50 pt-[72px]">
+        <NavBar user={userData as any || null} />
+        <div className="mx-auto max-w-6xl px-4 md:px-8 py-8 w-full">
+          <SkeletonLoader type="profile" count={1} />
         </div>
       </div>
     );
@@ -678,8 +677,8 @@ export default function ProfilePage() {
 
   if (!userData) {
     return (
-      <div className="flex min-h-screen flex-col bg-slate-50">
-        {/* <NavBar user={null} /> */}
+      <div className="flex min-h-screen flex-col bg-slate-50 pt-[72px]">
+        <NavBar user={null} />
         <div className="flex flex-1 flex-col items-center justify-center px-4 py-20 text-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -708,8 +707,8 @@ export default function ProfilePage() {
   // ─── Main Render ──────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 font-sans text-slate-800">
-      {/* <NavBar user={userData as any} /> */}
+    <div className="min-h-screen bg-slate-50 pb-24 font-sans text-slate-800 pt-[72px]">
+      <NavBar user={userData as any} />
 
       {/* Hero Background */}
       <div className="relative h-30 overflow-hidden bg-slate-900 sm:h-35">

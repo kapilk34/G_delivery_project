@@ -20,16 +20,25 @@ import {
   Search,
   Phone,
   Box,
-  Navigation
+  Navigation,
+  TrendingUp,
+  Filter,
+  X,
+  SlidersHorizontal,
+  ChevronDown,
+  CalendarDays,
+  ArrowUpDown
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { getSocket } from "@/lib/socket";
 import dynamicImport from "next/dynamic";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/redux/cartSlice";
 import { useSession } from "next-auth/react";
 import ReviewModal from "./ReviewModal";
+import NavBar from "@/components/Nav";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 const DeliveryMapComponent = dynamicImport(() => import("./DeliveryMapComponent"), { ssr: false });
 
@@ -47,6 +56,9 @@ const STATUS_CONFIG: Record<OrderStatus, {
   gradient: string;
   dot: string;
   description: string;
+  chipBg: string;
+  chipText: string;
+  chipBorder: string;
 }> = {
   pending: {
     label: "Processing",
@@ -57,16 +69,22 @@ const STATUS_CONFIG: Record<OrderStatus, {
     gradient: "from-amber-500/10 to-orange-500/5",
     dot: "bg-amber-500",
     description: "Your order is being prepared",
+    chipBg: "bg-amber-50",
+    chipText: "text-amber-700",
+    chipBorder: "border-amber-200",
   },
   "Out of Delivery": {
     label: "On the Way",
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
+    color: "text-green-700",
+    bg: "bg-green-50",
+    border: "border-green-200",
     icon: Truck,
-    gradient: "from-blue-500/10 to-cyan-500/5",
-    dot: "bg-blue-500",
+    gradient: "from-green-500/10 to-emerald-500/5",
+    dot: "bg-green-500",
     description: "Your order is out for delivery",
+    chipBg: "bg-green-50",
+    chipText: "text-green-700",
+    chipBorder: "border-green-200",
   },
   delivered: {
     label: "Delivered",
@@ -77,6 +95,9 @@ const STATUS_CONFIG: Record<OrderStatus, {
     gradient: "from-emerald-500/10 to-teal-500/5",
     dot: "bg-emerald-500",
     description: "Your order has been delivered",
+    chipBg: "bg-emerald-50",
+    chipText: "text-emerald-700",
+    chipBorder: "border-emerald-200",
   },
 };
 
@@ -109,26 +130,26 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
         {/* Progress Line */}
         <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-100">
           <div 
-            className="h-full bg-indigo-600 transition-all duration-500 rounded-full"
+            className="h-full bg-green-600 transition-all duration-500 rounded-full"
             style={{
               width: `${(currentStep / (steps.length - 1)) * 100}%`
             }}
           />
         </div>
-        
+
         {steps.map((step, index) => {
           const Icon = step.icon;
           const isCompleted = index <= currentStep;
           const isActive = index === currentStep;
-          
+
           return (
             <div key={index} className="flex flex-col items-center relative z-10 flex-1">
               <div 
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
                   isCompleted
-                    ? "bg-indigo-600 border-indigo-600 text-white"
+                    ? "bg-green-600 border-green-600 text-white"
                     : "bg-white border-gray-200 text-gray-400"
-                } ${isActive ? "ring-4 ring-indigo-100 animate-pulse" : ""}`}
+                } ${isActive ? "ring-4 ring-green-100 animate-pulse" : ""}`}
               >
                 <Icon className="w-4 h-4" />
               </div>
@@ -143,7 +164,7 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
       </div>
       {/* Mobile-only active step label */}
       <div className="text-center sm:hidden mt-2">
-        <span className="text-xs font-bold text-indigo-600">
+        <span className="text-xs font-bold text-green-600">
           Status: {steps[currentStep]?.label}
         </span>
       </div>
@@ -177,8 +198,8 @@ const OrderItemRow = ({
       <p className="text-xs text-gray-500 mt-0.5">Qty: {quantity}</p>
     </div>
     <div className="text-right">
-      <p className="font-semibold text-gray-900 text-sm">${(numPrice * quantity).toFixed(2)}</p>
-      <p className="text-xs text-gray-400">${numPrice.toFixed(2)} each</p>
+      <p className="font-semibold text-gray-900 text-sm">₹{(numPrice * quantity).toFixed(2)}</p>
+      <p className="text-xs text-gray-400">₹{numPrice.toFixed(2)} each</p>
     </div>
   </div>
   );
@@ -200,14 +221,14 @@ const DeliveryTracker = ({
   if (status === "delivered") return null;
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-4">
+    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 p-4">
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-          <Navigation className="w-5 h-5 text-blue-600 animate-pulse" />
+        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <Navigation className="w-5 h-5 text-green-600 animate-pulse" />
         </div>
         <div>
-          <p className="font-semibold text-blue-900 text-sm">Live Tracking</p>
-          <p className="text-xs text-blue-600">
+          <p className="font-semibold text-green-900 text-sm">Live Tracking</p>
+          <p className="text-xs text-green-600">
             {status === "pending" 
               ? "Preparing your order..." 
               : isPickedUp 
@@ -216,15 +237,15 @@ const DeliveryTracker = ({
           </p>
         </div>
       </div>
-      
+
       <div className="bg-white/60 rounded-lg p-3 space-y-2">
         {location && (
-          <div className="flex items-center gap-2 text-xs text-blue-700">
+          <div className="flex items-center gap-2 text-xs text-green-700">
             <MapPin className="w-3.5 h-3.5" />
             <span>Lat: {location.latitude.toFixed(4)}, Lng: {location.longitude.toFixed(4)}</span>
           </div>
         )}
-        <div className="h-[250px] bg-blue-100 rounded-lg relative overflow-hidden z-0">
+        <div className="h-[250px] bg-green-100 rounded-lg relative overflow-hidden z-0">
           <DeliveryMapComponent 
             deliveryLocation={location ? [location.latitude, location.longitude] : null} 
             destinationLocation={destination ? [destination.latitude, destination.longitude] : null}
@@ -268,7 +289,7 @@ const OrderCard = ({
         year: "numeric",
       })
     : "N/A";
-  
+
   const orderTime = order.createdAt
     ? new Date(order.createdAt).toLocaleTimeString("en-US", {
         hour: "2-digit",
@@ -332,7 +353,7 @@ const OrderCard = ({
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <StatusBadge status={status} />
             <button
@@ -364,13 +385,13 @@ const OrderCard = ({
               {!expanded && items.length > 2 && (
                 <button 
                   onClick={() => setExpanded(true)}
-                  className="text-xs font-medium hover:text-green-700"
+                  className="text-xs font-medium text-green-600 hover:text-green-700"
                 >
                   +{items.length - 2} more
                 </button>
               )}
             </div>
-            
+
             <div className="space-y-2">
               {(expanded ? items : items.slice(0, 2)).map((item, idx) => (
                 <OrderItemRow key={idx} {...item} />
@@ -395,12 +416,12 @@ const OrderCard = ({
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Order Summary</h3>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Subtotal</span>
-                <span className="font-medium text-gray-700">${subtotal.toFixed(2)}</span>
+                <span className="font-medium text-gray-700">₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="h-px bg-gray-200 my-2" />
               <div className="flex justify-between">
                 <span className="font-semibold text-gray-900">Total</span>
-                <span className="text-lg font-bold text-gray-900">${total.toFixed(2)}</span>
+                <span className="text-lg font-bold text-gray-900">₹{total.toFixed(2)}</span>
               </div>
               <div className="flex items-center gap-2 pt-1">
                 <CreditCard className="w-4 h-4 text-gray-400" />
@@ -412,21 +433,21 @@ const OrderCard = ({
 
             {/* Delivery Info */}
             {status === "Out of Delivery" && (
-              <div className="bg-blue-50 rounded-xl border border-blue-100 p-4">
+              <div className="bg-green-50 rounded-xl border border-green-100 p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Truck className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <Truck className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-blue-900 text-sm">{deliveryBoyName}</p>
-                    <p className="text-xs text-blue-600">Your delivery partner</p>
+                    <p className="font-semibold text-green-900 text-sm">{deliveryBoyName}</p>
+                    <p className="text-xs text-green-600">Your delivery partner</p>
                   </div>
                 </div>
-                
+
                 {deliveryBoyPhone && (
                   <a 
                     href={`tel:${deliveryBoyPhone}`}
-                    className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 transition-colors bg-white/60 rounded-lg p-2.5"
+                    className="flex items-center gap-2 text-sm text-green-700 hover:text-green-800 transition-colors bg-white/60 rounded-lg p-2.5"
                   >
                     <Phone className="w-4 h-4" />
                     <span>{deliveryBoyPhone}</span>
@@ -437,13 +458,13 @@ const OrderCard = ({
 
             {/* ETA and Distance Summary */}
             {status !== "delivered" && routeDetails && (
-              <div className="bg-indigo-50 text-indigo-950 p-4 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm">
+              <div className="bg-green-50 text-green-950 p-4 rounded-xl border border-green-100 flex items-center justify-between shadow-sm">
                 <div>
-                  <p className="text-gray-900 font-semi-bold">Estimated Arrival</p>
+                  <p className="text-gray-900 font-semibold">Estimated Arrival</p>
                   <p className="text-lg font-bold">{routeDetails.durationMin} mins</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-gray-900 font-semi-bold">Distance Remaining</p>
+                  <p className="text-gray-900 font-semibold">Distance Remaining</p>
                   <p className="text-lg font-bold">{routeDetails.distanceKm.toFixed(1)} km</p>
                 </div>
               </div>
@@ -496,15 +517,233 @@ const OrderCard = ({
               Reorder
             </button>
           </div>
-          
+
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1.5 text-sm font-medium hover:text-green-700 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
           >
             {expanded ? "Show Less" : "View Details"}
             <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expanded ? "rotate-90" : ""}`} />
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Modern Stat Card Component ────────────────────────────────────
+
+const StatCard = ({ 
+  label, 
+  value, 
+  icon: Icon, 
+  color, 
+  bg, 
+  border, 
+  gradient,
+  description,
+  index 
+}: { 
+  label: string; 
+  value: number; 
+  icon: React.ElementType; 
+  color: string; 
+  bg: string; 
+  border: string;
+  gradient: string;
+  description: string;
+  index: number;
+}) => {
+  return (
+    <div 
+      className={`group relative bg-white rounded-2xl border ${border} p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden`}
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      {/* Background gradient on hover */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-4">
+          <div className={`${bg} p-3 rounded-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+            <Icon className={`w-6 h-6 ${color}`} />
+          </div>
+          <div className="flex items-center gap-1">
+            <TrendingUp className={`w-3.5 h-3.5 ${color} opacity-60`} />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-3xl font-bold text-gray-900 tracking-tight">{value}</p>
+          <p className="text-sm font-semibold text-gray-700">{label}</p>
+          <p className="text-xs text-gray-400 font-medium">{description}</p>
+        </div>
+      </div>
+
+      {/* Bottom accent bar */}
+      <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient} opacity-30 group-hover:opacity-100 transition-opacity duration-300`} />
+    </div>
+  );
+};
+
+// ─── Modern Filter Bar Component ───────────────────────────────────
+
+const FilterBar = ({
+  searchQuery,
+  setSearchQuery,
+  statusFilter,
+  setStatusFilter,
+  stats,
+  totalResults
+}: {
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+  statusFilter: OrderStatus | "all";
+  setStatusFilter: (s: OrderStatus | "all") => void;
+  stats: { total: number; pending: number; outForDelivery: number; delivered: number };
+  totalResults: number;
+}) => {
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const statusOptions = [
+    { value: "all" as const, label: "All Orders", count: stats.total, icon: Package },
+    { value: "pending" as const, label: "Processing", count: stats.pending, icon: Clock, config: STATUS_CONFIG.pending },
+    { value: "Out of Delivery" as const, label: "On the Way", count: stats.outForDelivery, icon: Truck, config: STATUS_CONFIG["Out of Delivery"] },
+    { value: "delivered" as const, label: "Delivered", count: stats.delivered, icon: CheckCircle, config: STATUS_CONFIG.delivered },
+  ];
+
+  const activeFiltersCount = (searchQuery ? 1 : 0) + (statusFilter !== "all" ? 1 : 0);
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Header Row */}
+      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-green-50 rounded-xl">
+            <SlidersHorizontal className="w-4 h-4 text-green-600" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-900">Filters & Search</h3>
+            <p className="text-xs text-gray-400">{totalResults} {totalResults === 1 ? 'order' : 'orders'} found</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {activeFiltersCount > 0 && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
+            >
+              <X className="w-3 h-3" />
+              Clear All ({activeFiltersCount})
+            </button>
+          )}
+          <button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+          >
+            <Filter className="w-3 h-3" />
+            Filters
+            <ChevronDown className={`w-3 h-3 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Search & Filter Content */}
+      <div className={`p-6 space-y-5 ${showMobileFilters ? '' : 'hidden lg:block'}`}>
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+          {/* Modern Search Input */}
+          <div className="relative w-full lg:w-[420px]">
+            <div className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${searchFocused ? 'ring-green-500/20' : ''}`} />
+            <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${searchFocused ? 'text-green-600' : 'text-gray-400'}`}>
+              <Search className="w-5 h-5" />
+            </div>
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search by order ID, item name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  searchInputRef.current?.focus();
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            )}
+          </div>
+
+          {/* Sort indicator (decorative) */}
+          <div className="hidden lg:flex items-center gap-2 text-xs text-gray-400 font-medium">
+            <CalendarDays className="w-3.5 h-3.5" />
+            <span>Sorted by newest first</span>
+            <ArrowUpDown className="w-3.5 h-3.5" />
+          </div>
+        </div>
+
+        {/* Status Filter Chips */}
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
+          {/* <span className="text-xs font-semibold text-gray-400 tracking-wider shrink-0">Status:</span> */}
+          {statusOptions.map((option) => {
+            const isActive = statusFilter === option.value;
+            const Icon = option.icon;
+
+            return (
+              <button
+                key={option.value}
+                onClick={() => setStatusFilter(option.value)}
+                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 shrink-0 ${
+                  isActive
+                    ? "bg-green-600 text-white shadow-lg shadow-green-600/25 scale-105"
+                    : "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-700 border border-gray-200 hover:border-green-200"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : option.config?.color || 'text-gray-500'}`} />
+                <span>{option.label}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-md font-bold ${
+                  isActive ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {option.count}
+                </span>
+                {isActive && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Filters Tags */}
+        {activeFiltersCount > 0 && (
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 flex-wrap">
+              {statusFilter !== "all" && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-semibold border border-green-200">
+                  <Filter className="w-3 h-3" />
+                  {STATUS_CONFIG[statusFilter]?.label}
+                  <button 
+                    onClick={() => setStatusFilter("all")} 
+                    className="ml-1 p-0.5 hover:bg-green-200 rounded-full transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -520,6 +759,12 @@ function MyOrder() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [reviewModal, setReviewModal] = useState<ReviewModalState>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchQuery]);
 
   const getDeliveryBoyId = (assignedDeliveryBoy: any) => {
     if (!assignedDeliveryBoy) return undefined;
@@ -597,8 +842,14 @@ function MyOrder() {
         o.items?.some((i: any) => i.name?.toLowerCase().includes(q))
       );
     }
-    return result;
+    return [...result].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
   }, [orders, statusFilter, searchQuery]);
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+
+  const paginatedOrders = useMemo(() => {
+    return filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  }, [filteredOrders, currentPage]);
 
   const stats = useMemo(() => ({
     total: orders.length,
@@ -607,134 +858,159 @@ function MyOrder() {
     delivered: orders.filter(o => o.orderStatus === "delivered").length,
   }), [orders]);
 
+  const statCards = [
+    { 
+      label: "Total Orders", 
+      value: stats.total, 
+      icon: Package, 
+      color: "text-green-700", 
+      bg: "bg-green-50",
+      border: "border-green-200",
+      description: "All time orders"
+    },
+    { 
+      label: "Processing", 
+      value: stats.pending, 
+      icon: Clock, 
+      color: "text-amber-700", 
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      description: "Currently preparing"
+    },
+    { 
+      label: "On the Way", 
+      value: stats.outForDelivery, 
+      icon: Truck, 
+      color: "text-green-700", 
+      bg: "bg-green-50",
+      border: "border-green-200",
+      description: "Active deliveries"
+    },
+    { 
+      label: "Delivered", 
+      value: stats.delivered, 
+      icon: CheckCircle, 
+      color: "text-emerald-700", 
+      bg: "bg-emerald-50",
+      border: "border-emerald-200",
+      description: "Completed orders"
+    },
+  ];
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-gray-100 border-t-indigo-600 animate-spin" />
-          <p className="text-sm font-medium text-gray-500">Loading your orders...</p>
-        </div>
+      <div className="min-h-screen bg-[#f8fafc]">
+        <NavBar user={session?.user as any || null} />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 space-y-8">
+          <SkeletonLoader type="card" count={4} />
+          <SkeletonLoader type="list" count={3} />
+        </main>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      {/* Header */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push("/")}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="font-medium text-sm">Back</span>
-              </button>
-              <div className="h-6 w-px bg-gray-200" />
-              <div className="flex items-center gap-2">
-                <div className="bg-green-600 p-1.5 rounded-lg">
-                  <ShoppingBag className="w-5 h-5 text-white" />
-                </div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">My Orders</h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <NavBar user={session?.user as any || null} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 space-y-8">
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { label: "Total", value: stats.total, icon: Package, color: "text-indigo-600", bg: "bg-indigo-50" },
-            { label: "Processing", value: stats.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-            { label: "On the Way", value: stats.outForDelivery, icon: Truck, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Delivered", value: stats.delivered, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-3">
-                <div className={`${stat.bg} p-2.5 rounded-xl`}>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-xs text-gray-500">{stat.label}</p>
-                </div>
-              </div>
+        {/* Page Header - Amazon/Flipkart Style */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-1 h-6 bg-green-600 rounded-full" />
+              <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Order Management</p>
             </div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">My Orders</h1>
+            <p className="text-sm text-gray-500 mt-1.5 font-medium">Track, manage, and reorder your purchases</p>
+          </div>
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-green-600/20 hover:shadow-green-600/30 hover:-translate-y-0.5"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            Continue Shopping
+          </button>
+        </div>
+
+        {/* Stats Cards - Modern E-commerce Style */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {statCards.map((stat, index) => (
+            <StatCard key={stat.label} {...stat} index={index} />
           ))}
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="relative w-full sm:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search orders..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              />
-            </div>
-            
-            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-              {(["all", "pending", "Out of Delivery", "delivered"] as const).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                    statusFilter === status
-                      ? "bg-gray-900 text-white shadow-sm"
-                      : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
-                  }`}
-                >
-                  {status === "all" ? "All" : STATUS_CONFIG[status]?.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Modern Filter Bar */}
+        <FilterBar 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          stats={stats}
+          totalResults={filteredOrders.length}
+        />
 
         {/* Orders List */}
         {orders.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Package className="w-10 h-10 text-gray-300" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+            <div className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <Package className="w-12 h-12 text-gray-300" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Orders Yet</h3>
-            <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
-              Start shopping to view your orders here. Your order history will appear once you make a purchase.
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No Orders Yet</h3>
+            <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+              Your order history is empty. Start shopping to see your orders here and track their delivery status in real-time.
             </p>
             <button
               onClick={() => router.push("/")}
-              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-green-600/20 hover:shadow-green-600/30 hover:-translate-y-0.5"
             >
               <ShoppingBag className="w-4 h-4" />
               Start Shopping
             </button>
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-gray-300" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <Search className="w-10 h-10 text-gray-300" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">No matching orders</h3>
-            <p className="text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No matching orders</h3>
+            <p className="text-sm text-gray-500 mb-6">Try adjusting your search terms or filter criteria to find what you are looking for.</p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+              }}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-bold transition-all"
+            >
+              <X className="w-4 h-4" />
+              Clear Filters
+            </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500 px-1">
-              Showing <span className="font-semibold text-gray-900">{filteredOrders.length}</span>{" "}
-              {filteredOrders.length === 1 ? "order" : "orders"}
-            </p>
-            {filteredOrders.map((order) => {
+          <div className="space-y-5">
+            {/* Results Header */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-gray-500 font-medium">
+                  Showing <span className="font-bold text-gray-900">{filteredOrders.length}</span>{" "}
+                  {filteredOrders.length === 1 ? "order" : "orders"}
+                </p>
+                {statusFilter !== "all" && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-semibold border border-green-200">
+                    <Filter className="w-3 h-3" />
+                    {STATUS_CONFIG[statusFilter]?.label}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 font-medium hidden sm:block">
+                Page {currentPage} of {totalPages || 1}
+              </p>
+            </div>
+
+            {paginatedOrders.map((order) => {
               const deliveryBoyId = getDeliveryBoyId(order.assignedDeliveryBoy);
               const orderIdStr = order._id?.toString() || "";
-              
+
               // Fallback to coordinates stored in database for the delivery boy if socket updates haven't arrived yet
               let deliveryLoc = deliveryBoyId ? deliveryLocations[deliveryBoyId] : undefined;
               if (!deliveryLoc && order.assignedDeliveryBoy && typeof order.assignedDeliveryBoy === "object") {
@@ -746,7 +1022,7 @@ function MyOrder() {
                   };
                 }
               }
-              
+
               return (
                 <OrderCard
                   key={orderIdStr}
@@ -763,6 +1039,68 @@ function MyOrder() {
                 />
               );
             })}
+
+            {/* Modern Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-10 pt-6">
+                <button 
+                  onClick={() => {
+                    setCurrentPage(p => Math.max(1, p - 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+                >
+                  <ChevronRight className="w-4 h-4 rotate-180" />
+                  Previous
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  {[...Array(totalPages)].map((_, i) => {
+                    const page = i + 1;
+                    const isActive = currentPage === page;
+
+                    // Show first, last, current, and neighbors
+                    const shouldShow = page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                    const showEllipsis = (page === 2 && currentPage > 3) || (page === totalPages - 1 && currentPage < totalPages - 2);
+
+                    if (showEllipsis) {
+                      return <span key={page} className="px-2 text-gray-400 font-bold">...</span>;
+                    }
+                    if (!shouldShow) return null;
+
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
+                          isActive 
+                            ? "bg-green-600 text-white shadow-lg shadow-green-600/25 scale-110" 
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button 
+                  onClick={() => {
+                    setCurrentPage(p => Math.min(totalPages, p + 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>

@@ -4,10 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   Zap, 
   Truck, 
-  Leaf, 
-  ArrowRight, 
-  Star,
-  Play
+  Leaf
 } from 'lucide-react';
 import Image from 'next/image';
 

@@ -704,8 +704,6 @@ export default function ProfilePage() {
     );
   }
 
-  // ─── Main Render ──────────────────────────────────────────────────
-
   return (
     <div className="min-h-screen bg-slate-50 pb-24 font-sans text-slate-800 pt-[72px]">
       <NavBar user={userData as any} />
@@ -718,7 +716,6 @@ export default function ProfilePage() {
           className="relative overflow-hidden rounded-3xl border border-white/60 bg-white shadow-xl shadow-slate-200/50"
         >
           <div className="flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-start sm:gap-8 sm:p-8">
-            {/* Avatar */}
             <div className="relative flex-shrink-0">
               <motion.div
                 whileHover={{ scale: 1.02 }}
@@ -726,7 +723,6 @@ export default function ProfilePage() {
                 onClick={() => fileInputRef.current?.click()}
               >
                 {userData.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={userData.image}
                     alt={userData.name}
@@ -738,7 +734,6 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {/* Hover Overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                   <Camera className="h-6 w-6 text-white" />
                   <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-white/90">

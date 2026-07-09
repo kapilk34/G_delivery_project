@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import DeliveryStatistics from "./DeliveryStatistics";
 import { getSocket } from "@/lib/socket";
 import Chatbot from "./Chatbot";
+import DeliveryBoyHeroSection from "./DeliveryBoyHeroSection";
 
 interface AssignmentItem {
   _id: string;
@@ -351,6 +352,7 @@ const DeliveryBoyDashboard = () => {
         <div className="pt-20" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
 
+          <DeliveryBoyHeroSection/>
           {/* Hero Banner */}
           <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-700 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl shadow-emerald-200 anim anim-1 mt-10">
             <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full pointer-events-none" />

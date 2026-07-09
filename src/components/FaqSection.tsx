@@ -57,7 +57,7 @@ const faqs = [
 const categories = ["All", "Delivery", "Pricing", "Payment", "Orders", "Tracking"];
 
 export default function FAQSection() {
-  const [active, setActive] = useState(null);
+  const [active, setActive] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 

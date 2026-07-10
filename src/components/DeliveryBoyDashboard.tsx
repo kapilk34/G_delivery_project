@@ -25,7 +25,9 @@ interface EarningsData {
   today: number;
   thisWeek: number;
   thisMonth: number;
+  totalEarnings: number;
   dailyBreakdown: { day: string; amount: number; deliveries: number }[];
+  monthlyBreakdown: { month: string; amount: number; deliveries: number }[];
 }
 
 function SectionLabel({ label }: { label: string }) {
@@ -46,62 +48,60 @@ function getGreeting() {
   return "Evening";
 }
 
-const EarningsBarChart = ({
+function BarChart({
   data,
+  labelKey,
+  title,
+  subtitle,
+  color,
 }: {
-  data: EarningsData["dailyBreakdown"];
-}) => {
+  data: { amount: number; deliveries: number; [key: string]: string | number }[];
+  labelKey: string;
+  title: string;
+  subtitle: string;
+  color: "emerald" | "violet";
+}) {
   const maxAmount = Math.max(...data.map((d) => d.amount), 1);
+  const colorMap = {
+    emerald: { bar: "bg-emerald-500 hover:bg-emerald-600", dot: "bg-emerald-500", text: "text-emerald-600" },
+    violet: { bar: "bg-violet-500 hover:bg-violet-600", dot: "bg-violet-500", text: "text-violet-600" },
+  };
+  const c = colorMap[color];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex-1 min-w-0">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-bold text-slate-800">
-            Earnings Overview
-          </h3>
-          <p className="text-sm text-slate-400 mt-0.5">
-            Last 7 days performance
-          </p>
+          <h3 className="text-base font-bold text-slate-800">{title}</h3>
+          <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <span className="w-3 h-3 rounded-sm bg-emerald-500" />
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <span className={`w-3 h-3 rounded-sm ${c.dot}`} />
           Earnings (₹)
         </div>
       </div>
-
-      <div className="h-64 flex items-end gap-3">
+      <div className="h-52 flex items-end gap-2">
         {data.map((item, index) => (
-          <div
-            key={item.day}
-            className="flex-1 flex flex-col items-center gap-2 group"
-          >
+          <div key={index} className="flex-1 flex flex-col items-center gap-1.5 group">
             <div className="relative w-full flex justify-center">
-              <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs font-semibold px-2 py-1 rounded-lg whitespace-nowrap z-10 pointer-events-none">
+              <div className="absolute -top-11 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs font-semibold px-2 py-1 rounded-lg whitespace-nowrap z-10 pointer-events-none">
                 ₹{item.amount.toLocaleString("en-IN")}
-                <div className="text-slate-300 text-[10px]">
-                  {item.deliveries} deliveries
-                </div>
+                <div className="text-slate-300 text-[10px]">{item.deliveries} deliveries</div>
               </div>
               <div
-                className="w-full max-w-[48px] bg-emerald-500 rounded-t-lg hover:bg-emerald-600 transition-all duration-300 relative overflow-hidden"
-                style={{
-                  height: `${(item.amount / maxAmount) * 180}px`,
-                  animationDelay: `${index * 0.1}s`,
-                }}
+                className={`w-full max-w-[44px] ${c.bar} rounded-t-lg transition-all duration-300 relative overflow-hidden`}
+                style={{ height: `${Math.max((item.amount / maxAmount) * 168, item.amount > 0 ? 4 : 0)}px` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-emerald-600/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
               </div>
             </div>
-            <span className="text-xs font-medium text-slate-500">
-              {item.day}
-            </span>
+            <span className="text-[10px] font-medium text-slate-500">{item[labelKey]}</span>
           </div>
         ))}
       </div>
     </div>
   );
-};
+}
 
 const DeliveryBoyDashboard = () => {
   const { data: session } = useSession();
@@ -196,7 +196,19 @@ const DeliveryBoyDashboard = () => {
       today: todayEarnings,
       thisWeek: weekEarnings,
       thisMonth: monthEarnings,
+      totalEarnings: completed.reduce((sum, a) => sum + (a.earningAmount || 40), 0),
       dailyBreakdown,
+      monthlyBreakdown: Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+        const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+        const monthName = d.toLocaleDateString("en-IN", { month: "short" });
+        const ma = completed.filter((a) => {
+          if (!a.updatedAt) return false;
+          const u = new Date(a.updatedAt);
+          return u >= d && u < nextMonth;
+        });
+        return { month: monthName, amount: ma.reduce((s, a) => s + (a.earningAmount || 40), 0), deliveries: ma.length };
+      }),
     });
   }, [assignments]);
 
@@ -293,27 +305,18 @@ const DeliveryBoyDashboard = () => {
   const earningsCards = useMemo(
     () => [
       {
-        label: "Today's Earnings",
-        sub: "Earnings from today",
-        value: earnings?.today ?? 0,
+        label: "Total Earnings",
+        sub: "All-time earnings",
+        value: earnings?.totalEarnings ?? totalEarningsAllTime,
         textColor: "text-emerald-600",
         iconBg: "bg-emerald-100",
         border: "border-emerald-100",
         ringColor: "ring-emerald-200",
         prefix: "₹",
         icon: (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         ),
       },
@@ -327,18 +330,9 @@ const DeliveryBoyDashboard = () => {
         ringColor: "ring-blue-200",
         prefix: "₹",
         icon: (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         ),
       },
@@ -352,23 +346,14 @@ const DeliveryBoyDashboard = () => {
         ringColor: "ring-violet-200",
         prefix: "₹",
         icon: (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         ),
       },
     ],
-    [earnings],
+    [earnings, totalEarningsAllTime],
   );
 
   const statCards = [
@@ -844,23 +829,42 @@ const DeliveryBoyDashboard = () => {
             </div>
           )}
 
-          {/* Earnings Chart */}
+          {/* Earnings Charts */}
           <div className="mb-10 anim anim-9">
             {earningsLoading ? (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm animate-pulse h-80">
-                <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
-                <div className="flex items-end gap-3 h-64 mt-8">
-                  {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                    <div
-                      key={i}
-                      className="flex-1 bg-slate-200 rounded-t-lg"
-                      style={{ height: `${Math.random() * 100}%` }}
-                    />
-                  ))}
-                </div>
+              <div className="flex flex-col sm:flex-row gap-5">
+                {[1, 2].map((i) => (
+                  <div key={i} className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm animate-pulse h-72 flex-1">
+                    <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
+                    <div className="flex items-end gap-2 h-52 mt-6">
+                      {Array.from({ length: i === 1 ? 7 : 6 }).map((_, j) => (
+                        <div key={j} className="flex-1 bg-slate-200 rounded-t-lg" style={{ height: `${30 + Math.floor(j * 17) % 70}%` }} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              earnings && <EarningsBarChart data={earnings.dailyBreakdown} />
+              <div className="flex flex-col sm:flex-row gap-5">
+                {earnings?.dailyBreakdown && (
+                  <BarChart
+                    data={earnings.dailyBreakdown}
+                    labelKey="day"
+                    title="This Month — Daily"
+                    subtitle="Last 7 days earnings"
+                    color="emerald"
+                  />
+                )}
+                {earnings?.monthlyBreakdown && (
+                  <BarChart
+                    data={earnings.monthlyBreakdown}
+                    labelKey="month"
+                    title="All-Time — Monthly"
+                    subtitle="Last 6 months earnings"
+                    color="violet"
+                  />
+                )}
+              </div>
             )}
           </div>
 

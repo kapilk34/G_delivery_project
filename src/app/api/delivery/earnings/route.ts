@@ -34,6 +34,9 @@ export async function GET() {
             .filter((a) => a.updatedAt && new Date(a.updatedAt) >= monthStart)
             .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
 
+        const totalEarnings = assignments
+            .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+
         // Generate last 7 days breakdown
         const dailyBreakdown = Array.from({ length: 7 }, (_, i) => {
             const date = new Date(today);
@@ -54,11 +57,30 @@ export async function GET() {
             return { day: dayName, amount: dayEarnings, deliveries: dayDeliveries };
         });
 
+        // Generate last 6 months breakdown
+        const monthlyBreakdown = Array.from({ length: 6 }, (_, i) => {
+            const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+            const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+            const monthName = d.toLocaleDateString("en-IN", { month: "short" });
+            const monthAssignments = assignments.filter((a) => {
+                if (!a.updatedAt) return false;
+                const u = new Date(a.updatedAt);
+                return u >= d && u < nextMonth;
+            });
+            return {
+                month: monthName,
+                amount: monthAssignments.reduce((sum, a) => sum + (a.earningAmount || 40), 0),
+                deliveries: monthAssignments.length,
+            };
+        });
+
         return NextResponse.json({
             today: todayEarnings,
             thisWeek: weekEarnings,
             thisMonth: monthEarnings,
+            totalEarnings,
             dailyBreakdown,
+            monthlyBreakdown,
         }, { status: 200 });
 
     } catch (error) {

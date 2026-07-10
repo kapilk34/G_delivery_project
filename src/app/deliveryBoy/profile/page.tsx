@@ -721,7 +721,7 @@ export default function ProfilePage() {
       <NavBar user={userData as any} />
 
       {/* Hero Background */}
-      <div className="relative h-30 overflow-hidden bg-slate-900 sm:h-35">
+      <div className="relative h-30 overflow-hidden sm:h-35">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-slate-950" />
         <div className="absolute inset-0 opacity-30" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -730,22 +730,6 @@ export default function ProfilePage() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 md:px-8 -mt-24 sm:-mt-28">
-        {/* Back Button */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-6"
-        >
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-white/80 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Home
-          </Link>
-        </motion.div>
-
         {/* Profile Header Card */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}

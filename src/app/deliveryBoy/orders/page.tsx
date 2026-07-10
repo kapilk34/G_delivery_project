@@ -3,14 +3,17 @@
 import axios from "axios";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import nextDynamic from "next/dynamic";
 import {
-  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, Clock, Truck, Ban, ChevronRight, Phone, Star, Hash, Box, ShoppingBag, CreditCard, ArrowLeft
+  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, Clock, Truck, Ban, ChevronRight, Phone, Star, Hash, Box, ShoppingBag, CreditCard
 } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 import { motion, AnimatePresence } from "motion/react";
 import { IOrder } from "@/models/orderModel";
-import Link from "next/link";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import NavBar from "@/components/Nav";
 
 const DeliveryMapComponent = nextDynamic(() => import("./DeliviveryMapComponent"), { ssr: false });
 
@@ -54,12 +57,12 @@ const STATUS_CONFIG: Record<AssignmentStatus, {
   },
   assigned: {
     label: "In Progress",
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
+    color: "text-green-700",
+    bg: "bg-green-50",
+    border: "border-green-200",
     icon: Truck,
-    gradient: "from-blue-500/10 to-cyan-500/5",
-    dot: "bg-blue-500",
+    gradient: "from-green-500/10 to-emerald-500/5",
+    dot: "bg-green-500",
     description: "Delivery is in progress",
   },
   completed: {
@@ -109,9 +112,9 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
     <div className="w-full py-4">
       <div className="flex items-center justify-between relative">
         {/* Progress Line */}
-        <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-100">
+            <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-100">
           <div
-            className="h-full bg-indigo-600 transition-all duration-500 rounded-full"
+            className="h-full bg-green-600 transition-all duration-500 rounded-full"
             style={{
               width: `${(currentStep / (steps.length - 1)) * 100}%`
             }}
@@ -127,9 +130,9 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
             <div key={index} className="flex flex-col items-center relative z-10 flex-1">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isCompleted
-                  ? "bg-indigo-600 border-indigo-600 text-white"
+                  ? "bg-green-600 border-green-600 text-white"
                   : "bg-white border-gray-200 text-gray-400"
-                  } ${isActive ? "ring-4 ring-indigo-100 animate-pulse" : ""}`}
+                  } ${isActive ? "ring-4 ring-green-100 animate-pulse" : ""}`}
               >
                 <Icon className="w-4 h-4" />
               </div>
@@ -143,7 +146,7 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
       </div>
       {/* Mobile-only active step label */}
       <div className="text-center sm:hidden mt-2">
-        <span className="text-xs font-bold text-indigo-600">
+        <span className="text-xs font-bold text-green-600">
           Status: {steps[currentStep]?.label}
         </span>
       </div>
@@ -198,12 +201,12 @@ const DeliveryTracker = ({
   return (
     <div className="p-4">
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-          <Navigation className="w-5 h-5 text-blue-600 animate-pulse" />
+        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <Navigation className="w-5 h-5 text-green-600 animate-pulse" />
         </div>
         <div>
-          <p className="font-semibold text-blue-900 text-sm">Live Navigation</p>
-          <p className="text-xs text-blue-600">
+          <p className="font-semibold text-green-900 text-sm">Live Navigation</p>
+          <p className="text-xs text-green-600">
             {status === "broadcasted"
               ? "Accept the delivery to start tracking"
               : isPickedUp
@@ -216,12 +219,12 @@ const DeliveryTracker = ({
       {status === "assigned" && (
         <div className="bg-white/60 rounded-lg p-3 space-y-2">
           {location && (
-            <div className="flex items-center gap-2 text-xs text-blue-700">
+            <div className="flex items-center gap-2 text-xs text-green-700">
               <MapPin className="w-3.5 h-3.5" />
               <span>Lat: {location[0].toFixed(4)}, Lng: {location[1].toFixed(4)}</span>
             </div>
           )}
-          <div className="h-[250px] bg-blue-100 rounded-lg relative overflow-hidden z-0">
+          <div className="h-[250px] bg-green-100 rounded-lg relative overflow-hidden z-0">
             <DeliveryMapComponent
               deliveryLocation={location}
               destinationLocation={destination}
@@ -417,23 +420,23 @@ function PremiumDeliveryCard({
             )}
 
             {status === "assigned" && (
-              <div className="bg-blue-50 rounded-xl border border-blue-100 p-4">
+              <div className="bg-green-50 rounded-xl border border-green-100 p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <Phone className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-blue-900 text-sm">
+                    <p className="font-semibold text-green-900 text-sm">
                       {assignment.order?.address?.fullName || "Customer"}
                     </p>
-                    <p className="text-xs text-blue-600">Contact Customer</p>
+                    <p className="text-xs text-green-600">Contact Customer</p>
                   </div>
                 </div>
 
                 {assignment.order?.address?.mobile && (
                   <a
                     href={`tel:${assignment.order.address.mobile}`}
-                    className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 transition-colors bg-white/60 rounded-lg p-2.5"
+                    className="flex items-center gap-2 text-sm text-green-700 hover:text-green-800 transition-colors bg-white/60 rounded-lg p-2.5"
                   >
                     <Phone className="w-4 h-4" />
                     <span>{assignment.order.address.mobile}</span>
@@ -463,27 +466,27 @@ function PremiumDeliveryCard({
 
               return (
                 <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                  <h3 className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-3">Your Earning</h3>
+                  <h3 className="text-xs font-semibold text-black tracking-wider mb-3">Your Earning</h3>
                   <div className="flex items-end justify-between">
                     {displayAmount !== null ? (
-                      <span className="text-3xl font-extrabold text-emerald-600">₹{displayAmount}</span>
+                      <span className="text-2xl font-bold text-black">₹{displayAmount}</span>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-emerald-600 font-medium">Calculating...</span>
+                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-black font-medium">Calculating...</span>
                       </div>
                     )}
                     {breakdown && (
-                      <span className="text-xs text-emerald-500 font-medium">{breakdown}</span>
+                      <span className="text-xs text-black font-medium">{breakdown}</span>
                     )}
                     {isCompleted && storedEarning !== null && (
-                      <span className="text-xs text-emerald-500 font-medium">Distance-based</span>
+                      <span className="text-xs text-black font-medium">Distance-based</span>
                     )}
                   </div>
                   <div className="h-px bg-emerald-200 my-3" />
                   <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs text-emerald-700 font-medium">
+                    <CreditCard className="w-4 h-4 text-black" />
+                    <span className="text-xs text-black font-medium">
                       {assignment.order?.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
                     </span>
                   </div>
@@ -493,7 +496,7 @@ function PremiumDeliveryCard({
 
             {/* ETA and Distance Summary */}
             {status !== "completed" && (
-              <div className="bg-indigo-50 text-indigo-950 p-4 rounded-xl border border-indigo-100 shadow-sm">
+              <div className="bg-green-50 text-green-950 p-4 rounded-xl border border-green-100 shadow-sm">
                 {routeInfo ? (
                   <div className="flex items-center justify-between">
                     <div>
@@ -507,8 +510,8 @@ function PremiumDeliveryCard({
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-indigo-700 font-medium">Calculating route...</span>
+                    <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-green-700 font-medium">Calculating route...</span>
                   </div>
                 )}
               </div>
@@ -536,7 +539,7 @@ function PremiumDeliveryCard({
               <>
                 <button
                   onClick={() => respondToAssignment(assignment._id, "accept")}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   <CheckCircle className="w-4 h-4" />
                   Accept Delivery
@@ -564,7 +567,7 @@ function PremiumDeliveryCard({
                 )}
                 <button
                   onClick={() => completeDelivery(assignment._id, calculateEarning(routeInfo?.distanceKm ?? null).amount)}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   <CheckCircle className="w-4 h-4" />
                   Mark Delivered
@@ -612,9 +615,10 @@ function PremiumDeliveryCard({
   );
 }
 
-// ─── Main Page Component ──────────────────────────────────────────────────────
 export default function DeliveryOrdersPage() {
+  const router = useRouter();
   const { data: session } = useSession();
+  const userData = useSelector((state: RootState) => state.user.userData);
   const [assignment, setAssignment] = useState<AssignmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPosition, setCurrentPosition] = useState<LatLng | null>(null);
@@ -706,14 +710,12 @@ export default function DeliveryOrdersPage() {
     }
   };
 
-  const filteredAssignments = activeFilter === "all"
-    ? [...assignment].sort((a, b) => {
-      const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
-      return statusOrder[a.status] - statusOrder[b.status];
-    })
-    : [...assignment].filter(a => a.status === activeFilter).sort((a, b) => {
-      const statusOrder = { broadcasted: 0, assigned: 1, completed: 2 };
-      return statusOrder[a.status] - statusOrder[b.status];
+  const filteredAssignments = [...assignment]
+    .filter(a => activeFilter === "all" ? true : a.status === activeFilter)
+    .sort((a, b) => {
+      const aDate = new Date(a.createdAt || a.order?.createdAt || 0).getTime();
+      const bDate = new Date(b.createdAt || b.order?.createdAt || 0).getTime();
+      return bDate - aDate; // newest first
     });
 
   const counts = {
@@ -725,9 +727,10 @@ export default function DeliveryOrdersPage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] relative overflow-hidden">
+      
       {/* Premium Background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-400/[0.03] rounded-full blur-[100px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-green-400/[0.03] rounded-full blur-[100px]" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-400/[0.03] rounded-full blur-[100px]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-400/[0.02] rounded-full blur-[120px]" />
       </div>
@@ -747,9 +750,9 @@ export default function DeliveryOrdersPage() {
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             className="fixed top-6 right-6 z-50"
           >
-            <div className={`rounded-2xl shadow-2xl shadow-black/10 px-6 py-4 flex items-center gap-4 backdrop-blur-xl border ${notification.type === "success" ? "bg-emerald-500/95 text-white border-emerald-400/30" :
+              <div className={`rounded-2xl shadow-2xl shadow-black/10 px-6 py-4 flex items-center gap-4 backdrop-blur-xl border ${notification.type === "success" ? "bg-emerald-500/95 text-white border-emerald-400/30" :
               notification.type === "error" ? "bg-rose-500/95 text-white border-rose-400/30" :
-                "bg-blue-500/95 text-white border-blue-400/30"
+                "bg-green-600/95 text-white border-green-500/30"
               }`}>
               <div className="p-1.5 bg-white/20 rounded-xl">
                 {notification.type === "success" && <CheckCircle className="w-5 h-5" strokeWidth={2.5} />}
@@ -762,42 +765,32 @@ export default function DeliveryOrdersPage() {
         )}
       </AnimatePresence>
 
-      {/* ─── Back Button ────────────────────────────────────────────── */}
-      <div className="fixed top-4 left-4 z-50">
-        <Link href="/">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 group"
-          >
-            <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-900 transition-colors" />
-            <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">Back</span>
-          </motion.button>
-        </Link>
-      </div>
+      <NavBar user={userData as any} />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 mt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 pt-[88px]">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <div className="p-2.5 bg-gray-900 rounded-xl shadow-sm">
-                  <Truck className="w-5 h-5 text-white" strokeWidth={2} />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Deliveries</h1>
-                  <p className="text-[13px] text-gray-500 font-medium">
-                    {assignment.length} assignment{assignment.length !== 1 ? "s" : ""} total
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-1 h-6 bg-green-600 rounded-full" />
+                        <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Order Management</p>
+                      </div>
+                      <h1 className="text-3xl font-bold text-gray-900 tracking-tight">My Deliveries</h1>
+                      <p className="text-sm text-gray-500 mt-1.5 font-medium">Track, manage, and complete your deliveries</p>
+                    </div>
+                    <button
+                      onClick={() => router.push("/")}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-green-600/20 hover:shadow-green-600/30 hover:-translate-y-0.5"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      Back to Dashboard
+                    </button>
+                  </div>
 
           <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-2">
             {(["all", "broadcasted", "assigned", "completed"] as const).map((filter) => (
@@ -807,7 +800,7 @@ export default function DeliveryOrdersPage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveFilter(filter)}
                 className={`relative px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all duration-300 whitespace-nowrap ${activeFilter === filter
-                  ? "bg-gray-900 text-white shadow-md shadow-gray-900/10"
+                  ? "bg-green-600 text-white shadow-md shadow-green-600/10"
                   : "bg-white text-gray-600 border border-gray-200/60 hover:bg-gray-50"
                   }`}
               >

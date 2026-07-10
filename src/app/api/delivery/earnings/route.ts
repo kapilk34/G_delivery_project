@@ -24,18 +24,18 @@ export async function GET() {
 
         const todayEarnings = assignments
             .filter((a) => a.updatedAt && new Date(a.updatedAt) >= today)
-            .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+            .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
         const weekEarnings = assignments
             .filter((a) => a.updatedAt && new Date(a.updatedAt) >= weekStart)
-            .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+            .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
         const monthEarnings = assignments
             .filter((a) => a.updatedAt && new Date(a.updatedAt) >= monthStart)
-            .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+            .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
         const totalEarnings = assignments
-            .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+            .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
         // Generate last 7 days breakdown
         const dailyBreakdown = Array.from({ length: 7 }, (_, i) => {
@@ -51,7 +51,7 @@ export async function GET() {
                     d.getFullYear() === date.getFullYear();
             });
 
-            const dayEarnings = dayAssignments.reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+            const dayEarnings = dayAssignments.reduce((sum, a) => sum + (a.earningAmount || 0), 0);
             const dayDeliveries = dayAssignments.length;
 
             return { day: dayName, amount: dayEarnings, deliveries: dayDeliveries };

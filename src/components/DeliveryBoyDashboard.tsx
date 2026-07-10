@@ -153,15 +153,15 @@ const DeliveryBoyDashboard = () => {
 
     const todayEarnings = completed
       .filter((a) => a.updatedAt && new Date(a.updatedAt) >= today)
-      .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+      .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
     const weekEarnings = completed
       .filter((a) => a.updatedAt && new Date(a.updatedAt) >= weekStart)
-      .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+      .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
     const monthEarnings = completed
       .filter((a) => a.updatedAt && new Date(a.updatedAt) >= monthStart)
-      .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+      .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
     // Generate last 7 days breakdown
     const dailyBreakdown = Array.from({ length: 7 }, (_, i) => {
@@ -178,7 +178,7 @@ const DeliveryBoyDashboard = () => {
             d.getFullYear() === date.getFullYear()
           );
         })
-        .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+        .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
       const dayDeliveries = completed.filter((a) => {
         if (!a.updatedAt) return false;
         const d = new Date(a.updatedAt);
@@ -196,7 +196,7 @@ const DeliveryBoyDashboard = () => {
       today: todayEarnings,
       thisWeek: weekEarnings,
       thisMonth: monthEarnings,
-      totalEarnings: completed.reduce((sum, a) => sum + (a.earningAmount || 40), 0),
+      totalEarnings: completed.reduce((sum, a) => sum + (a.earningAmount || 0), 0),
       dailyBreakdown,
       monthlyBreakdown: Array.from({ length: 6 }, (_, i) => {
         const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
@@ -207,7 +207,7 @@ const DeliveryBoyDashboard = () => {
           const u = new Date(a.updatedAt);
           return u >= d && u < nextMonth;
         });
-        return { month: monthName, amount: ma.reduce((s, a) => s + (a.earningAmount || 40), 0), deliveries: ma.length };
+        return { month: monthName, amount: ma.reduce((s, a) => s + (a.earningAmount || 0), 0), deliveries: ma.length };
       }),
     });
   }, [assignments]);
@@ -292,7 +292,7 @@ const DeliveryBoyDashboard = () => {
   const totalRatings = ratedAssignments.length;
 
   const totalEarningsAllTime = completedAssignments
-    .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+    .reduce((sum, a) => sum + (a.earningAmount || 0), 0);
 
   const notificationCount = pendingRequests;
   const avgRating = rating;

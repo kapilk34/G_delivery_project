@@ -74,11 +74,12 @@ const STATUS_CONFIG: Record<AssignmentStatus, {
   },
 };
 
+const RATE_PER_KM = 30;
+
 const calculateEarning = (distanceKm: number | null): { amount: number; breakdown: string } => {
-  if (distanceKm === null) return { amount: 40, breakdown: "Base fare (distance pending)" };
-  if (distanceKm < 3) return { amount: 40, breakdown: `Flat rate for <3 km` };
-  const amount = Math.round(distanceKm * 12);
-  return { amount, breakdown: `${distanceKm.toFixed(1)} km × ₹12/km` };
+  if (distanceKm === null) return { amount: 0, breakdown: "Calculating distance..." };
+  const amount = Math.round(distanceKm * RATE_PER_KM);
+  return { amount, breakdown: `${distanceKm.toFixed(1)} km × ₹${RATE_PER_KM}/km` };
 };
 
 const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
@@ -446,32 +447,43 @@ function PremiumDeliveryCard({
           <div className="lg:col-span-5 space-y-4">
             {/* Earnings Breakdown */}
             {(() => {
-              const earning = calculateEarning(routeInfo?.distanceKm ?? null);
-              const displayEarning = status === "completed" && assignment.earningAmount 
-                ? assignment.earningAmount 
-                : earning.amount;
+              const isCompleted = status === "completed";
+              const storedEarning = assignment.earningAmount ?? null;
+              const liveEarning = routeInfo ? calculateEarning(routeInfo.distanceKm) : null;
+
+              // For completed: always use stored DB value
+              // For active: use live calculated value, or show spinner
+              const displayAmount = isCompleted
+                ? (storedEarning ?? 0)
+                : liveEarning?.amount ?? null;
+
+              const breakdown = isCompleted
+                ? null
+                : liveEarning?.breakdown ?? null;
 
               return (
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-1">Earnings & Payment</h3>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-gray-500">Order Amount</span>
-                    <span className="font-bold text-gray-900 text-lg">₹{assignment.order?.totalAmmount || 0}</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-gray-500">Your Earning</span>
-                    <span className="font-bold text-emerald-600 text-lg">₹{displayEarning}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-400">
-                    {/* <span>{earning.breakdown}</span> */}
-                    {!routeInfo && status !== "completed" && (
-                      <span className="text-amber-500 font-medium">Estimated</span>
+                <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                  <h3 className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-3">Your Earning</h3>
+                  <div className="flex items-end justify-between">
+                    {displayAmount !== null ? (
+                      <span className="text-3xl font-extrabold text-emerald-600">₹{displayAmount}</span>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-emerald-600 font-medium">Calculating...</span>
+                      </div>
+                    )}
+                    {breakdown && (
+                      <span className="text-xs text-emerald-500 font-medium">{breakdown}</span>
+                    )}
+                    {isCompleted && storedEarning !== null && (
+                      <span className="text-xs text-emerald-500 font-medium">Distance-based</span>
                     )}
                   </div>
-                  <div className="h-px bg-gray-200 my-2" />
+                  <div className="h-px bg-emerald-200 my-3" />
                   <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-gray-400" />
-                    <span className="text-xs text-gray-500">
+                    <CreditCard className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs text-emerald-700 font-medium">
                       {assignment.order?.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
                     </span>
                   </div>
@@ -581,7 +593,7 @@ function PremiumDeliveryCard({
               ) : (
                 <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-200">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Delivered Successfully (+₹{calculateEarning(routeInfo?.distanceKm ?? null).amount})</span>
+                  <span>Delivered Successfully (+₹{assignment.earningAmount ?? calculateEarning(routeInfo?.distanceKm ?? null).amount})</span>
                 </div>
               )
             )}

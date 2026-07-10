@@ -8,6 +8,7 @@ import {
     LineElement, Filler, Tooltip, Legend,
 } from "chart.js"
 import { Bar } from "react-chartjs-2"
+import Footer from "./Footer"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Filler, Tooltip, Legend)
 
@@ -523,8 +524,8 @@ function AdminDashboard() {
                             </table>
                         </div>
                     </div>
-
                 </div>
+                <Footer/>
             </div>
         </>
     )

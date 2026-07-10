@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import DeliveryStatistics from "./DeliveryStatistics";
 import { getSocket } from "@/lib/socket";
 import Chatbot from "./Chatbot";
-import DeliveryBoyHeroSection from "./DeliveryBoyHeroSection";
+import Footer from "./Footer";
 
 interface AssignmentItem {
   _id: string;
@@ -123,6 +123,13 @@ const DeliveryBoyDashboard = () => {
       setEarningsLoading(false);
     }
   }, []);
+
+const [todayDeliveries, setTodayDeliveries] = useState(8);
+const [pendingOrders, setPendingOrders] = useState(3);
+const [todayEarnings, setTodayEarnings] = useState(124.50);
+const [rating, setRating] = useState(4.9);
+const [totalRatings, setTotalRatings] = useState(342);
+const [notificationCount, setNotificationCount] = useState(3);
 
   // Fallback earnings calculation from assignments data
   const calculateEarningsFromAssignments = useCallback(() => {
@@ -350,52 +357,153 @@ const DeliveryBoyDashboard = () => {
 
       <div className="jakarta min-h-screen bg-slate-50">
         <div className="pt-20" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
 
-          <DeliveryBoyHeroSection/>
           {/* Hero Banner */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-700 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl shadow-emerald-200 anim anim-1 mt-10">
-            <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full pointer-events-none" />
-            <div className="absolute -bottom-12 right-20 w-36 h-36 bg-white/5 rounded-full pointer-events-none" />
-            <div className="absolute top-6 right-44 w-12 h-12 bg-white/10 rounded-full pointer-events-none" />
+          <div className="relative overflow-hidden bg-gradient-to-br from-green-600 via-green-700 to-green-800 rounded-3xl p-6 sm:p-8 mb-8 shadow-2xl shadow-emerald-200/50 mt-10 group">
+  {/* Animated background blobs */}
+  <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/[0.08] rounded-full blur-2xl pointer-events-none animate-pulse" />
+  <div className="absolute -bottom-16 right-32 w-48 h-48 bg-teal-400/10 rounded-full blur-xl pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
+  <div className="absolute top-10 right-56 w-16 h-16 bg-white/[0.07] rounded-full pointer-events-none animate-pulse" style={{ animationDelay: '2.5s' }} />
+  <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-emerald-400/5 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-              <div>
-                <div className="inline-flex items-center gap-2 bg-white/15 border border-white/20 rounded-full px-3 py-1 mb-4">
-                  <span className="text-base">🚴</span>
-                  <span className="text-emerald-100 text-xs font-bold tracking-widest uppercase">FreshBasket</span>
-                  <span className="text-emerald-300 text-xs">· Delivery Panel</span>
-                </div>
-                <h1 className="text-white text-2xl sm:text-3xl font-bold tracking-tight leading-snug">
-                  Good {getGreeting()},{" "}
-                  <span className="text-emerald-200">{session?.user?.name?.split(" ")[0] ?? "Rider"}</span>!
-                </h1>
-                <p className="text-emerald-300 text-sm mt-1.5">{dateString}</p>
-              </div>
+  <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+    style={{
+      backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+      backgroundSize: '24px 24px'
+    }}
+  />
 
-              <div className="flex items-center gap-2.5 shrink-0">
-                <div className="flex items-center gap-2 bg-white/15 border border-white/20 rounded-xl px-3 py-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-                  <span className="text-white text-xs font-semibold">
-                    {activeDeliveries > 0 ? "On Delivery" : "Available"}
-                  </span>
-                </div>
-                <button
-                  onClick={() => {
-                    fetchAssignments();
-                    fetchEarnings();
-                  }}
-                  className="flex items-center gap-1.5 bg-white/15 border border-white/20 hover:bg-white/25 transition-colors rounded-xl px-3 py-2 text-white text-xs font-semibold"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Refresh
-                </button>
-              </div>
-            </div>
+  <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+    <div className="space-y-1 flex-1">
+      {/* Badge with glass effect */}
+      <div className="inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 bg-white/10 backdrop-blur-md mb-5 shadow-sm hover:bg-white/15 transition-all duration-300 cursor-default">
+        <div className="relative">
+          <img
+            src={"https://z2jsknicy5.ufs.sh/f/HcyboFZa5mETeZhyjgHcDxIylbosdVjB0gizWqJutYmG8PLS"}
+            alt="Delivery"
+            className="h-8 sm:h-9 w-auto drop-shadow-sm"
+          />
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-300 rounded-full animate-ping opacity-75" />
+        </div>
+        <span className="text-emerald-50 text-xs font-medium tracking-wide">Delivery Panel</span>
+      </div>
+
+      {/* Main greeting */}
+      <h1 className="text-white text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+        Good {getGreeting()},{" "}
+        <span className="text-orange-400 drop-shadow-lg relative inline-block group/name">
+          {session?.user?.name?.split(" ")[0] ?? "Rider"}
+          <svg className="absolute -bottom-1 left-0 w-full h-2 text-orange-500 transform transition-transform duration-300 group-hover/name:scale-x-110" viewBox="0 0 100 10" preserveAspectRatio="none">
+            <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" />
+          </svg>
+        </span>
+      </h1>
+
+      <div className="flex items-center gap-2 text-gray-200 text-sm mt-3 font-medium">
+        <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        {dateString}
+      </div>
+
+      {/* Delivery Stats Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
+        {/* Today's Deliveries */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/5 hover:bg-white/10 transition-all duration-300 cursor-default group/stat">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <span className="text-white/80 text-[10px] font-medium uppercase tracking-wider">Today</span>
           </div>
+          <p className="text-white text-xl font-bold mt-1">{todayDeliveries || 0}</p>
+          <span className="text-emerald-300/60 text-[9px]">deliveries</span>
+        </div>
+
+        {/* Pending Orders */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/5 hover:bg-white/10 transition-all duration-300 cursor-default group/stat">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-white/80 text-[10px] font-medium uppercase tracking-wider">Pending</span>
+          </div>
+          <p className="text-white text-xl font-bold mt-1">{pendingOrders || 0}</p>
+          <span className="text-amber-300/60 text-[9px]">to deliver</span>
+        </div>
+
+        {/* Today's Earnings */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/5 hover:bg-white/10 transition-all duration-300 cursor-default group/stat">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-white/80 text-[10px] font-medium uppercase tracking-wider">Earnings</span>
+          </div>
+          <p className="text-white text-xl font-bold mt-1">${todayEarnings || '0.00'}</p>
+          <span className="text-emerald-300/60 text-[9px]">today</span>
+        </div>
+
+        {/* Rating */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/5 hover:bg-white/10 transition-all duration-300 cursor-default group/stat">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <span className="text-white/80 text-[10px] font-medium uppercase tracking-wider">Rating</span>
+          </div>
+          <p className="text-white text-xl font-bold mt-1">{rating || '4.9'}</p>
+          <span className="text-yellow-300/60 text-[9px]">★ {totalRatings || 0} reviews</span>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap items-center gap-2 mt-4">
+        <button className="px-3.5 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-xs font-medium hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2 group/btn">
+          <svg className="w-3.5 h-3.5 group-hover/btn:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Accept Order
+        </button>
+        <button className="px-3.5 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-xs font-medium hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          Notifications
+          {notificationCount > 0 && (
+            <span className="w-4 h-4 bg-red-500 rounded-full text-[9px] flex items-center justify-center text-white font-bold animate-pulse">
+              {notificationCount}
+            </span>
+          )}
+        </button>
+        <button className="px-3.5 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-xs font-medium hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          Complete Delivery
+        </button>
+        <button className="px-3.5 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-xs font-medium hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+          </svg>
+          View All
+        </button>
+      </div>
+    </div>
+
+    {/* Image section */}
+    <div className="relative flex-shrink-0">
+      <div className="absolute -inset-4 bg-white/5 rounded-full blur-2xl opacity-50 animate-pulse" />
+      <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-400/20 rounded-full blur-xl animate-pulse" />
+      <img
+        src={"https://z2jsknicy5.ufs.sh/f/HcyboFZa5mETYcwnttSyq4fs76rKd0U9VPWiGLkT21NuHzYO"}
+        alt="Grocery Delivery"
+        className="h-40 sm:h-72 md:h-60 lg:h-[22rem] w-auto object-contain translate-y-8 relative z-10 hover:scale-105 transition-transform duration-500 drop-shadow-2xl"
+      />
+    </div>
+  </div>
+</div>
 
           {/* Stats */}
           <div className="anim anim-2">
@@ -558,7 +666,8 @@ const DeliveryBoyDashboard = () => {
 
         </div>
       </div>
-      <Chatbot/>
+      <Footer/>
+      <Chatbot />
     </>
   );
 };

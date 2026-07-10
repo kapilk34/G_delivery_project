@@ -141,13 +141,6 @@ const DeliveryBoyDashboard = () => {
     }
   }, []);
 
-  const [todayDeliveries, setTodayDeliveries] = useState(8);
-  const [pendingOrders, setPendingOrders] = useState(3);
-  const [todayEarnings, setTodayEarnings] = useState(124.5);
-  const [rating, setRating] = useState(4.9);
-  const [totalRatings, setTotalRatings] = useState(342);
-  const [notificationCount, setNotificationCount] = useState(3);
-
   // Fallback earnings calculation from assignments data
   const calculateEarningsFromAssignments = useCallback(() => {
     const now = new Date();
@@ -251,6 +244,9 @@ const DeliveryBoyDashboard = () => {
     day: "numeric",
   });
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const totalDeliveries = assignments.filter(
     (a) => a.status === "completed",
   ).length;
@@ -261,20 +257,33 @@ const DeliveryBoyDashboard = () => {
     (a) => a.status === "broadcasted",
   ).length;
 
-  const totalEarningsAllTime = assignments
-    .filter((a) => a.status === "completed")
-    .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
-
   const completedAssignments = assignments.filter(
     (a) => a.status === "completed",
   );
-  const avgRating =
-    completedAssignments.length > 0
-      ? completedAssignments.reduce(
-          (sum, a) => sum + (a.order?.review?.rating || 5),
-          0,
-        ) / completedAssignments.length
+
+  const todayDeliveries = completedAssignments.filter(
+    (a) => a.updatedAt && new Date(a.updatedAt) >= today,
+  ).length;
+
+  const pendingOrders = pendingRequests + activeDeliveries;
+
+  const todayEarnings = earnings?.today ?? 0;
+
+  const ratedAssignments = completedAssignments.filter(
+    (a) => a.order?.review?.rating,
+  );
+  const rating =
+    ratedAssignments.length > 0
+      ? ratedAssignments.reduce((sum, a) => sum + (a.order?.review?.rating || 0), 0) /
+        ratedAssignments.length
       : 0;
+  const totalRatings = ratedAssignments.length;
+
+  const totalEarningsAllTime = completedAssignments
+    .reduce((sum, a) => sum + (a.earningAmount || 40), 0);
+
+  const notificationCount = pendingRequests;
+  const avgRating = rating;
 
   const avgDeliveryTimeStr =
     completedAssignments.length > 0 ? "25 min" : "0 min"; // Simplified as exact times might be complex to compute without complete timestamp pairs
@@ -609,7 +618,7 @@ const DeliveryBoyDashboard = () => {
                       </span>
                     </div>
                     <p className="text-white text-xl font-bold mt-1">
-                      ${todayEarnings || "0.00"}
+                      ₹{todayEarnings.toLocaleString("en-IN")}
                     </p>
                     <span className="text-emerald-300/60 text-[9px]">
                       today
@@ -631,10 +640,10 @@ const DeliveryBoyDashboard = () => {
                       </span>
                     </div>
                     <p className="text-white text-xl font-bold mt-1">
-                      {rating || "4.9"}
+                      {rating > 0 ? rating.toFixed(1) : "4.6"}
                     </p>
                     <span className="text-yellow-300/60 text-[9px]">
-                      ★ {totalRatings || 0} reviews
+                      ★ {totalRatings} reviews
                     </span>
                   </div>
                 </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Package, Trash2 } from "lucide-react";
+import { Package, Trash2 } from "lucide-react";
 import Image from "next/image";
 import axios from "axios";
 
@@ -44,12 +43,7 @@ function ViewGrocery() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-50 to-white pb-16">
-      <Link href={"/"} className="inline-flex items-center gap-2 text-green-700 font-semibold bg-white px-4 py-2 rounded-full shadow-md hover:bg-green-100 hover:shadow-lg transition-all m-6">
-        <ArrowLeft className="w-5 h-5" />
-        <span className="hidden md:flex">Back To Home</span>
-      </Link>
-
-      <div className="flex items-center justify-center gap-2 mb-8">
+      <div className="flex items-center justify-center gap-2 mb-8 pt-8">
         <Package className="text-green-600 w-6 h-6" />
         <h1 className="text-2xl font-bold text-green-700">View Groceries</h1>
       </div>

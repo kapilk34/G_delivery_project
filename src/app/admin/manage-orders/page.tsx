@@ -3,7 +3,6 @@
 import { IOrder } from "@/models/orderModel";
 import axios from "axios";
 import {
-  ArrowLeft,
   Package,
   Clock,
   CheckCircle,
@@ -23,7 +22,6 @@ import {
   Check,
   TrendingUp,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useMemo } from "react";
 import { getSocket } from "@/lib/socket";
 
@@ -442,7 +440,6 @@ function ManageOrders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const router = useRouter();
 
   const fetchOrders = async () => {
     try {
@@ -509,38 +506,23 @@ function ManageOrders() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push("/")}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="font-medium text-sm">Back</span>
-              </button>
-              <div className="h-6 w-px bg-gray-200" />
-              <div className="flex items-center gap-2">
-                <div className="bg-indigo-600 p-1.5 rounded-lg">
-                  <Package className="w-5 h-5 text-white" />
-                </div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">Order Management</h1>
-              </div>
-            </div>
-            <button
-              onClick={fetchOrders}
-              disabled={isRefreshing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all disabled:opacity-50 shadow-sm"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-              Refresh
-            </button>
-          </div>
-        </div>
-      </nav>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-indigo-600 p-1.5 rounded-lg">
+              <Package className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 tracking-tight">Order Management</h1>
+          </div>
+          <button
+            onClick={fetchOrders}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all disabled:opacity-50 shadow-sm"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Orders" value={stats.total} icon={Package} color="text-indigo-600" bgColor="bg-indigo-50" />
           <StatCard label="Pending" value={stats.pending} icon={Clock} color="text-amber-600" bgColor="bg-amber-50" />

@@ -6,7 +6,22 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import nextDynamic from "next/dynamic";
 import {
-  MapPin, Package, Navigation, CheckCircle, XCircle, Bell, Clock, Truck, Ban, ChevronRight, Phone, Star, Hash, Box, ShoppingBag, CreditCard
+  MapPin,
+  Package,
+  Navigation,
+  CheckCircle,
+  XCircle,
+  Bell,
+  Clock,
+  Truck,
+  Ban,
+  ChevronRight,
+  Phone,
+  Star,
+  Hash,
+  Box,
+  ShoppingBag,
+  CreditCard,
 } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 import { motion, AnimatePresence } from "motion/react";
@@ -15,7 +30,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import NavBar from "@/components/Nav";
 
-const DeliveryMapComponent = nextDynamic(() => import("./DeliviveryMapComponent"), { ssr: false });
+const DeliveryMapComponent = nextDynamic(
+  () => import("./DeliviveryMapComponent"),
+  { ssr: false },
+);
 
 type AssignmentItem = {
   _id: string;
@@ -35,16 +53,19 @@ interface AxiosError {
 
 type AssignmentStatus = "broadcasted" | "assigned" | "completed";
 
-const STATUS_CONFIG: Record<AssignmentStatus, {
-  label: string;
-  color: string;
-  bg: string;
-  border: string;
-  icon: React.ElementType;
-  gradient: string;
-  dot: string;
-  description: string;
-}> = {
+const STATUS_CONFIG: Record<
+  AssignmentStatus,
+  {
+    label: string;
+    color: string;
+    bg: string;
+    border: string;
+    icon: React.ElementType;
+    gradient: string;
+    dot: string;
+    description: string;
+  }
+> = {
   broadcasted: {
     label: "New Request",
     color: "text-amber-700",
@@ -79,10 +100,16 @@ const STATUS_CONFIG: Record<AssignmentStatus, {
 
 const RATE_PER_KM = 30;
 
-const calculateEarning = (distanceKm: number | null): { amount: number; breakdown: string } => {
-  if (distanceKm === null) return { amount: 0, breakdown: "Calculating distance..." };
+const calculateEarning = (
+  distanceKm: number | null,
+): { amount: number; breakdown: string } => {
+  if (distanceKm === null)
+    return { amount: 0, breakdown: "Calculating distance..." };
   const amount = Math.round(distanceKm * RATE_PER_KM);
-  return { amount, breakdown: `${distanceKm.toFixed(1)} km × ₹${RATE_PER_KM}/km` };
+  return {
+    amount,
+    breakdown: `${distanceKm.toFixed(1)} km × ₹${RATE_PER_KM}/km`,
+  };
 };
 
 const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
@@ -90,10 +117,16 @@ const StatusBadge = ({ status }: { status: AssignmentStatus }) => {
   const Icon = config.icon;
 
   return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${config.bg} ${config.border} border`}>
-      <span className={`w-2 h-2 rounded-full ${config.dot} ${status === "broadcasted" ? "animate-pulse" : ""}`} />
+    <div
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${config.bg} ${config.border} border`}
+    >
+      <span
+        className={`w-2 h-2 rounded-full ${config.dot} ${status === "broadcasted" ? "animate-pulse" : ""}`}
+      />
       <Icon className={`w-3.5 h-3.5 ${config.color}`} />
-      <span className={`text-sm font-semibold ${config.color}`}>{config.label}</span>
+      <span className={`text-sm font-semibold ${config.color}`}>
+        {config.label}
+      </span>
     </div>
   );
 };
@@ -112,11 +145,11 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
     <div className="w-full py-4">
       <div className="flex items-center justify-between relative">
         {/* Progress Line */}
-            <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-100">
+        <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-100">
           <div
             className="h-full bg-green-600 transition-all duration-500 rounded-full"
             style={{
-              width: `${(currentStep / (steps.length - 1)) * 100}%`
+              width: `${(currentStep / (steps.length - 1)) * 100}%`,
             }}
           />
         </div>
@@ -127,17 +160,24 @@ const ProgressBar = ({ currentStep }: { currentStep: number }) => {
           const isActive = index === currentStep;
 
           return (
-            <div key={index} className="flex flex-col items-center relative z-10 flex-1">
+            <div
+              key={index}
+              className="flex flex-col items-center relative z-10 flex-1"
+            >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isCompleted
-                  ? "bg-green-600 border-green-600 text-white"
-                  : "bg-white border-gray-200 text-gray-400"
-                  } ${isActive ? "ring-4 ring-green-100 animate-pulse" : ""}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                  isCompleted
+                    ? "bg-green-600 border-green-600 text-white"
+                    : "bg-white border-gray-200 text-gray-400"
+                } ${isActive ? "ring-4 ring-green-100 animate-pulse" : ""}`}
               >
                 <Icon className="w-4 h-4" />
               </div>
-              <span className={`text-[10px] mt-2 font-semibold text-center hidden sm:block ${isCompleted ? "text-gray-900 font-bold" : "text-gray-400"
-                }`}>
+              <span
+                className={`text-[10px] mt-2 font-semibold text-center hidden sm:block ${
+                  isCompleted ? "text-gray-900 font-bold" : "text-gray-400"
+                }`}
+              >
                 {step.label}
               </span>
             </div>
@@ -158,12 +198,12 @@ const OrderItemRow = ({
   name,
   quantity,
   price,
-  image
+  image,
 }: {
   name: string;
   quantity: number;
   price: number;
-  image?: string
+  image?: string;
 }) => {
   const numPrice = Number(price);
   return (
@@ -194,7 +234,10 @@ const DeliveryTracker = ({
   status: AssignmentStatus;
   destination: [number, number];
   isPickedUp: boolean;
-  onRouteCalculated: (data: { distanceKm: number; durationMin: number }) => void;
+  onRouteCalculated: (data: {
+    distanceKm: number;
+    durationMin: number;
+  }) => void;
 }) => {
   if (status === "completed") return null;
 
@@ -205,7 +248,9 @@ const DeliveryTracker = ({
           <Navigation className="w-5 h-5 text-green-600 animate-pulse" />
         </div>
         <div>
-          <p className="font-semibold text-green-900 text-sm">Live Navigation</p>
+          <p className="font-semibold text-green-900 text-sm">
+            Live Navigation
+          </p>
           <p className="text-xs text-green-600">
             {status === "broadcasted"
               ? "Accept the delivery to start tracking"
@@ -221,7 +266,9 @@ const DeliveryTracker = ({
           {location && (
             <div className="flex items-center gap-2 text-xs text-green-700">
               <MapPin className="w-3.5 h-3.5" />
-              <span>Lat: {location[0].toFixed(4)}, Lng: {location[1].toFixed(4)}</span>
+              <span>
+                Lat: {location[0].toFixed(4)}, Lng: {location[1].toFixed(4)}
+              </span>
             </div>
           )}
           <div className="h-[250px] bg-green-100 rounded-lg relative overflow-hidden z-0">
@@ -265,13 +312,21 @@ function PremiumDeliveryCard({
   pickupOrder: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; durationMin: number } | null>(null);
+  const [routeInfo, setRouteInfo] = useState<{
+    distanceKm: number;
+    durationMin: number;
+  } | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const status = assignment.status;
 
   // Fetch route data independently so ETA/distance shows without opening the map
   useEffect(() => {
-    if (status === "completed" || !currentPosition || !assignment.order?.address) return;
+    if (
+      status === "completed" ||
+      !currentPosition ||
+      !assignment.order?.address
+    )
+      return;
     const { latitude, longitude } = assignment.order.address;
     if (!latitude || !longitude) return;
 
@@ -279,10 +334,10 @@ function PremiumDeliveryCard({
     const [dLat, dLng] = currentPosition;
     fetch(
       `https://router.project-osrm.org/route/v1/driving/${dLng},${dLat};${longitude},${latitude}?overview=false`,
-      { signal: controller.signal }
+      { signal: controller.signal },
     )
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (data.routes?.[0]) {
           const route = data.routes[0];
           setRouteInfo({
@@ -291,7 +346,7 @@ function PremiumDeliveryCard({
           });
         }
       })
-      .catch(() => { });
+      .catch(() => {});
 
     return () => controller.abort();
   }, [currentPosition?.[0], currentPosition?.[1], status]);
@@ -300,34 +355,38 @@ function PremiumDeliveryCard({
   const orderId = assignment.order?._id?.toString() || "ORD-0000";
   const orderDate = assignment.order?.createdAt
     ? new Date(assignment.order.createdAt).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })
-    : assignment.createdAt
-      ? new Date(assignment.createdAt).toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
       })
+    : assignment.createdAt
+      ? new Date(assignment.createdAt).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
       : "N/A";
 
   const orderTime = assignment.order?.createdAt
     ? new Date(assignment.order.createdAt).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-    : assignment.createdAt
-      ? new Date(assignment.createdAt).toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       })
+    : assignment.createdAt
+      ? new Date(assignment.createdAt).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       : "";
 
   const items = assignment.order?.items || [];
 
   const currentStep = useMemo(() => {
-    if (assignment.status === "completed" || assignment.order?.orderStatus === "delivered") return 5;
+    if (
+      assignment.status === "completed" ||
+      assignment.order?.orderStatus === "delivered"
+    )
+      return 5;
     if (assignment.status === "assigned") {
       if (assignment.order?.isPickedUp) {
         if (routeInfo && routeInfo.distanceKm < 0.5) {
@@ -338,19 +397,30 @@ function PremiumDeliveryCard({
       return 1; // Preparing / Assigned
     }
     return 0; // Confirmed
-  }, [assignment.status, assignment.order?.isPickedUp, assignment.order?.orderStatus, routeInfo]);
+  }, [
+    assignment.status,
+    assignment.order?.isPickedUp,
+    assignment.order?.orderStatus,
+    routeInfo,
+  ]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{
+        delay: index * 0.1,
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
     >
       {/* Card Header */}
-      <div className={`bg-gradient-to-r ${config.gradient} px-6 py-4 border-b ${config.border}`}>
+      <div
+        className={`bg-gradient-to-r ${config.gradient} px-6 py-4 border-b ${config.border}`}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -358,8 +428,12 @@ function PremiumDeliveryCard({
                 <Hash className="w-4 h-4 text-gray-600" />
               </div>
               <div>
-                <p className="font-mono text-sm font-semibold text-gray-700">{orderId}</p>
-                <p className="text-xs text-gray-500">{orderDate} at {orderTime}</p>
+                <p className="font-mono text-sm font-semibold text-gray-700">
+                  {orderId}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {orderDate} at {orderTime}
+                </p>
               </div>
             </div>
           </div>
@@ -413,7 +487,10 @@ function PremiumDeliveryCard({
               <DeliveryTracker
                 location={currentPosition}
                 status={status}
-                destination={[assignment.order.address.latitude, assignment.order.address.longitude]}
+                destination={[
+                  assignment.order.address.latitude,
+                  assignment.order.address.longitude,
+                ]}
                 isPickedUp={!!assignment.order?.isPickedUp}
                 onRouteCalculated={setRouteInfo}
               />
@@ -452,42 +529,56 @@ function PremiumDeliveryCard({
             {(() => {
               const isCompleted = status === "completed";
               const storedEarning = assignment.earningAmount ?? null;
-              const liveEarning = routeInfo ? calculateEarning(routeInfo.distanceKm) : null;
+              const liveEarning = routeInfo
+                ? calculateEarning(routeInfo.distanceKm)
+                : null;
 
               // For completed: always use stored DB value
               // For active: use live calculated value, or show spinner
               const displayAmount = isCompleted
                 ? (storedEarning ?? 0)
-                : liveEarning?.amount ?? null;
+                : (liveEarning?.amount ?? null);
 
               const breakdown = isCompleted
                 ? null
-                : liveEarning?.breakdown ?? null;
+                : (liveEarning?.breakdown ?? null);
 
               return (
                 <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                  <h3 className="text-xs font-semibold text-black tracking-wider mb-3">Your Earning</h3>
+                  <h3 className="text-xs font-semibold text-black tracking-wider mb-3">
+                    Your Earning
+                  </h3>
                   <div className="flex items-end justify-between">
                     {displayAmount !== null ? (
-                      <span className="text-2xl font-bold text-black">₹{displayAmount}</span>
+                      <span className="text-2xl font-bold text-black">
+                        ₹{displayAmount}
+                      </span>
                     ) : (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-black font-medium">Calculating...</span>
+                        <span className="text-sm text-black font-medium">
+                          Calculating...
+                        </span>
                       </div>
                     )}
                     {breakdown && (
-                      <span className="text-xs text-black font-medium">{breakdown}</span>
+                      <span className="text-xs text-black font-medium">
+                        {breakdown}
+                      </span>
                     )}
                     {isCompleted && storedEarning !== null && (
-                      <span className="text-xs text-black font-medium">Distance-based</span>
+                      <span className="text-xs text-black font-medium">
+                        Distance-based
+                      </span>
                     )}
                   </div>
                   <div className="h-px bg-emerald-200 my-3" />
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-black" />
                     <span className="text-xs text-black font-medium">
-                      {assignment.order?.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
+                      {assignment.order?.paymentMethod === "cod"
+                        ? "Cash on Delivery"
+                        : "Online Payment"}
                     </span>
                   </div>
                 </div>
@@ -500,18 +591,28 @@ function PremiumDeliveryCard({
                 {routeInfo ? (
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-gray-900 font-semibold text-sm">Estimated Time</p>
-                      <p className="text-lg font-bold">{routeInfo.durationMin} min</p>
+                      <p className="text-gray-900 font-semibold text-sm">
+                        Estimated Time
+                      </p>
+                      <p className="text-lg font-bold">
+                        {routeInfo.durationMin} min
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-gray-900 font-semibold text-sm">Distance</p>
-                      <p className="text-lg font-bold">{routeInfo.distanceKm.toFixed(1)} km</p>
+                      <p className="text-gray-900 font-semibold text-sm">
+                        Distance
+                      </p>
+                      <p className="text-lg font-bold">
+                        {routeInfo.distanceKm.toFixed(1)} km
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-green-700 font-medium">Calculating route...</span>
+                    <span className="text-sm text-green-700 font-medium">
+                      Calculating route...
+                    </span>
                   </div>
                 )}
               </div>
@@ -566,7 +667,12 @@ function PremiumDeliveryCard({
                   </button>
                 )}
                 <button
-                  onClick={() => completeDelivery(assignment._id, calculateEarning(routeInfo?.distanceKm ?? null).amount)}
+                  onClick={() =>
+                    completeDelivery(
+                      assignment._id,
+                      calculateEarning(routeInfo?.distanceKm ?? null).amount,
+                    )
+                  }
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   <CheckCircle className="w-4 h-4" />
@@ -582,24 +688,31 @@ function PremiumDeliveryCard({
               </>
             )}
 
-            {status === "completed" && (
-              assignment.order?.isReviewed ? (
+            {status === "completed" &&
+              (assignment.order?.isReviewed ? (
                 <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-200">
                   <CheckCircle className="w-4 h-4" />
                   <span>Customer Rating:</span>
                   <div className="flex items-center gap-0.5 ml-1">
-                    {[1, 2, 3, 4, 5].map(s => (
-                      <Star key={s} className={`w-3 h-3 ${s <= (assignment.order?.review?.rating ?? 0) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}`} />
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        className={`w-3 h-3 ${s <= (assignment.order?.review?.rating ?? 0) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}`}
+                      />
                     ))}
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-200">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Delivered Successfully (+₹{assignment.earningAmount ?? calculateEarning(routeInfo?.distanceKm ?? null).amount})</span>
+                  <span>
+                    Delivered Successfully (+₹
+                    {assignment.earningAmount ??
+                      calculateEarning(routeInfo?.distanceKm ?? null).amount}
+                    )
+                  </span>
                 </div>
-              )
-            )}
+              ))}
           </div>
 
           <button
@@ -607,7 +720,9 @@ function PremiumDeliveryCard({
             className="flex items-center gap-1.5 text-sm font-medium hover:text-green-700 transition-colors"
           >
             {expanded ? "Show Less" : "View Details"}
-            <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expanded ? "rotate-90" : ""}`} />
+            <ChevronRight
+              className={`w-4 h-4 transition-transform duration-300 ${expanded ? "rotate-90" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -622,12 +737,24 @@ export default function DeliveryOrdersPage() {
   const [assignment, setAssignment] = useState<AssignmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPosition, setCurrentPosition] = useState<LatLng | null>(null);
-  const [notification, setNotification] = useState<{ show: boolean; message: string; type: string }>({ show: false, message: "", type: "" });
-  const [activeFilter, setActiveFilter] = useState<"all" | "broadcasted" | "assigned" | "completed">("all");
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    message: string;
+    type: string;
+  }>({ show: false, message: "", type: "" });
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "broadcasted" | "assigned" | "completed"
+  >("all");
 
-  const showNotification = (message: string, type: "success" | "error" | "info") => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" | "info",
+  ) => {
     setNotification({ show: true, message, type });
-    setTimeout(() => setNotification({ show: false, message: "", type: "" }), 4000);
+    setTimeout(
+      () => setNotification({ show: false, message: "", type: "" }),
+      4000,
+    );
   };
 
   const fetchAssignment = useCallback(async () => {
@@ -650,11 +777,15 @@ export default function DeliveryOrdersPage() {
         setCurrentPosition([lat, lon]);
         if (session?.user?.id) {
           const socket = getSocket();
-          socket.emit("updateLocation", { userId: session.user.id, latitude: lat, longitude: lon });
+          socket.emit("updateLocation", {
+            userId: session.user.id,
+            latitude: lat,
+            longitude: lon,
+          });
         }
       },
       (err) => console.error("Geolocation failed", err),
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true },
     );
     return () => navigator.geolocation.clearWatch(watcher);
   }, [session?.user?.id]);
@@ -663,9 +794,14 @@ export default function DeliveryOrdersPage() {
     if (!session?.user?.id) return;
     const socket = getSocket();
     socket.emit("identity", session.user.id);
-    const handleUpdate = async () => { await fetchAssignment(); showNotification("New assignment available!", "info"); };
+    const handleUpdate = async () => {
+      await fetchAssignment();
+      showNotification("New assignment available!", "info");
+    };
     socket.on("order-status-update", handleUpdate);
-    return () => { socket.off("order-status-update", handleUpdate); };
+    return () => {
+      socket.off("order-status-update", handleUpdate);
+    };
   }, [session?.user?.id, fetchAssignment]);
 
   useEffect(() => {
@@ -677,25 +813,43 @@ export default function DeliveryOrdersPage() {
     return () => clearInterval(interval);
   }, [fetchAssignment]);
 
-  const respondToAssignment = async (assignmentId: string, action: "accept" | "reject") => {
+  const respondToAssignment = async (
+    assignmentId: string,
+    action: "accept" | "reject",
+  ) => {
     try {
-      await axios.post("/api/delivery/respond-assignment", { assignmentId, action });
+      await axios.post("/api/delivery/respond-assignment", {
+        assignmentId,
+        action,
+      });
       await fetchAssignment();
       showNotification(`Successfully ${action}ed the delivery!`, "success");
     } catch (error: unknown) {
       const err = error as AxiosError;
-      showNotification(`Failed to ${action} assignment: ${err?.response?.data?.message || err?.message}`, "error");
+      showNotification(
+        `Failed to ${action} assignment: ${err?.response?.data?.message || err?.message}`,
+        "error",
+      );
     }
   };
 
-  const completeDelivery = async (assignmentId: string, earningAmount: number) => {
+  const completeDelivery = async (
+    assignmentId: string,
+    earningAmount: number,
+  ) => {
     try {
-      await axios.post("/api/delivery/deliver-order", { assignmentId, earningAmount });
+      await axios.post("/api/delivery/deliver-order", {
+        assignmentId,
+        earningAmount,
+      });
       await fetchAssignment();
       showNotification("Delivery completed successfully! 🎉", "success");
     } catch (error: unknown) {
       const err = error as AxiosError;
-      showNotification(`Failed to complete delivery: ${err?.response?.data?.message || err?.message}`, "error");
+      showNotification(
+        `Failed to complete delivery: ${err?.response?.data?.message || err?.message}`,
+        "error",
+      );
     }
   };
 
@@ -706,12 +860,15 @@ export default function DeliveryOrdersPage() {
       showNotification("Order picked up successfully! 📦", "success");
     } catch (error: unknown) {
       const err = error as AxiosError;
-      showNotification(`Failed to pick up order: ${err?.response?.data?.message || err?.message}`, "error");
+      showNotification(
+        `Failed to pick up order: ${err?.response?.data?.message || err?.message}`,
+        "error",
+      );
     }
   };
 
   const filteredAssignments = [...assignment]
-    .filter(a => activeFilter === "all" ? true : a.status === activeFilter)
+    .filter((a) => (activeFilter === "all" ? true : a.status === activeFilter))
     .sort((a, b) => {
       const aDate = new Date(a.createdAt || a.order?.createdAt || 0).getTime();
       const bDate = new Date(b.createdAt || b.order?.createdAt || 0).getTime();
@@ -720,14 +877,13 @@ export default function DeliveryOrdersPage() {
 
   const counts = {
     all: assignment.length,
-    broadcasted: assignment.filter(a => a.status === "broadcasted").length,
-    assigned: assignment.filter(a => a.status === "assigned").length,
-    completed: assignment.filter(a => a.status === "completed").length,
+    broadcasted: assignment.filter((a) => a.status === "broadcasted").length,
+    assigned: assignment.filter((a) => a.status === "assigned").length,
+    completed: assignment.filter((a) => a.status === "completed").length,
   };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] relative overflow-hidden">
-      
       {/* Premium Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-green-400/[0.03] rounded-full blur-[100px]" />
@@ -736,11 +892,15 @@ export default function DeliveryOrdersPage() {
       </div>
 
       {/* Subtle grid pattern */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.015]"
-        style={{ backgroundImage: "radial-gradient(circle, #64748b 1px, transparent 1px)", backgroundSize: "32px 32px" }}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.015]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, #64748b 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
       />
 
-      {/* Notification Toast */}
       <AnimatePresence>
         {notification.show && (
           <motion.div
@@ -750,16 +910,29 @@ export default function DeliveryOrdersPage() {
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             className="fixed top-6 right-6 z-50"
           >
-              <div className={`rounded-2xl shadow-2xl shadow-black/10 px-6 py-4 flex items-center gap-4 backdrop-blur-xl border ${notification.type === "success" ? "bg-emerald-500/95 text-white border-emerald-400/30" :
-              notification.type === "error" ? "bg-rose-500/95 text-white border-rose-400/30" :
-                "bg-green-600/95 text-white border-green-500/30"
-              }`}>
+            <div
+              className={`rounded-2xl shadow-2xl shadow-black/10 px-6 py-4 flex items-center gap-4 backdrop-blur-xl border ${
+                notification.type === "success"
+                  ? "bg-emerald-500/95 text-white border-emerald-400/30"
+                  : notification.type === "error"
+                    ? "bg-rose-500/95 text-white border-rose-400/30"
+                    : "bg-green-600/95 text-white border-green-500/30"
+              }`}
+            >
               <div className="p-1.5 bg-white/20 rounded-xl">
-                {notification.type === "success" && <CheckCircle className="w-5 h-5" strokeWidth={2.5} />}
-                {notification.type === "error" && <XCircle className="w-5 h-5" strokeWidth={2.5} />}
-                {notification.type === "info" && <Bell className="w-5 h-5" strokeWidth={2.5} />}
+                {notification.type === "success" && (
+                  <CheckCircle className="w-5 h-5" strokeWidth={2.5} />
+                )}
+                {notification.type === "error" && (
+                  <XCircle className="w-5 h-5" strokeWidth={2.5} />
+                )}
+                {notification.type === "info" && (
+                  <Bell className="w-5 h-5" strokeWidth={2.5} />
+                )}
               </div>
-              <p className="font-bold text-[13px] leading-snug">{notification.message}</p>
+              <p className="font-bold text-[13px] leading-snug">
+                {notification.message}
+              </p>
             </div>
           </motion.div>
         )}
@@ -775,42 +948,58 @@ export default function DeliveryOrdersPage() {
           className="mb-8"
         >
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1 h-6 bg-green-600 rounded-full" />
-                        <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Order Management</p>
-                      </div>
-                      <h1 className="text-3xl font-bold text-gray-900 tracking-tight">My Deliveries</h1>
-                      <p className="text-sm text-gray-500 mt-1.5 font-medium">Track, manage, and complete your deliveries</p>
-                    </div>
-                    <button
-                      onClick={() => router.push("/")}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-green-600/20 hover:shadow-green-600/30 hover:-translate-y-0.5"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      Back to Dashboard
-                    </button>
-                  </div>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1 h-6 bg-green-600 rounded-full" />
+                <p className="text-xs font-bold text-green-600 uppercase tracking-widest">
+                  Delivery Management
+                </p>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                My Deliveries
+              </h1>
+              <p className="text-sm text-gray-500 mt-1.5 font-medium">
+                Track, manage, and complete your deliveries
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-green-600/20 hover:shadow-green-600/30 hover:-translate-y-0.5"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Back to Dashboard
+            </button>
+          </div>
 
           <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-2">
-            {(["all", "broadcasted", "assigned", "completed"] as const).map((filter) => (
-              <motion.button
-                key={filter}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setActiveFilter(filter)}
-                className={`relative px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all duration-300 whitespace-nowrap ${activeFilter === filter
-                  ? "bg-green-600 text-white shadow-md shadow-green-600/10"
-                  : "bg-white text-gray-600 border border-gray-200/60 hover:bg-gray-50"
+            {(["all", "broadcasted", "assigned", "completed"] as const).map(
+              (filter) => (
+                <motion.button
+                  key={filter}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`relative px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all duration-300 whitespace-nowrap ${
+                    activeFilter === filter
+                      ? "bg-green-600 text-white shadow-md shadow-green-600/10"
+                      : "bg-white text-gray-600 border border-gray-200/60 hover:bg-gray-50"
                   }`}
-              >
-                <span className="capitalize">{filter === "all" ? "All Orders" : filter}</span>
-                <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[10px] font-black ${activeFilter === filter ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
-                  }`}>
-                  {counts[filter]}
-                </span>
-              </motion.button>
-            ))}
+                >
+                  <span className="capitalize">
+                    {filter === "all" ? "All Orders" : filter}
+                  </span>
+                  <span
+                    className={`ml-2 px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+                      activeFilter === filter
+                        ? "bg-white/20 text-white"
+                        : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {counts[filter]}
+                  </span>
+                </motion.button>
+              ),
+            )}
           </div>
         </motion.div>
 
@@ -822,10 +1011,17 @@ export default function DeliveryOrdersPage() {
               className="relative"
             >
               <div className="w-16 h-16 border-[3px] border-gray-100 border-t-gray-900 rounded-full" />
-              <Truck className="w-5 h-5 text-gray-900 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" strokeWidth={2} />
+              <Truck
+                className="w-5 h-5 text-gray-900 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                strokeWidth={2}
+              />
             </motion.div>
-            <p className="mt-6 text-gray-500 font-bold text-lg">Loading your deliveries...</p>
-            <p className="text-[13px] text-gray-400 mt-1 font-medium">Fetching real-time data</p>
+            <p className="mt-6 text-gray-500 font-bold text-lg">
+              Loading your deliveries...
+            </p>
+            <p className="text-[13px] text-gray-400 mt-1 font-medium">
+              Fetching real-time data
+            </p>
           </div>
         ) : filteredAssignments.length === 0 ? (
           <motion.div
@@ -836,11 +1032,17 @@ export default function DeliveryOrdersPage() {
           >
             <div className="relative inline-block mb-6">
               <div className="absolute inset-0 bg-gray-400 rounded-full blur-3xl opacity-10 animate-pulse" />
-              <Package className="w-20 h-20 text-gray-300 mx-auto relative" strokeWidth={1.5} />
+              <Package
+                className="w-20 h-20 text-gray-300 mx-auto relative"
+                strokeWidth={1.5}
+              />
             </div>
-            <h3 className="text-xl font-black text-gray-700">No Active Deliveries</h3>
+            <h3 className="text-xl font-black text-gray-700">
+              No Active Deliveries
+            </h3>
             <p className="text-gray-500 mt-2 max-w-sm mx-auto font-medium text-[14px]">
-              You&apos;re all caught up! New assignments will appear here automatically.
+              You&apos;re all caught up! New assignments will appear here
+              automatically.
             </p>
             <motion.div
               initial={{ opacity: 0 }}
@@ -852,7 +1054,9 @@ export default function DeliveryOrdersPage() {
                 <div className="w-2.5 h-2.5 bg-gray-500 rounded-full" />
                 <div className="absolute inset-0 w-2.5 h-2.5 bg-gray-500 rounded-full animate-ping" />
               </div>
-              <span className="text-[13px] font-bold text-gray-600">Waiting for new orders...</span>
+              <span className="text-[13px] font-bold text-gray-600">
+                Waiting for new orders...
+              </span>
             </motion.div>
           </motion.div>
         ) : (
